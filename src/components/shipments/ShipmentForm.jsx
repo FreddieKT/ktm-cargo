@@ -1,0 +1,336 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calculator, Package, Truck } from 'lucide-react';
+
+const serviceTypes = [
+  { value: 'cargo_small', label: 'Cargo (1-5kg)', costBasis: 90, price: 120 },
+  { value: 'cargo_medium', label: 'Cargo (6-15kg)', costBasis: 75, price: 95 },
+  { value: 'cargo_large', label: 'Cargo (16-30kg)', costBasis: 55, price: 70 },
+  { value: 'shopping_small', label: 'Shopping + Small Items', costBasis: 80, price: 110 },
+  { value: 'shopping_fashion', label: 'Shopping + Fashion/Electronics', costBasis: 85, price: 115 },
+  { value: 'shopping_bulk', label: 'Shopping + Bulk Order', costBasis: 70, price: 90 },
+  { value: 'express', label: 'Express (1-2 days)', costBasis: 100, price: 150 },
+  { value: 'standard', label: 'Standard (3-5 days)', costBasis: 75, price: 95 },
+];
+
+export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrders = [], vendors = [] }) {
+  const [form, setForm] = useState({
+    customer_name: '',
+    customer_phone: '',
+    service_type: 'cargo_medium',
+    weight_kg: '',
+    items_description: '',
+    pickup_address: '',
+    delivery_address: '',
+    pickup_date: '',
+    insurance_opted: false,
+    packaging_fee: 0,
+    notes: '',
+    vendor_po_id: '',
+    vendor_po_number: '',
+    vendor_id: '',
+    vendor_name: '',
+    vendor_cost_per_kg: 0,
+    ...shipment
+  });
+
+  const [calculated, setCalculated] = useState({ cost: 0, price: 0, profit: 0, total: 0, vendorCost: 0 });
+
+  // Filter POs that are approved/received and have remaining weight
+  const availablePOs = purchaseOrders.filter(po => 
+    ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
+    (po.remaining_weight_kg > 0 || !po.total_weight_kg)
+  );
+
+  useEffect(() => {
+    const service = serviceTypes.find(s => s.value === form.service_type);
+    if (service && form.weight_kg) {
+      const weight = parseFloat(form.weight_kg) || 0;
+      
+      // Use vendor cost from PO if linked, otherwise use default service cost
+      const vendorCostPerKg = form.vendor_cost_per_kg || service.costBasis;
+      const vendorCost = vendorCostPerKg * weight;
+      
+      const price = service.price * weight;
+      const insurance = form.insurance_opted ? price * 0.03 : 0;
+      const packaging = parseFloat(form.packaging_fee) || 0;
+      const total = price + insurance + packaging;
+      const profit = total - vendorCost - insurance;
+      
+      setCalculated({ cost: vendorCost, price, profit, total, insurance, vendorCost, vendorCostPerKg });
+    }
+  }, [form.service_type, form.weight_kg, form.insurance_opted, form.packaging_fee, form.vendor_cost_per_kg]);
+
+  const handlePOChange = (poId) => {
+    if (!poId || poId === 'none') {
+      setForm({
+        ...form,
+        vendor_po_id: '',
+        vendor_po_number: '',
+        vendor_id: '',
+        vendor_name: '',
+        vendor_cost_per_kg: 0
+      });
+      return;
+    }
+    
+    const selectedPO = purchaseOrders.find(po => po.id === poId);
+    if (selectedPO) {
+      setForm({
+        ...form,
+        vendor_po_id: selectedPO.id,
+        vendor_po_number: selectedPO.po_number,
+        vendor_id: selectedPO.vendor_id,
+        vendor_name: selectedPO.vendor_name,
+        vendor_cost_per_kg: selectedPO.cost_per_kg || 0
+      });
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const service = serviceTypes.find(s => s.value === form.service_type);
+    const weight = parseFloat(form.weight_kg);
+    
+    onSubmit({
+      ...form,
+      weight_kg: weight,
+      cost_basis: form.vendor_cost_per_kg || service?.costBasis,
+      price_per_kg: service?.price,
+      vendor_cost_per_kg: form.vendor_cost_per_kg || 0,
+      vendor_total_cost: calculated.vendorCost || 0,
+      total_amount: calculated.total,
+      profit: calculated.profit,
+      insurance_amount: calculated.insurance || 0,
+      tracking_number: form.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`
+    });
+  };
+
+  return (
+    <Card className="border-0 shadow-lg">
+      <CardHeader className="border-b">
+        <CardTitle>{shipment ? 'Edit Shipment' : 'New Shipment'}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Customer Name *</Label>
+              <Input
+                value={form.customer_name}
+                onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                placeholder="Enter customer name"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone Number *</Label>
+              <Input
+                value={form.customer_phone}
+                onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                placeholder="+66 or +95"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Vendor PO Linkage */}
+          {availablePOs.length > 0 && (
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-blue-600" />
+                <Label className="text-blue-800 font-medium">Link to Vendor Purchase Order</Label>
+              </div>
+              <Select value={form.vendor_po_id || 'none'} onValueChange={handlePOChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select vendor PO (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No PO Linked (use default pricing)</SelectItem>
+                  {availablePOs.map(po => (
+                    <SelectItem key={po.id} value={po.id}>
+                      {po.po_number} - {po.vendor_name} 
+                      {po.cost_per_kg ? ` (฿${po.cost_per_kg}/kg)` : ''} 
+                      {po.remaining_weight_kg ? ` - ${po.remaining_weight_kg}kg available` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.vendor_po_id && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge className="bg-blue-100 text-blue-800">
+                    <Package className="w-3 h-3 mr-1" />
+                    {form.vendor_name}
+                  </Badge>
+                  <span className="text-blue-600">Cost: ฿{form.vendor_cost_per_kg}/kg</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Service Type *</Label>
+              <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceTypes.map(s => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label} - ฿{s.price}/kg
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Weight (kg) *</Label>
+              <Input
+                type="number"
+                step="0.1"
+                min="0.1"
+                value={form.weight_kg}
+                onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
+                placeholder="Enter weight"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Items Description</Label>
+            <Textarea
+              value={form.items_description}
+              onChange={(e) => setForm({ ...form, items_description: e.target.value })}
+              placeholder="Describe the items being shipped..."
+              rows={2}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Pickup Address (Bangkok)</Label>
+              <Input
+                value={form.pickup_address}
+                onChange={(e) => setForm({ ...form, pickup_address: e.target.value })}
+                placeholder="Bangkok address"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Delivery Address (Yangon)</Label>
+              <Input
+                value={form.delivery_address}
+                onChange={(e) => setForm({ ...form, delivery_address: e.target.value })}
+                placeholder="Yangon address"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Pickup Date</Label>
+              <Input
+                type="date"
+                value={form.pickup_date}
+                onChange={(e) => setForm({ ...form, pickup_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Packaging Fee (THB)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={form.packaging_fee}
+                onChange={(e) => setForm({ ...form, packaging_fee: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Insurance (3%)</Label>
+              <div className="flex items-center gap-2 h-10">
+                <Switch
+                  checked={form.insurance_opted}
+                  onCheckedChange={(v) => setForm({ ...form, insurance_opted: v })}
+                />
+                <span className="text-sm text-slate-600">
+                  {form.insurance_opted ? `฿${calculated.insurance?.toFixed(0) || 0}` : 'Not included'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Notes</Label>
+            <Textarea
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              placeholder="Additional notes..."
+              rows={2}
+            />
+          </div>
+
+          {form.weight_kg && (
+            <div className="bg-slate-50 rounded-xl p-4 space-y-2">
+              <div className="flex items-center gap-2 mb-3">
+                <Calculator className="w-4 h-4 text-slate-600" />
+                <span className="font-medium text-slate-700">Price Calculation</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-500">Vendor Cost</p>
+                  <p className="font-semibold text-rose-600">฿{calculated.vendorCost?.toLocaleString()}</p>
+                  <p className="text-xs text-slate-400">
+                    {form.vendor_po_id ? `(PO: ฿${form.vendor_cost_per_kg}/kg)` : `(Default: ฿${calculated.vendorCostPerKg}/kg)`}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Customer Price</p>
+                  <p className="font-semibold">฿{calculated.price?.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Insurance</p>
+                  <p className="font-semibold">฿{(calculated.insurance || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Packaging</p>
+                  <p className="font-semibold">฿{parseFloat(form.packaging_fee || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Total</p>
+                  <p className="font-bold text-lg text-blue-600">฿{calculated.total?.toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-slate-200 mt-2 flex items-center justify-between">
+                <p className="text-sm text-emerald-600 font-medium">
+                  Est. Profit: ฿{calculated.profit?.toLocaleString()}
+                </p>
+                {form.vendor_po_id && (
+                  <Badge className="bg-blue-100 text-blue-700">
+                    Linked to {form.vendor_po_number}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+              {shipment ? 'Update Shipment' : 'Create Shipment'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
