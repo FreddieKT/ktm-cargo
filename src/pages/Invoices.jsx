@@ -10,12 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
+import {
   Search, FileText, Package, ShoppingBag, Calendar as CalendarIcon,
   DollarSign, User, Printer, Download, Eye, CheckCircle, Clock, XCircle, Send
 } from 'lucide-react';
 import { format, parseISO, isWithinInterval, subDays } from 'date-fns';
 import { toast } from 'sonner';
+import { printDocument } from '@/utils/documentPrinter';
+import InvoiceTemplate from '@/components/documents/templates/InvoiceTemplate';
 
 const STATUS_CONFIG = {
   draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800', icon: FileText },
@@ -111,15 +113,10 @@ export default function Invoices() {
   };
 
   const handlePrintInvoice = (invoice) => {
-    const printContent = generateInvoiceHTML(invoice, companySettings);
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
-    } else {
-      toast.error('Please allow popups to print invoices');
-    }
+    printDocument(InvoiceTemplate, {
+      data: { invoice, customer: { name: invoice.customer_name } }, // Passing minimal customer data as we don't have full object here
+      settings: companySettings
+    });
   };
 
   return (
@@ -272,8 +269,8 @@ export default function Invoices() {
               const TypeIcon = typeConfig.icon;
 
               return (
-                <Card 
-                  key={invoice.id} 
+                <Card
+                  key={invoice.id}
                   className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer"
                   onClick={() => handleViewDetails(invoice)}
                 >
@@ -313,16 +310,16 @@ export default function Invoices() {
                           {statusConfig.label}
                         </Badge>
                         <div className="flex gap-1">
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); handleViewDetails(invoice); }}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); handlePrintInvoice(invoice); }}
                           >
                             <Printer className="w-4 h-4" />
@@ -341,8 +338,8 @@ export default function Invoices() {
               <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-900 mb-2">No invoices found</h3>
               <p className="text-slate-500">
-                {searchQuery || typeFilter !== 'all' || statusFilter !== 'all' 
-                  ? 'Try adjusting your filters' 
+                {searchQuery || typeFilter !== 'all' || statusFilter !== 'all'
+                  ? 'Try adjusting your filters'
                   : 'Invoices will appear here when orders are completed'}
               </p>
             </CardContent>
@@ -359,8 +356,8 @@ export default function Invoices() {
               </DialogTitle>
             </DialogHeader>
             {selectedInvoice && (
-              <InvoiceDetailsView 
-                invoice={selectedInvoice} 
+              <InvoiceDetailsView
+                invoice={selectedInvoice}
                 companySettings={companySettings}
                 onPrint={() => handlePrintInvoice(selectedInvoice)}
               />
@@ -525,276 +522,4 @@ function InvoiceDetailsView({ invoice, companySettings, onPrint }) {
       )}
     </div>
   );
-}
-
-function generateInvoiceHTML(invoice, companySettings) {
-  const typeLabel = invoice.invoice_type === 'shopping_order' ? 'Shopping Order Invoice' : 'Shipment Invoice';
-  const logoUrl = companySettings?.logo_url;
-  
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Invoice ${invoice.invoice_number}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #000; padding: 40px; background: white; }
-        .invoice-container { max-width: 800px; margin: 0 auto; }
-        
-        /* Header */
-        .header { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: flex-start;
-          padding-bottom: 30px;
-          border-bottom: 1px solid #000;
-          margin-bottom: 30px;
-        }
-        .company-info { display: flex; align-items: center; gap: 15px; }
-        .company-logo { 
-          width: 60px; 
-          height: 60px; 
-          border: 1px solid #000;
-          display: flex; 
-          align-items: center; 
-          justify-content: center;
-        }
-        .company-logo img { max-width: 50px; max-height: 50px; object-fit: contain; }
-        .company-logo-placeholder { font-size: 24px; font-weight: bold; }
-        .company-details h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-        .company-details p { font-size: 11px; color: #333; }
-        
-        .invoice-title {
-          text-align: right;
-        }
-        .invoice-title h2 { 
-          font-size: 28px; 
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-        }
-        .invoice-number { 
-          font-size: 14px;
-          margin-top: 5px;
-          font-weight: 600;
-        }
-        
-        /* Info section */
-        .info-row { 
-          display: flex; 
-          justify-content: space-between;
-          margin-bottom: 30px;
-        }
-        .info-box h3 { 
-          font-size: 10px; 
-          text-transform: uppercase; 
-          letter-spacing: 1px;
-          border-bottom: 1px solid #000;
-          padding-bottom: 5px;
-          margin-bottom: 10px;
-          font-weight: 700;
-        }
-        .info-box p { margin: 4px 0; font-size: 12px; }
-        .info-box .name { font-size: 14px; font-weight: 600; }
-        
-        /* Details */
-        .details-row {
-          display: flex;
-          gap: 30px;
-          margin-bottom: 25px;
-          padding: 15px 0;
-          border-top: 1px solid #ccc;
-          border-bottom: 1px solid #ccc;
-        }
-        .detail-item label { 
-          display: block; 
-          font-size: 9px; 
-          text-transform: uppercase; 
-          letter-spacing: 0.5px;
-          color: #666;
-        }
-        .detail-item span { font-weight: 600; font-size: 12px; }
-        
-        /* Table */
-        .invoice-table { 
-          width: 100%; 
-          border-collapse: collapse; 
-          margin-bottom: 20px;
-        }
-        .invoice-table th { 
-          background: #f5f5f5;
-          color: #000;
-          padding: 12px 15px; 
-          text-align: left; 
-          font-size: 10px; 
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 600;
-          border-bottom: 1px solid #000;
-        }
-        .invoice-table th.text-right { text-align: right; }
-        .invoice-table td { 
-          padding: 12px 15px; 
-          border-bottom: 1px solid #ddd;
-        }
-        .text-right { text-align: right; }
-        
-        .total-row td { 
-          background: #f5f5f5;
-          color: #000;
-          font-weight: 700; 
-          font-size: 14px;
-          border-top: 1px solid #000;
-          border-bottom: 1px solid #000;
-        }
-        
-        /* Status */
-        .status-row { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: center;
-          margin-top: 25px;
-          padding-top: 20px;
-          border-top: 1px solid #000;
-        }
-        .paid-stamp { 
-          border: 1px solid #000;
-          padding: 8px 20px; 
-          font-weight: 500;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        .unpaid-stamp {
-          border: 1px solid #000;
-          padding: 8px 20px;
-          font-weight: 500;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-        
-        /* Notes */
-        .notes { 
-          border: 1px solid #ccc;
-          padding: 15px; 
-          margin-top: 20px;
-        }
-        .notes h4 { 
-          font-size: 10px; 
-          text-transform: uppercase; 
-          letter-spacing: 1px;
-          margin-bottom: 8px;
-          font-weight: 700;
-        }
-        .notes p { font-size: 11px; line-height: 1.5; }
-        
-        /* Footer */
-        .footer { 
-          text-align: center; 
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #ccc;
-        }
-        .footer p { font-size: 11px; color: #666; margin: 3px 0; }
-        .footer .thank-you { 
-          font-size: 14px; 
-          font-weight: 600; 
-          color: #000;
-          margin-bottom: 5px;
-        }
-        
-        @media print { 
-          body { padding: 20px; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="invoice-container">
-        <div class="header">
-          <div class="company-info">
-            <div class="company-logo">
-              ${logoUrl 
-                ? `<img src="${logoUrl}" alt="Logo" />` 
-                : `<span class="company-logo-placeholder">✈</span>`
-              }
-            </div>
-            <div class="company-details">
-              <h1>${companySettings?.company_name || 'BKK-YGN Cargo'}</h1>
-              <p>${companySettings?.address || 'Bangkok - Yangon Cargo & Shopping Services'}</p>
-              <p>${companySettings?.phone || ''} ${companySettings?.email ? '| ' + companySettings.email : ''}</p>
-            </div>
-          </div>
-          <div class="invoice-title">
-            <h2>Invoice</h2>
-            <p class="invoice-number">${invoice.invoice_number}</p>
-            <p style="font-size: 10px; color: #666; margin-top: 3px;">${typeLabel}</p>
-          </div>
-        </div>
-
-        <div class="info-row">
-          <div class="info-box">
-            <h3>Bill To</h3>
-            <p class="name">${invoice.customer_name}</p>
-            ${invoice.customer_email ? `<p>${invoice.customer_email}</p>` : ''}
-            ${invoice.customer_phone ? `<p>${invoice.customer_phone}</p>` : ''}
-          </div>
-          <div class="info-box" style="text-align: right;">
-            <h3>Invoice Details</h3>
-            <p><strong>Date:</strong> ${invoice.invoice_date || '-'}</p>
-            <p><strong>Due:</strong> ${invoice.due_date || '-'}</p>
-            <p><strong>Payment:</strong> ${invoice.payment_method?.replace('_', ' ').toUpperCase() || '-'}</p>
-          </div>
-        </div>
-
-        <div class="details-row">
-          ${invoice.tracking_number ? `<div class="detail-item"><label>Tracking #</label><span>${invoice.tracking_number}</span></div>` : ''}
-          ${invoice.order_number ? `<div class="detail-item"><label>Order #</label><span>${invoice.order_number}</span></div>` : ''}
-          <div class="detail-item"><label>Service</label><span style="text-transform: capitalize;">${invoice.service_type?.replace(/_/g, ' ') || '-'}</span></div>
-          ${invoice.weight_kg ? `<div class="detail-item"><label>Weight</label><span>${invoice.weight_kg} kg</span></div>` : ''}
-        </div>
-
-        <table class="invoice-table">
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th class="text-right">Amount (THB)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${invoice.product_cost > 0 ? `<tr><td>Product Cost</td><td class="text-right">฿${invoice.product_cost.toLocaleString()}</td></tr>` : ''}
-            ${invoice.commission_amount > 0 ? `<tr><td>Service Commission</td><td class="text-right">฿${invoice.commission_amount.toLocaleString()}</td></tr>` : ''}
-            ${invoice.shipping_amount > 0 ? `<tr><td>Shipping ${invoice.weight_kg && invoice.price_per_kg ? `(${invoice.weight_kg} kg × ฿${invoice.price_per_kg})` : ''}</td><td class="text-right">฿${invoice.shipping_amount.toLocaleString()}</td></tr>` : ''}
-            ${invoice.insurance_amount > 0 ? `<tr><td>Insurance</td><td class="text-right">฿${invoice.insurance_amount.toLocaleString()}</td></tr>` : ''}
-            ${invoice.packaging_fee > 0 ? `<tr><td>Packaging</td><td class="text-right">฿${invoice.packaging_fee.toLocaleString()}</td></tr>` : ''}
-            ${invoice.tax_amount > 0 ? `<tr><td>Tax</td><td class="text-right">฿${invoice.tax_amount.toLocaleString()}</td></tr>` : ''}
-            <tr class="total-row">
-              <td>TOTAL</td>
-              <td class="text-right">฿${(invoice.total_amount || 0).toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="status-row">
-          <div>
-            ${invoice.status === 'paid' 
-              ? `<div class="paid-stamp">PAID${invoice.payment_date ? ` - ${invoice.payment_date}` : ''}</div>` 
-              : `<div class="unpaid-stamp">${invoice.status?.toUpperCase() || 'PENDING'}</div>`
-            }
-          </div>
-          <div style="text-align: right; font-size: 11px; color: #666;">
-            <p>Generated: ${new Date().toLocaleDateString()}</p>
-          </div>
-        </div>
-
-        ${invoice.notes ? `<div class="notes"><h4>Notes</h4><p>${invoice.notes}</p></div>` : ''}
-
-        <div class="footer">
-          <p class="thank-you">Thank you for your business</p>
-          <p>${companySettings?.company_name || 'BKK-YGN Cargo'}</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
 }

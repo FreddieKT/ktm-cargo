@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { 
-  Building2, FileText, Package, DollarSign, BarChart3, 
-  Plus, Search, CheckCircle, Clock, AlertTriangle, 
+import {
+  Building2, FileText, Package, DollarSign, BarChart3,
+  Plus, Search, CheckCircle, Clock, AlertTriangle,
   PackageCheck, Pencil, Trash2, Eye, Send, Shield, History, Receipt, Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -63,12 +63,12 @@ export default function Procurement() {
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list('-created_date')
+    queryFn: () => base44.entities.PurchaseOrder.list('-created_at')
   });
 
   const { data: goodsReceipts = [] } = useQuery({
     queryKey: ['goods-receipts'],
-    queryFn: () => base44.entities.GoodsReceipt.list('-created_date')
+    queryFn: () => base44.entities.GoodsReceipt.list('-created_at')
   });
 
   const { data: contracts = [] } = useQuery({
@@ -78,7 +78,7 @@ export default function Procurement() {
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
-    queryFn: () => base44.entities.VendorPayment.list('-created_date')
+    queryFn: () => base44.entities.VendorPayment.list('-created_at')
   });
 
   const { data: approvalRules = [] } = useQuery({
@@ -88,22 +88,22 @@ export default function Procurement() {
 
   const { data: approvalHistory = [] } = useQuery({
     queryKey: ['approval-history'],
-    queryFn: () => base44.entities.ApprovalHistory.list('-created_date')
+    queryFn: () => base44.entities.ApprovalHistory.list('-created_at')
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list('-created_date')
+    queryFn: () => base44.entities.Invoice.list('-created_at')
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date')
+    queryFn: () => base44.entities.Shipment.list('-created_at')
   });
 
   const { data: shoppingOrders = [] } = useQuery({
     queryKey: ['shopping-orders'],
-    queryFn: () => base44.entities.ShoppingOrder.list('-created_date')
+    queryFn: () => base44.entities.ShoppingOrder.list('-created_at')
   });
 
   const { data: currentUser } = useQuery({
@@ -258,7 +258,7 @@ export default function Procurement() {
 
   // Get all pending approval POs
   const allPendingPOs = purchaseOrders.filter(po => po.status === 'pending_approval');
-  
+
   // Get pending approvals specifically assigned to current user
   const pendingForMe = purchaseOrders.filter(po => {
     if (po.status !== 'pending_approval') return false;
@@ -268,10 +268,10 @@ export default function Procurement() {
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
     return latestSubmission?.approver_email === currentUser?.email;
   });
-  
+
   // For admins, show all pending if none specifically assigned to them
-  const pendingToShow = currentUser?.role === 'admin' && pendingForMe.length === 0 
-    ? allPendingPOs 
+  const pendingToShow = currentUser?.role === 'admin' && pendingForMe.length === 0
+    ? allPendingPOs
     : pendingForMe;
 
   const handleApprovePOWorkflow = async (po, comments) => {
@@ -311,7 +311,7 @@ export default function Procurement() {
     queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
     queryClient.invalidateQueries({ queryKey: ['approval-history'] });
     queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    
+
     if (result.status === 'auto_approved') {
       toast.success('Purchase order auto-approved!');
     } else if (result.approver) {
@@ -322,8 +322,8 @@ export default function Procurement() {
   };
 
   // Filter POs
-  const filteredPOs = purchaseOrders.filter(po => 
-    !searchQuery || 
+  const filteredPOs = purchaseOrders.filter(po =>
+    !searchQuery ||
     po.po_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     po.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -476,7 +476,7 @@ export default function Procurement() {
                             <td className="p-4 font-medium">{po.po_number}</td>
                             <td className="p-4">{po.vendor_name}</td>
                             <td className="p-4 text-slate-500">
-                              {po.order_date ? format(new Date(po.order_date), 'MMM d, yyyy') : '-'}
+                              {po.created_at ? format(new Date(po.created_at), 'MMM d, yyyy') : '-'}
                             </td>
                             <td className="p-4">
                               <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
@@ -645,6 +645,8 @@ export default function Procurement() {
         {/* Vendor Onboarding Dialog */}
         <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
           <DialogContent className="max-w-2xl p-0 bg-transparent border-0 shadow-none">
+            <DialogTitle className="sr-only">Vendor Onboarding</DialogTitle>
+            <DialogDescription className="sr-only">Form to onboard a new vendor</DialogDescription>
             <VendorOnboarding
               onComplete={() => {
                 queryClient.invalidateQueries({ queryKey: ['vendors'] });
@@ -658,6 +660,8 @@ export default function Procurement() {
         {/* PO Form Dialog */}
         <Dialog open={showPOForm} onOpenChange={setShowPOForm}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
+            <DialogTitle className="sr-only">{editingPO ? 'Edit Purchase Order' : 'New Purchase Order'}</DialogTitle>
+            <DialogDescription className="sr-only">Form to create or edit a purchase order</DialogDescription>
             <PurchaseOrderForm
               vendors={vendors}
               existingPO={editingPO}
@@ -670,6 +674,8 @@ export default function Procurement() {
         {/* Goods Receipt Dialog */}
         <Dialog open={showReceiveForm} onOpenChange={setShowReceiveForm}>
           <DialogContent className="max-w-2xl p-0 bg-transparent border-0 shadow-none">
+            <DialogTitle className="sr-only">Receive Goods</DialogTitle>
+            <DialogDescription className="sr-only">Form to record goods receipt</DialogDescription>
             <GoodsReceiptForm
               purchaseOrder={selectedPO}
               onSubmit={(data) => createReceiptMutation.mutate(data)}
@@ -681,6 +687,8 @@ export default function Procurement() {
         {/* Approval History Dialog */}
         <Dialog open={!!selectedPOHistory} onOpenChange={() => setSelectedPOHistory(null)}>
           <DialogContent className="max-w-lg">
+            <DialogTitle className="sr-only">Approval History</DialogTitle>
+            <DialogDescription className="sr-only">History of approvals for this purchase order</DialogDescription>
             <ApprovalHistoryPanel
               history={approvalHistory.filter(h => h.po_id === selectedPOHistory?.id)}
               poNumber={selectedPOHistory?.po_number}
@@ -704,13 +712,13 @@ export default function Procurement() {
                 Delete Purchase Order
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete <span className="font-semibold">{deleteConfirm.po?.po_number}</span>? 
+                Are you sure you want to delete <span className="font-semibold">{deleteConfirm.po?.po_number}</span>?
                 This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 className="bg-rose-600 hover:bg-rose-700"
                 onClick={() => {
                   deletePOMutation.mutate(deleteConfirm.po?.id);
@@ -732,13 +740,13 @@ export default function Procurement() {
                 Edit Purchase Order
               </AlertDialogTitle>
               <AlertDialogDescription>
-                You are about to edit <span className="font-semibold">{editConfirm.po?.po_number}</span> for vendor <span className="font-semibold">{editConfirm.po?.vendor_name}</span>. 
+                You are about to edit <span className="font-semibold">{editConfirm.po?.po_number}</span> for vendor <span className="font-semibold">{editConfirm.po?.vendor_name}</span>.
                 Do you want to proceed?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => {
                   handleEditPO(editConfirm.po);

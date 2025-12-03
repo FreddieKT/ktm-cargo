@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
+import {
   FileText, Printer, Download, Package, Search,
   CheckCircle, Clock, ArrowLeft, Filter, FileCheck,
   Plane, ClipboardList, AlertTriangle, RefreshCw,
@@ -18,6 +18,11 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
+import { printDocument } from '@/utils/documentPrinter';
+import CommercialInvoiceTemplate from '@/components/documents/templates/CommercialInvoiceTemplate';
+import PackingListTemplate from '@/components/documents/templates/PackingListTemplate';
+import AWBTemplate from '@/components/documents/templates/AWBTemplate';
+import CustomsDeclarationTemplate from '@/components/documents/templates/CustomsDeclarationTemplate';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -70,8 +75,8 @@ export default function ShipmentDocuments() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return s.tracking_number?.toLowerCase().includes(query) ||
-               s.customer_name?.toLowerCase().includes(query) ||
-               s.items_description?.toLowerCase().includes(query);
+          s.customer_name?.toLowerCase().includes(query) ||
+          s.items_description?.toLowerCase().includes(query);
       }
       return true;
     });
@@ -89,14 +94,21 @@ export default function ShipmentDocuments() {
   }, [eligibleShipments, generatedDocs]);
 
   const handlePrintDocument = (docType, shipment) => {
-    const printContent = generateFullDocument(docType, shipment, companySettings);
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
+    const templates = {
+      commercial_invoice: CommercialInvoiceTemplate,
+      packing_list: PackingListTemplate,
+      air_waybill: AWBTemplate,
+      customs_declaration: CustomsDeclarationTemplate
+    };
+
+    const Component = templates[docType];
+    if (Component) {
+      printDocument(Component, {
+        data: { shipment },
+        settings: companySettings
+      });
     } else {
-      toast.error('Please allow popups to print documents');
+      toast.error('Document template not found');
     }
   };
 
@@ -138,7 +150,7 @@ export default function ShipmentDocuments() {
   };
 
   const toggleShipmentSelection = (id) => {
-    setSelectedShipments(prev => 
+    setSelectedShipments(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
@@ -272,7 +284,7 @@ export default function ShipmentDocuments() {
                 </Select>
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="flex items-center gap-2">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedShipments.length === eligibleShipments.length && eligibleShipments.length > 0}
                       onCheckedChange={selectAllShipments}
                     />
@@ -301,17 +313,16 @@ export default function ShipmentDocuments() {
                     return (
                       <div
                         key={shipment.id}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          isSelected ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'
+                          }`}
                       >
                         <div className="flex items-start gap-3">
-                          <Checkbox 
+                          <Checkbox
                             checked={isChecked}
                             onCheckedChange={() => toggleShipmentSelection(shipment.id)}
                             onClick={(e) => e.stopPropagation()}
                           />
-                          <div 
+                          <div
                             className="flex-1 min-w-0"
                             onClick={() => setSelectedShipmentId(shipment.id)}
                           >
@@ -395,12 +406,11 @@ export default function ShipmentDocuments() {
                     const isActive = activeDoc === doc.id;
 
                     return (
-                      <Card 
+                      <Card
                         key={doc.id}
-                        className={`border-2 cursor-pointer transition-all ${
-                          isActive ? 'border-blue-500 bg-blue-50' : 
+                        className={`border-2 cursor-pointer transition-all ${isActive ? 'border-blue-500 bg-blue-50' :
                           isGenerated ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                          }`}
                         onClick={() => setActiveDoc(doc.id)}
                       >
                         <CardContent className="p-3">
@@ -424,8 +434,8 @@ export default function ShipmentDocuments() {
                       <CardDescription>Preview and print document</CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => handleGenerateDoc(selectedShipment.id, activeDoc)}
                       >
                         <RefreshCw className="w-4 h-4 mr-2" />
@@ -463,348 +473,26 @@ export default function ShipmentDocuments() {
 }
 
 function DocumentPreview({ type, shipment, companySettings }) {
-  const today = format(new Date(), 'MMMM d, yyyy');
-  const companyName = companySettings?.company_name || 'Bangkok-Yangon Cargo & Shopping Services';
-  const companyAddress = companySettings?.address || 'Bangkok, Thailand';
-  
-  if (type === 'commercial_invoice') {
-    return (
-      <div className="space-y-6">
-        <div className="text-center border-b pb-4">
-          <h1 className="text-2xl font-bold">COMMERCIAL INVOICE</h1>
-          <p className="text-slate-600">{companyName}</p>
-          <p className="text-sm text-slate-500">{companyAddress}</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">INVOICE DETAILS</h3>
-            <p><strong>Invoice No:</strong> INV-{shipment.tracking_number}</p>
-            <p><strong>Date:</strong> {today}</p>
-            <p><strong>Tracking:</strong> {shipment.tracking_number}</p>
-          </div>
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">CONSIGNEE</h3>
-            <p className="font-semibold">{shipment.customer_name}</p>
-            <p>{shipment.customer_phone}</p>
-            <p>{shipment.delivery_address || 'Yangon, Myanmar'}</p>
-          </div>
-        </div>
+  const props = { data: { shipment }, settings: companySettings };
 
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-slate-100">
-              <th className="border p-2 text-left">Description</th>
-              <th className="border p-2 text-right">Weight</th>
-              <th className="border p-2 text-right">Rate</th>
-              <th className="border p-2 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border p-2">{shipment.items_description || 'General Cargo'}</td>
-              <td className="border p-2 text-right">{shipment.weight_kg} kg</td>
-              <td className="border p-2 text-right">฿{shipment.price_per_kg || 95}/kg</td>
-              <td className="border p-2 text-right">฿{((shipment.weight_kg || 0) * (shipment.price_per_kg || 95)).toLocaleString()}</td>
-            </tr>
-            {shipment.insurance_amount > 0 && (
-              <tr>
-                <td className="border p-2">Insurance</td>
-                <td className="border p-2" colSpan="2"></td>
-                <td className="border p-2 text-right">฿{shipment.insurance_amount}</td>
-              </tr>
-            )}
-            {shipment.packaging_fee > 0 && (
-              <tr>
-                <td className="border p-2">Packaging Fee</td>
-                <td className="border p-2" colSpan="2"></td>
-                <td className="border p-2 text-right">฿{shipment.packaging_fee}</td>
-              </tr>
-            )}
-            <tr className="font-bold bg-slate-50">
-              <td className="border p-2" colSpan="3">TOTAL</td>
-              <td className="border p-2 text-right">฿{(shipment.total_amount || 0).toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
+  // We wrap the template in a scale-down container for preview
+  const PreviewWrapper = ({ children }) => (
+    <div className="origin-top scale-[0.6] md:scale-[0.7] lg:scale-[0.8] transform-gpu bg-white shadow-lg">
+      {children}
+    </div>
+  );
 
-        <div className="flex justify-between items-center pt-4">
-          <p><strong>Payment Status:</strong> <Badge className={shipment.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>{shipment.payment_status?.toUpperCase()}</Badge></p>
-          <p><strong>Payment Method:</strong> {shipment.payment_method?.replace('_', ' ')?.toUpperCase() || 'N/A'}</p>
-        </div>
-      </div>
-    );
+  switch (type) {
+    case 'commercial_invoice':
+      return <PreviewWrapper><CommercialInvoiceTemplate {...props} /></PreviewWrapper>;
+    case 'packing_list':
+      return <PreviewWrapper><PackingListTemplate {...props} /></PreviewWrapper>;
+    case 'air_waybill':
+      return <PreviewWrapper><AWBTemplate {...props} /></PreviewWrapper>;
+    case 'customs_declaration':
+      return <PreviewWrapper><CustomsDeclarationTemplate {...props} /></PreviewWrapper>;
+    default:
+      return null;
   }
-
-  if (type === 'packing_list') {
-    return (
-      <div className="space-y-6">
-        <div className="text-center border-b pb-4">
-          <h1 className="text-2xl font-bold">PACKING LIST</h1>
-          <p className="text-slate-600">{companyName}</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">SHIPMENT DETAILS</h3>
-            <p><strong>Tracking No:</strong> {shipment.tracking_number}</p>
-            <p><strong>Date:</strong> {today}</p>
-            <p><strong>Service:</strong> {shipment.service_type?.replace('_', ' ')?.toUpperCase()}</p>
-          </div>
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">CONSIGNEE</h3>
-            <p className="font-semibold">{shipment.customer_name}</p>
-            <p>{shipment.delivery_address || 'Yangon, Myanmar'}</p>
-          </div>
-        </div>
-
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-slate-100">
-              <th className="border p-2 text-left">Item No.</th>
-              <th className="border p-2 text-left">Description</th>
-              <th className="border p-2 text-center">Quantity</th>
-              <th className="border p-2 text-right">Weight</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border p-2">1</td>
-              <td className="border p-2">{shipment.items_description || 'General Cargo'}</td>
-              <td className="border p-2 text-center">1 Package</td>
-              <td className="border p-2 text-right">{shipment.weight_kg} kg</td>
-            </tr>
-            <tr className="font-bold bg-slate-50">
-              <td className="border p-2" colSpan="3">TOTAL GROSS WEIGHT</td>
-              <td className="border p-2 text-right">{shipment.weight_kg} kg</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <p><strong>Number of Packages:</strong> 1</p>
-          <p><strong>Packaging:</strong> {shipment.packaging_fee > 0 ? 'Professional' : 'Standard'}</p>
-          <p><strong>Origin:</strong> {shipment.pickup_address || 'Bangkok, Thailand'}</p>
-          <p><strong>Destination:</strong> {shipment.delivery_address || 'Yangon, Myanmar'}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'air_waybill') {
-    return (
-      <div className="space-y-6">
-        <div className="text-center border-b pb-4">
-          <h1 className="text-2xl font-bold">AIR WAYBILL</h1>
-          <p className="text-xl font-mono mt-2 text-blue-600">{shipment.tracking_number}</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">SHIPPER</h3>
-            <p className="font-semibold">{companyName}</p>
-            <p>{companyAddress}</p>
-          </div>
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">CONSIGNEE</h3>
-            <p className="font-semibold">{shipment.customer_name}</p>
-            <p>{shipment.customer_phone}</p>
-            <p>{shipment.delivery_address || 'Yangon, Myanmar'}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border rounded-lg p-4 text-center bg-blue-50">
-            <h3 className="text-sm font-semibold text-slate-500">ORIGIN</h3>
-            <p className="text-3xl font-bold text-blue-600">BKK</p>
-            <p className="text-sm text-slate-600">Bangkok, Thailand</p>
-          </div>
-          <div className="border rounded-lg p-4 text-center bg-emerald-50">
-            <h3 className="text-sm font-semibold text-slate-500">DESTINATION</h3>
-            <p className="text-3xl font-bold text-emerald-600">RGN</p>
-            <p className="text-sm text-slate-600">Yangon, Myanmar</p>
-          </div>
-        </div>
-
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-slate-100">
-              <th className="border p-2">Pieces</th>
-              <th className="border p-2">Gross Weight</th>
-              <th className="border p-2">Description</th>
-              <th className="border p-2">Declared Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border p-2 text-center">1</td>
-              <td className="border p-2 text-center">{shipment.weight_kg} kg</td>
-              <td className="border p-2">{shipment.items_description || 'General Cargo'}</td>
-              <td className="border p-2 text-center">฿{(shipment.total_amount || 0).toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="grid grid-cols-2 gap-4">
-          <p><strong>Flight Date:</strong> {shipment.pickup_date ? format(new Date(shipment.pickup_date), 'MMM d, yyyy') : 'TBD'}</p>
-          <p><strong>Service:</strong> {shipment.service_type === 'express' ? 'EXPRESS' : 'STANDARD'}</p>
-          <p><strong>Est. Delivery:</strong> {shipment.estimated_delivery ? format(new Date(shipment.estimated_delivery), 'MMM d, yyyy') : 'TBD'}</p>
-          <p><strong>Insurance:</strong> {shipment.insurance_opted ? 'Yes' : 'No'}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'customs_declaration') {
-    return (
-      <div className="space-y-6">
-        <div className="text-center border-b pb-4">
-          <h1 className="text-2xl font-bold">CUSTOMS DECLARATION</h1>
-          <p className="text-slate-600">For Export from Thailand to Myanmar</p>
-        </div>
-
-        <div className="border rounded-lg p-4 bg-slate-50">
-          <h3 className="text-sm font-semibold text-slate-500 mb-2">DECLARATION REFERENCE</h3>
-          <p><strong>Reference No:</strong> CD-{shipment.tracking_number}</p>
-          <p><strong>Date:</strong> {today}</p>
-          <p><strong>AWB Number:</strong> {shipment.tracking_number}</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">EXPORTER</h3>
-            <p className="font-semibold">{companyName}</p>
-            <p>{companyAddress}</p>
-          </div>
-          <div className="border rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-500 mb-2">IMPORTER/CONSIGNEE</h3>
-            <p className="font-semibold">{shipment.customer_name}</p>
-            <p>{shipment.delivery_address || 'Yangon, Myanmar'}</p>
-          </div>
-        </div>
-
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-slate-100">
-              <th className="border p-2">HS Code</th>
-              <th className="border p-2">Description</th>
-              <th className="border p-2">Qty</th>
-              <th className="border p-2">Weight</th>
-              <th className="border p-2">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border p-2 text-center">-</td>
-              <td className="border p-2">{shipment.items_description || 'Personal Effects'}</td>
-              <td className="border p-2 text-center">1 pkg</td>
-              <td className="border p-2 text-center">{shipment.weight_kg} kg</td>
-              <td className="border p-2 text-center">฿{(shipment.total_amount || 0).toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="border rounded-lg p-4 bg-amber-50">
-          <h3 className="font-semibold mb-2">DECLARATION</h3>
-          <p className="text-sm text-slate-600">
-            I hereby declare that the information provided above is true and accurate to the best of my knowledge. 
-            The goods described comply with all applicable export regulations of Thailand and import regulations of Myanmar.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6 pt-8">
-          <div className="border-t-2 border-slate-300 pt-2 text-center text-sm text-slate-500">
-            Declarant Signature & Date
-          </div>
-          <div className="border-t-2 border-slate-300 pt-2 text-center text-sm text-slate-500">
-            Customs Officer Stamp
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
-}
-
-function generateFullDocument(docType, shipment, companySettings) {
-  const today = format(new Date(), 'MMMM d, yyyy');
-  const companyName = companySettings?.company_name || 'Bangkok-Yangon Cargo & Shopping Services';
-  const companyAddress = companySettings?.address || 'Bangkok, Thailand';
-  
-  const baseStyles = `
-    <style>
-      body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-      .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
-      .header h1 { margin: 0; font-size: 24px; }
-      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-      .info-box { border: 1px solid #ddd; padding: 15px; border-radius: 4px; }
-      .info-box h3 { margin: 0 0 10px 0; font-size: 12px; color: #666; text-transform: uppercase; }
-      table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-      th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-      th { background: #f5f5f5; }
-      .total-row { font-weight: bold; background: #f9f9f9; }
-      .footer { margin-top: 40px; font-size: 12px; color: #666; }
-      .signature-box { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-      .signature-line { border-top: 1px solid #333; padding-top: 5px; margin-top: 50px; text-align: center; }
-    </style>
-  `;
-
-  const templates = {
-    commercial_invoice: `<!DOCTYPE html><html><head><title>Commercial Invoice</title>${baseStyles}</head><body>
-      <div class="header"><h1>COMMERCIAL INVOICE</h1><p>${companyName}</p><p style="font-size:12px;color:#666;">${companyAddress}</p></div>
-      <div class="info-grid">
-        <div class="info-box"><h3>Invoice Details</h3><p>Invoice No: INV-${shipment.tracking_number}</p><p>Date: ${today}</p><p>Tracking: ${shipment.tracking_number}</p></div>
-        <div class="info-box"><h3>Consignee</h3><p><strong>${shipment.customer_name}</strong></p><p>${shipment.customer_phone || ''}</p><p>${shipment.delivery_address || 'Yangon, Myanmar'}</p></div>
-      </div>
-      <table><thead><tr><th>Description</th><th>Weight</th><th>Rate</th><th>Amount</th></tr></thead>
-      <tbody>
-        <tr><td>${shipment.items_description || 'General Cargo'}</td><td>${shipment.weight_kg} kg</td><td>฿${shipment.price_per_kg || 95}/kg</td><td>฿${((shipment.weight_kg || 0) * (shipment.price_per_kg || 95)).toLocaleString()}</td></tr>
-        ${shipment.insurance_amount > 0 ? `<tr><td>Insurance</td><td colspan="2"></td><td>฿${shipment.insurance_amount}</td></tr>` : ''}
-        ${shipment.packaging_fee > 0 ? `<tr><td>Packaging</td><td colspan="2"></td><td>฿${shipment.packaging_fee}</td></tr>` : ''}
-        <tr class="total-row"><td colspan="3">TOTAL</td><td>฿${(shipment.total_amount || 0).toLocaleString()}</td></tr>
-      </tbody></table>
-      <p><strong>Payment Status:</strong> ${shipment.payment_status?.toUpperCase() || 'PENDING'}</p>
-      <div class="footer"><p>This is a computer-generated invoice.</p></div>
-    </body></html>`,
-    packing_list: `<!DOCTYPE html><html><head><title>Packing List</title>${baseStyles}</head><body>
-      <div class="header"><h1>PACKING LIST</h1><p>${companyName}</p></div>
-      <div class="info-grid">
-        <div class="info-box"><h3>Shipment</h3><p>Tracking: ${shipment.tracking_number}</p><p>Date: ${today}</p><p>Service: ${shipment.service_type?.replace('_', ' ')}</p></div>
-        <div class="info-box"><h3>Consignee</h3><p><strong>${shipment.customer_name}</strong></p><p>${shipment.delivery_address || 'Yangon, Myanmar'}</p></div>
-      </div>
-      <table><thead><tr><th>Item</th><th>Description</th><th>Qty</th><th>Weight</th></tr></thead>
-      <tbody><tr><td>1</td><td>${shipment.items_description || 'General Cargo'}</td><td>1 pkg</td><td>${shipment.weight_kg} kg</td></tr>
-      <tr class="total-row"><td colspan="3">TOTAL GROSS WEIGHT</td><td>${shipment.weight_kg} kg</td></tr></tbody></table>
-    </body></html>`,
-    air_waybill: `<!DOCTYPE html><html><head><title>Air Waybill</title>${baseStyles}</head><body>
-      <div class="header"><h1>AIR WAYBILL</h1><p style="font-size:20px;font-weight:bold;">${shipment.tracking_number}</p></div>
-      <div class="info-grid">
-        <div class="info-box"><h3>Shipper</h3><p><strong>${companyName}</strong></p><p>${companyAddress}</p></div>
-        <div class="info-box"><h3>Consignee</h3><p><strong>${shipment.customer_name}</strong></p><p>${shipment.customer_phone || ''}</p><p>${shipment.delivery_address || 'Yangon, Myanmar'}</p></div>
-      </div>
-      <div class="info-grid">
-        <div class="info-box" style="text-align:center;"><h3>Origin</h3><p style="font-size:28px;font-weight:bold;">BKK</p><p>Bangkok, Thailand</p></div>
-        <div class="info-box" style="text-align:center;"><h3>Destination</h3><p style="font-size:28px;font-weight:bold;">RGN</p><p>Yangon, Myanmar</p></div>
-      </div>
-      <table><thead><tr><th>Pieces</th><th>Weight</th><th>Description</th><th>Value</th></tr></thead>
-      <tbody><tr><td style="text-align:center;">1</td><td style="text-align:center;">${shipment.weight_kg} kg</td><td>${shipment.items_description || 'General Cargo'}</td><td style="text-align:center;">฿${(shipment.total_amount || 0).toLocaleString()}</td></tr></tbody></table>
-      <p><strong>Service:</strong> ${shipment.service_type === 'express' ? 'EXPRESS' : 'STANDARD'}</p>
-      <div class="signature-box"><div><div class="signature-line">Shipper Signature</div></div><div><div class="signature-line">Carrier Signature</div></div></div>
-    </body></html>`,
-    customs_declaration: `<!DOCTYPE html><html><head><title>Customs Declaration</title>${baseStyles}</head><body>
-      <div class="header"><h1>CUSTOMS DECLARATION</h1><p>For Export from Thailand to Myanmar</p></div>
-      <div class="info-box" style="margin-bottom:20px;"><h3>Reference</h3><p>Ref No: CD-${shipment.tracking_number}</p><p>Date: ${today}</p></div>
-      <div class="info-grid">
-        <div class="info-box"><h3>Exporter</h3><p><strong>${companyName}</strong></p><p>${companyAddress}</p></div>
-        <div class="info-box"><h3>Importer</h3><p><strong>${shipment.customer_name}</strong></p><p>${shipment.delivery_address || 'Yangon, Myanmar'}</p></div>
-      </div>
-      <table><thead><tr><th>HS Code</th><th>Description</th><th>Qty</th><th>Weight</th><th>Value</th></tr></thead>
-      <tbody><tr><td>-</td><td>${shipment.items_description || 'Personal Effects'}</td><td>1 pkg</td><td>${shipment.weight_kg} kg</td><td>฿${(shipment.total_amount || 0).toLocaleString()}</td></tr></tbody></table>
-      <div class="info-box" style="background:#fffbeb;"><h3>Declaration</h3><p>I hereby declare that the information provided is true and accurate.</p></div>
-      <div class="signature-box"><div><div class="signature-line">Declarant Signature & Date</div></div><div><div class="signature-line">Customs Officer Stamp</div></div></div>
-    </body></html>`
-  };
-
   return templates[docType] || '';
 }
