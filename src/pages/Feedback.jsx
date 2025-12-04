@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Star, Package, CheckCircle, Truck, MessageSquare, ThumbsUp } from 'lucide-react';
-import { toast } from "sonner";
+import { toast } from 'sonner';
 
 export default function Feedback() {
   const urlParams = new URLSearchParams(window.location.search);
   const shipmentId = urlParams.get('shipment');
-  
+
   const [ratings, setRatings] = useState({
     overall: 0,
     service: 0,
     delivery: 0,
-    communication: 0
+    communication: 0,
   });
   const [comment, setComment] = useState('');
   const [wouldRecommend, setWouldRecommend] = useState(true);
@@ -30,7 +30,7 @@ export default function Feedback() {
       const shipments = await base44.entities.Shipment.filter({ id: shipmentId });
       return shipments[0] || null;
     },
-    enabled: !!shipmentId
+    enabled: !!shipmentId,
   });
 
   const { data: existingFeedback } = useQuery({
@@ -40,7 +40,7 @@ export default function Feedback() {
       const feedbacks = await base44.entities.Feedback.filter({ shipment_id: shipmentId });
       return feedbacks[0] || null;
     },
-    enabled: !!shipmentId
+    enabled: !!shipmentId,
   });
 
   const submitMutation = useMutation({
@@ -53,7 +53,7 @@ export default function Feedback() {
     onSuccess: () => {
       setSubmitted(true);
       toast.success('Thank you for your feedback!');
-    }
+    },
   });
 
   const handleSubmit = () => {
@@ -72,7 +72,7 @@ export default function Feedback() {
       comment,
       service_type: shipment?.service_type,
       would_recommend: wouldRecommend,
-      status: 'submitted'
+      status: 'submitted',
     });
   };
 
@@ -83,7 +83,9 @@ export default function Feedback() {
           <CardContent className="p-8 text-center">
             <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-slate-900 mb-2">No Shipment Found</h2>
-            <p className="text-slate-500">Please use the link from your email to submit feedback.</p>
+            <p className="text-slate-500">
+              Please use the link from your email to submit feedback.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -101,10 +103,10 @@ export default function Feedback() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Thank You!</h2>
             <p className="text-slate-500 mb-6">Your feedback helps us improve our service.</p>
             <div className="flex justify-center gap-1">
-              {[1, 2, 3, 4, 5].map(star => (
-                <Star 
-                  key={star} 
-                  className={`w-8 h-8 ${star <= (ratings.overall || existingFeedback?.rating) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} 
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-8 h-8 ${star <= (ratings.overall || existingFeedback?.rating) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`}
                 />
               ))}
             </div>
@@ -121,34 +123,45 @@ export default function Feedback() {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm mb-4">
             <Package className="w-5 h-5 text-blue-600" />
-            <span className="font-medium text-slate-900">{shipment?.tracking_number || 'Shipment'}</span>
+            <span className="font-medium text-slate-900">
+              {shipment?.tracking_number || 'Shipment'}
+            </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">How was your experience?</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+            How was your experience?
+          </h1>
           <p className="text-slate-500 mt-2">Your feedback helps us serve you better</p>
         </div>
 
         {/* Overall Rating */}
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
-            <Label className="text-lg font-medium text-slate-900 mb-4 block">Overall Experience</Label>
+            <Label className="text-lg font-medium text-slate-900 mb-4 block">
+              Overall Experience
+            </Label>
             <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map(star => (
+              {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   onClick={() => setRatings({ ...ratings, overall: star })}
                   className="p-1 transition-transform hover:scale-110"
                 >
-                  <Star 
-                    className={`w-10 h-10 ${star <= ratings.overall ? 'text-amber-400 fill-amber-400' : 'text-slate-200 hover:text-amber-200'}`} 
+                  <Star
+                    className={`w-10 h-10 ${star <= ratings.overall ? 'text-amber-400 fill-amber-400' : 'text-slate-200 hover:text-amber-200'}`}
                   />
                 </button>
               ))}
             </div>
             <p className="text-center text-sm text-slate-500 mt-2">
-              {ratings.overall === 0 ? 'Tap to rate' : 
-               ratings.overall <= 2 ? 'We\'re sorry to hear that' :
-               ratings.overall === 3 ? 'Thanks for the feedback' :
-               ratings.overall === 4 ? 'Great!' : 'Excellent!'}
+              {ratings.overall === 0
+                ? 'Tap to rate'
+                : ratings.overall <= 2
+                  ? "We're sorry to hear that"
+                  : ratings.overall === 3
+                    ? 'Thanks for the feedback'
+                    : ratings.overall === 4
+                      ? 'Great!'
+                      : 'Excellent!'}
             </p>
           </CardContent>
         </Card>
@@ -204,7 +217,7 @@ export default function Feedback() {
         </Card>
 
         {/* Submit */}
-        <Button 
+        <Button
           onClick={handleSubmit}
           disabled={submitMutation.isPending}
           className="w-full bg-blue-600 hover:bg-blue-700 py-6 text-lg"
@@ -224,9 +237,11 @@ function RatingRow({ icon, label, value, onChange }) {
         <span>{label}</span>
       </div>
       <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map(star => (
+        {[1, 2, 3, 4, 5].map((star) => (
           <button key={star} onClick={() => onChange(star)} className="p-0.5">
-            <Star className={`w-5 h-5 ${star <= value ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+            <Star
+              className={`w-5 h-5 ${star <= value ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`}
+            />
           </button>
         ))}
       </div>

@@ -1,25 +1,40 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Scale, Package, TrendingUp, AlertTriangle, 
-  ChevronRight, Truck, Users, Plus, Link, Unlink, Save
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Scale,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  ChevronRight,
+  Truck,
+  Users,
+  Plus,
+  Link,
+  Unlink,
+  Save,
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-export default function WeightAllocationManager({ 
-  purchaseOrders = [], 
+export default function WeightAllocationManager({
+  purchaseOrders = [],
   shipments = [],
   shoppingOrders = [],
   onUpdateShipment,
   onUpdateShoppingOrder,
-  onUpdatePO
+  onUpdatePO,
 }) {
   const [selectedPO, setSelectedPO] = useState(null);
   const [showAllocateDialog, setShowAllocateDialog] = useState(false);
@@ -28,57 +43,58 @@ export default function WeightAllocationManager({
   const [allocateWeight, setAllocateWeight] = useState('');
 
   // Calculate summary stats
-  const activePOs = purchaseOrders.filter(po => 
-    ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
-    po.total_weight_kg > 0
+  const activePOs = purchaseOrders.filter(
+    (po) =>
+      ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
+      po.total_weight_kg > 0
   );
 
   const totalPurchasedKg = activePOs.reduce((sum, po) => sum + (po.total_weight_kg || 0), 0);
   const totalAllocatedKg = activePOs.reduce((sum, po) => sum + (po.allocated_weight_kg || 0), 0);
   const totalRemainingKg = activePOs.reduce((sum, po) => sum + (po.remaining_weight_kg || 0), 0);
-  
-  const avgBuyPrice = activePOs.length > 0 
-    ? activePOs.reduce((sum, po) => sum + (po.cost_per_kg || 0), 0) / activePOs.length 
-    : 0;
+
+  const avgBuyPrice =
+    activePOs.length > 0
+      ? activePOs.reduce((sum, po) => sum + (po.cost_per_kg || 0), 0) / activePOs.length
+      : 0;
 
   // Get shipments linked to a specific PO
   const getLinkedShipments = (poId) => {
-    return shipments.filter(s => s.vendor_po_id === poId);
+    return shipments.filter((s) => s.vendor_po_id === poId);
   };
 
   // Get shopping orders linked to a specific PO
   const getLinkedShoppingOrders = (poId) => {
-    return shoppingOrders.filter(s => s.vendor_po_id === poId);
+    return shoppingOrders.filter((s) => s.vendor_po_id === poId);
   };
 
   // Get unallocated orders
-  const unallocatedShipments = shipments.filter(s => 
-    !s.vendor_po_id && 
-    s.weight_kg > 0 &&
-    !['delivered', 'cancelled'].includes(s.status)
+  const unallocatedShipments = shipments.filter(
+    (s) => !s.vendor_po_id && s.weight_kg > 0 && !['delivered', 'cancelled'].includes(s.status)
   );
 
-  const unallocatedShoppingOrders = shoppingOrders.filter(s => 
-    !s.vendor_po_id && 
-    (s.actual_weight || s.estimated_weight) > 0 &&
-    !['delivered', 'cancelled'].includes(s.status)
+  const unallocatedShoppingOrders = shoppingOrders.filter(
+    (s) =>
+      !s.vendor_po_id &&
+      (s.actual_weight || s.estimated_weight) > 0 &&
+      !['delivered', 'cancelled'].includes(s.status)
   );
 
   // Calculate profit metrics
   const calculatePOProfit = (po) => {
     const linkedShipments = getLinkedShipments(po.id);
     const linkedShopping = getLinkedShoppingOrders(po.id);
-    
+
     const shipmentRevenue = linkedShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0);
     const shipmentCost = linkedShipments.reduce((sum, s) => sum + (s.vendor_total_cost || 0), 0);
-    
+
     const shoppingRevenue = linkedShopping.reduce((sum, s) => sum + (s.shipping_cost || 0), 0);
     const shoppingCost = linkedShopping.reduce((sum, s) => sum + (s.vendor_cost || 0), 0);
-    
-    return { 
-      revenue: shipmentRevenue + shoppingRevenue, 
-      cost: shipmentCost + shoppingCost, 
-      profit: (shipmentRevenue + shoppingRevenue) - (shipmentCost + shoppingCost) 
+
+    return {
+      revenue: shipmentRevenue + shoppingRevenue,
+      cost: shipmentCost + shoppingCost,
+      profit: shipmentRevenue + shoppingRevenue - (shipmentCost + shoppingCost),
     };
   };
 
@@ -103,7 +119,7 @@ export default function WeightAllocationManager({
     const vendorCost = weight * (selectedPO.cost_per_kg || 0);
 
     if (allocationType === 'shipment') {
-      const shipment = shipments.find(s => s.id === selectedOrderId);
+      const shipment = shipments.find((s) => s.id === selectedOrderId);
       if (shipment && onUpdateShipment) {
         await onUpdateShipment(shipment.id, {
           vendor_po_id: selectedPO.id,
@@ -111,11 +127,11 @@ export default function WeightAllocationManager({
           vendor_id: selectedPO.vendor_id,
           vendor_name: selectedPO.vendor_name,
           vendor_cost_per_kg: selectedPO.cost_per_kg,
-          vendor_total_cost: vendorCost
+          vendor_total_cost: vendorCost,
         });
       }
     } else {
-      const order = shoppingOrders.find(s => s.id === selectedOrderId);
+      const order = shoppingOrders.find((s) => s.id === selectedOrderId);
       if (order && onUpdateShoppingOrder) {
         await onUpdateShoppingOrder(order.id, {
           vendor_po_id: selectedPO.id,
@@ -123,7 +139,7 @@ export default function WeightAllocationManager({
           vendor_id: selectedPO.vendor_id,
           vendor_name: selectedPO.vendor_name,
           vendor_cost_per_kg: selectedPO.cost_per_kg,
-          vendor_cost: vendorCost
+          vendor_cost: vendorCost,
         });
       }
     }
@@ -134,7 +150,7 @@ export default function WeightAllocationManager({
       const newRemaining = (selectedPO.total_weight_kg || 0) - newAllocated;
       await onUpdatePO(selectedPO.id, {
         allocated_weight_kg: newAllocated,
-        remaining_weight_kg: newRemaining
+        remaining_weight_kg: newRemaining,
       });
     }
 
@@ -146,9 +162,10 @@ export default function WeightAllocationManager({
 
   // Handle unlink
   const handleUnlink = async (type, order) => {
-    const weight = type === 'shipment' ? order.weight_kg : (order.actual_weight || order.estimated_weight);
+    const weight =
+      type === 'shipment' ? order.weight_kg : order.actual_weight || order.estimated_weight;
     const poId = order.vendor_po_id;
-    const po = purchaseOrders.find(p => p.id === poId);
+    const po = purchaseOrders.find((p) => p.id === poId);
 
     if (type === 'shipment' && onUpdateShipment) {
       await onUpdateShipment(order.id, {
@@ -157,7 +174,7 @@ export default function WeightAllocationManager({
         vendor_id: '',
         vendor_name: '',
         vendor_cost_per_kg: 0,
-        vendor_total_cost: 0
+        vendor_total_cost: 0,
       });
     } else if (onUpdateShoppingOrder) {
       await onUpdateShoppingOrder(order.id, {
@@ -166,7 +183,7 @@ export default function WeightAllocationManager({
         vendor_id: '',
         vendor_name: '',
         vendor_cost_per_kg: 0,
-        vendor_cost: 0
+        vendor_cost: 0,
       });
     }
 
@@ -176,7 +193,7 @@ export default function WeightAllocationManager({
       const newRemaining = (po.total_weight_kg || 0) - newAllocated;
       await onUpdatePO(po.id, {
         allocated_weight_kg: newAllocated,
-        remaining_weight_kg: newRemaining
+        remaining_weight_kg: newRemaining,
       });
     }
 
@@ -203,7 +220,9 @@ export default function WeightAllocationManager({
               </div>
               <div>
                 <p className="text-xs text-blue-600 font-medium">Total Purchased</p>
-                <p className="text-2xl font-bold text-blue-900">{totalPurchasedKg.toLocaleString()} kg</p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {totalPurchasedKg.toLocaleString()} kg
+                </p>
               </div>
             </div>
           </CardContent>
@@ -217,7 +236,9 @@ export default function WeightAllocationManager({
               </div>
               <div>
                 <p className="text-xs text-emerald-600 font-medium">Allocated</p>
-                <p className="text-2xl font-bold text-emerald-900">{totalAllocatedKg.toLocaleString()} kg</p>
+                <p className="text-2xl font-bold text-emerald-900">
+                  {totalAllocatedKg.toLocaleString()} kg
+                </p>
               </div>
             </div>
           </CardContent>
@@ -231,7 +252,9 @@ export default function WeightAllocationManager({
               </div>
               <div>
                 <p className="text-xs text-amber-600 font-medium">Available</p>
-                <p className="text-2xl font-bold text-amber-900">{totalRemainingKg.toLocaleString()} kg</p>
+                <p className="text-2xl font-bold text-amber-900">
+                  {totalRemainingKg.toLocaleString()} kg
+                </p>
               </div>
             </div>
           </CardContent>
@@ -261,8 +284,9 @@ export default function WeightAllocationManager({
               <h3 className="font-medium text-amber-800">Orders Pending Allocation</h3>
             </div>
             <p className="text-sm text-amber-700">
-              {unallocatedShipments.length} shipment{unallocatedShipments.length !== 1 ? 's' : ''} and {' '}
-              {unallocatedShoppingOrders.length} shopping order{unallocatedShoppingOrders.length !== 1 ? 's' : ''} need weight allocation
+              {unallocatedShipments.length} shipment{unallocatedShipments.length !== 1 ? 's' : ''}{' '}
+              and {unallocatedShoppingOrders.length} shopping order
+              {unallocatedShoppingOrders.length !== 1 ? 's' : ''} need weight allocation
             </p>
           </CardContent>
         </Card>
@@ -282,83 +306,117 @@ export default function WeightAllocationManager({
             <div className="flex justify-between text-sm mb-2">
               <span className="text-slate-600">Overall Allocation</span>
               <span className="font-medium">
-                {totalAllocatedKg.toLocaleString()} / {totalPurchasedKg.toLocaleString()} kg 
-                ({totalPurchasedKg > 0 ? ((totalAllocatedKg / totalPurchasedKg) * 100).toFixed(1) : 0}%)
+                {totalAllocatedKg.toLocaleString()} / {totalPurchasedKg.toLocaleString()} kg (
+                {totalPurchasedKg > 0
+                  ? ((totalAllocatedKg / totalPurchasedKg) * 100).toFixed(1)
+                  : 0}
+                %)
               </span>
             </div>
-            <Progress 
-              value={totalPurchasedKg > 0 ? (totalAllocatedKg / totalPurchasedKg) * 100 : 0} 
+            <Progress
+              value={totalPurchasedKg > 0 ? (totalAllocatedKg / totalPurchasedKg) * 100 : 0}
               className="h-3"
             />
           </div>
 
           {/* PO Allocation List */}
           <div className="space-y-3 mt-6">
-            {activePOs.length > 0 ? activePOs.map(po => {
-              const allocated = po.allocated_weight_kg || 0;
-              const total = po.total_weight_kg || 0;
-              const remaining = po.remaining_weight_kg || 0;
-              const percentage = total > 0 ? (allocated / total) * 100 : 0;
-              const linkedShipments = getLinkedShipments(po.id);
-              const linkedShopping = getLinkedShoppingOrders(po.id);
-              const totalLinked = linkedShipments.length + linkedShopping.length;
-              const profitData = calculatePOProfit(po);
+            {activePOs.length > 0 ? (
+              activePOs.map((po) => {
+                const allocated = po.allocated_weight_kg || 0;
+                const total = po.total_weight_kg || 0;
+                const remaining = po.remaining_weight_kg || 0;
+                const percentage = total > 0 ? (allocated / total) * 100 : 0;
+                const linkedShipments = getLinkedShipments(po.id);
+                const linkedShopping = getLinkedShoppingOrders(po.id);
+                const totalLinked = linkedShipments.length + linkedShopping.length;
+                const profitData = calculatePOProfit(po);
 
-              return (
-                <div 
-                  key={po.id} 
-                  className="p-4 border rounded-lg hover:border-blue-300 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 cursor-pointer" onClick={() => setSelectedPO(po)}>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-medium">{po.po_number}</h3>
-                        <Badge className="bg-blue-100 text-blue-800">{po.vendor_name}</Badge>
-                        {remaining === 0 && total > 0 && (
-                          <Badge className="bg-emerald-100 text-emerald-800">Fully Allocated</Badge>
-                        )}
-                        {remaining > 0 && remaining < total * 0.2 && (
-                          <Badge className="bg-amber-100 text-amber-800">
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                            Low Stock
-                          </Badge>
+                return (
+                  <div
+                    key={po.id}
+                    className="p-4 border rounded-lg hover:border-blue-300 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 cursor-pointer" onClick={() => setSelectedPO(po)}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-medium">{po.po_number}</h3>
+                          <Badge className="bg-blue-100 text-blue-800">{po.vendor_name}</Badge>
+                          {remaining === 0 && total > 0 && (
+                            <Badge className="bg-emerald-100 text-emerald-800">
+                              Fully Allocated
+                            </Badge>
+                          )}
+                          {remaining > 0 && remaining < total * 0.2 && (
+                            <Badge className="bg-amber-100 text-amber-800">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Low Stock
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-500 mt-1">
+                          Cost: ฿{po.cost_per_kg}/kg • {totalLinked} order
+                          {totalLinked !== 1 ? 's' : ''} linked
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right mr-2">
+                          <p className="text-sm font-medium">{remaining.toLocaleString()} kg</p>
+                          <p className="text-xs text-slate-500">available</p>
+                        </div>
+                        {remaining > 0 && (
+                          <Button
+                            size="sm"
+                            onClick={() => openAllocateDialog(po)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Plus className="w-4 h-4 mr-1" /> Allocate
+                          </Button>
                         )}
                       </div>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Cost: ฿{po.cost_per_kg}/kg • {totalLinked} order{totalLinked !== 1 ? 's' : ''} linked
-                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-right mr-2">
-                        <p className="text-sm font-medium">{remaining.toLocaleString()} kg</p>
-                        <p className="text-xs text-slate-500">available</p>
+                    <div
+                      className="flex items-center gap-4 cursor-pointer"
+                      onClick={() => setSelectedPO(po)}
+                    >
+                      <Progress value={percentage} className="flex-1 h-2" />
+                      <span className="text-sm font-medium w-12 text-right">
+                        {percentage.toFixed(0)}%
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
+                    {profitData.revenue > 0 && (
+                      <div className="flex gap-4 mt-2 text-xs">
+                        <span className="text-slate-500">
+                          Revenue:{' '}
+                          <span className="text-blue-600 font-medium">
+                            ฿{profitData.revenue.toLocaleString()}
+                          </span>
+                        </span>
+                        <span className="text-slate-500">
+                          Cost:{' '}
+                          <span className="text-rose-600 font-medium">
+                            ฿{profitData.cost.toLocaleString()}
+                          </span>
+                        </span>
+                        <span className="text-slate-500">
+                          Profit:{' '}
+                          <span className="text-emerald-600 font-medium">
+                            ฿{profitData.profit.toLocaleString()}
+                          </span>
+                        </span>
                       </div>
-                      {remaining > 0 && (
-                        <Button size="sm" onClick={() => openAllocateDialog(po)} className="bg-blue-600 hover:bg-blue-700">
-                          <Plus className="w-4 h-4 mr-1" /> Allocate
-                        </Button>
-                      )}
-                    </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-4 cursor-pointer" onClick={() => setSelectedPO(po)}>
-                    <Progress value={percentage} className="flex-1 h-2" />
-                    <span className="text-sm font-medium w-12 text-right">{percentage.toFixed(0)}%</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </div>
-                  {profitData.revenue > 0 && (
-                    <div className="flex gap-4 mt-2 text-xs">
-                      <span className="text-slate-500">Revenue: <span className="text-blue-600 font-medium">฿{profitData.revenue.toLocaleString()}</span></span>
-                      <span className="text-slate-500">Cost: <span className="text-rose-600 font-medium">฿{profitData.cost.toLocaleString()}</span></span>
-                      <span className="text-slate-500">Profit: <span className="text-emerald-600 font-medium">฿{profitData.profit.toLocaleString()}</span></span>
-                    </div>
-                  )}
-                </div>
-              );
-            }) : (
+                );
+              })
+            ) : (
               <div className="text-center py-8">
                 <Scale className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500">No active purchase orders with weight data</p>
-                <p className="text-sm text-slate-400">Create a PO with weight and cost per kg to track allocations</p>
+                <p className="text-sm text-slate-400">
+                  Create a PO with weight and cost per kg to track allocations
+                </p>
               </div>
             )}
           </div>
@@ -392,7 +450,9 @@ export default function WeightAllocationManager({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Remaining</p>
-                  <p className="font-medium text-amber-600">{selectedPO.remaining_weight_kg?.toLocaleString()} kg</p>
+                  <p className="font-medium text-amber-600">
+                    {selectedPO.remaining_weight_kg?.toLocaleString()} kg
+                  </p>
                 </div>
               </div>
 
@@ -401,14 +461,16 @@ export default function WeightAllocationManager({
                 <div className="flex justify-between text-sm mb-2">
                   <span>Allocation Progress</span>
                   <span className="font-medium">
-                    {(selectedPO.allocated_weight_kg || 0).toLocaleString()} / {(selectedPO.total_weight_kg || 0).toLocaleString()} kg
+                    {(selectedPO.allocated_weight_kg || 0).toLocaleString()} /{' '}
+                    {(selectedPO.total_weight_kg || 0).toLocaleString()} kg
                   </span>
                 </div>
-                <Progress 
-                  value={selectedPO.total_weight_kg > 0 
-                    ? ((selectedPO.allocated_weight_kg || 0) / selectedPO.total_weight_kg) * 100 
-                    : 0
-                  } 
+                <Progress
+                  value={
+                    selectedPO.total_weight_kg > 0
+                      ? ((selectedPO.allocated_weight_kg || 0) / selectedPO.total_weight_kg) * 100
+                      : 0
+                  }
                   className="h-3"
                 />
               </div>
@@ -421,9 +483,9 @@ export default function WeightAllocationManager({
                 </h4>
                 <div className="space-y-2">
                   {getLinkedShipments(selectedPO.id).length > 0 ? (
-                    getLinkedShipments(selectedPO.id).map(shipment => (
-                      <div 
-                        key={shipment.id} 
+                    getLinkedShipments(selectedPO.id).map((shipment) => (
+                      <div
+                        key={shipment.id}
                         className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50"
                       >
                         <div className="flex items-center gap-3">
@@ -439,20 +501,28 @@ export default function WeightAllocationManager({
                           <div className="text-right">
                             <p className="font-medium">{shipment.weight_kg} kg</p>
                             <div className="flex gap-2 text-xs">
-                              <span className="text-rose-600">Cost: ฿{shipment.vendor_total_cost?.toLocaleString() || 0}</span>
-                              <span className="text-emerald-600">Profit: ฿{shipment.profit?.toLocaleString() || 0}</span>
+                              <span className="text-rose-600">
+                                Cost: ฿{shipment.vendor_total_cost?.toLocaleString() || 0}
+                              </span>
+                              <span className="text-emerald-600">
+                                Profit: ฿{shipment.profit?.toLocaleString() || 0}
+                              </span>
                             </div>
                           </div>
-                          <Badge className={
-                            shipment.status === 'delivered' ? 'bg-emerald-100 text-emerald-800' :
-                            shipment.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                            'bg-blue-100 text-blue-800'
-                          }>
+                          <Badge
+                            className={
+                              shipment.status === 'delivered'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : shipment.status === 'pending'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-blue-100 text-blue-800'
+                            }
+                          >
                             {shipment.status}
                           </Badge>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-rose-600 hover:bg-rose-50"
                             onClick={() => handleUnlink('shipment', shipment)}
                           >
@@ -462,7 +532,9 @@ export default function WeightAllocationManager({
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500 text-center py-4">No cargo shipments linked</p>
+                    <p className="text-sm text-slate-500 text-center py-4">
+                      No cargo shipments linked
+                    </p>
                   )}
                 </div>
               </div>
@@ -475,9 +547,9 @@ export default function WeightAllocationManager({
                 </h4>
                 <div className="space-y-2">
                   {getLinkedShoppingOrders(selectedPO.id).length > 0 ? (
-                    getLinkedShoppingOrders(selectedPO.id).map(order => (
-                      <div 
-                        key={order.id} 
+                    getLinkedShoppingOrders(selectedPO.id).map((order) => (
+                      <div
+                        key={order.id}
                         className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50"
                       >
                         <div className="flex items-center gap-3">
@@ -491,19 +563,27 @@ export default function WeightAllocationManager({
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <p className="font-medium">{order.actual_weight || order.estimated_weight} kg</p>
-                            <p className="text-xs text-rose-600">Cost: ฿{order.vendor_cost?.toLocaleString() || 0}</p>
+                            <p className="font-medium">
+                              {order.actual_weight || order.estimated_weight} kg
+                            </p>
+                            <p className="text-xs text-rose-600">
+                              Cost: ฿{order.vendor_cost?.toLocaleString() || 0}
+                            </p>
                           </div>
-                          <Badge className={
-                            order.status === 'delivered' ? 'bg-emerald-100 text-emerald-800' :
-                            order.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                            'bg-purple-100 text-purple-800'
-                          }>
+                          <Badge
+                            className={
+                              order.status === 'delivered'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : order.status === 'pending'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-purple-100 text-purple-800'
+                            }
+                          >
                             {order.status}
                           </Badge>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-rose-600 hover:bg-rose-50"
                             onClick={() => handleUnlink('shopping', order)}
                           >
@@ -513,33 +593,43 @@ export default function WeightAllocationManager({
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500 text-center py-4">No shopping orders linked</p>
+                    <p className="text-sm text-slate-500 text-center py-4">
+                      No shopping orders linked
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Profit Summary */}
-              {(getLinkedShipments(selectedPO.id).length > 0 || getLinkedShoppingOrders(selectedPO.id).length > 0) && (
+              {(getLinkedShipments(selectedPO.id).length > 0 ||
+                getLinkedShoppingOrders(selectedPO.id).length > 0) && (
                 <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                   <h4 className="font-medium text-emerald-800 mb-2">Profit Summary for this PO</h4>
                   {(() => {
                     const profitData = calculatePOProfit(selectedPO);
-                    const margin = profitData.revenue > 0 
-                      ? ((profitData.profit / profitData.revenue) * 100).toFixed(1) 
-                      : 0;
+                    const margin =
+                      profitData.revenue > 0
+                        ? ((profitData.profit / profitData.revenue) * 100).toFixed(1)
+                        : 0;
                     return (
                       <div className="grid grid-cols-4 gap-4 text-sm">
                         <div>
                           <p className="text-emerald-600">Total Revenue</p>
-                          <p className="font-bold text-emerald-900">฿{profitData.revenue.toLocaleString()}</p>
+                          <p className="font-bold text-emerald-900">
+                            ฿{profitData.revenue.toLocaleString()}
+                          </p>
                         </div>
                         <div>
                           <p className="text-emerald-600">Vendor Cost</p>
-                          <p className="font-bold text-rose-600">฿{profitData.cost.toLocaleString()}</p>
+                          <p className="font-bold text-rose-600">
+                            ฿{profitData.cost.toLocaleString()}
+                          </p>
                         </div>
                         <div>
                           <p className="text-emerald-600">Net Profit</p>
-                          <p className="font-bold text-emerald-900">฿{profitData.profit.toLocaleString()}</p>
+                          <p className="font-bold text-emerald-900">
+                            ฿{profitData.profit.toLocaleString()}
+                          </p>
                         </div>
                         <div>
                           <p className="text-emerald-600">Margin</p>
@@ -556,7 +646,12 @@ export default function WeightAllocationManager({
                   Close
                 </Button>
                 {(selectedPO.remaining_weight_kg || 0) > 0 && (
-                  <Button onClick={() => { setShowAllocateDialog(true); }} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <Button
+                    onClick={() => {
+                      setShowAllocateDialog(true);
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  >
                     <Plus className="w-4 h-4 mr-2" /> Allocate Weight
                   </Button>
                 )}
@@ -578,20 +673,36 @@ export default function WeightAllocationManager({
           {selectedPO && (
             <div className="space-y-4 mt-4">
               <div className="p-3 bg-blue-50 rounded-lg text-sm">
-                <p><strong>Vendor:</strong> {selectedPO.vendor_name}</p>
-                <p><strong>Available:</strong> {selectedPO.remaining_weight_kg?.toLocaleString()} kg</p>
-                <p><strong>Cost:</strong> ฿{selectedPO.cost_per_kg}/kg</p>
+                <p>
+                  <strong>Vendor:</strong> {selectedPO.vendor_name}
+                </p>
+                <p>
+                  <strong>Available:</strong> {selectedPO.remaining_weight_kg?.toLocaleString()} kg
+                </p>
+                <p>
+                  <strong>Cost:</strong> ฿{selectedPO.cost_per_kg}/kg
+                </p>
               </div>
 
               <div className="space-y-2">
                 <Label>Order Type</Label>
-                <Select value={allocationType} onValueChange={(v) => { setAllocationType(v); setSelectedOrderId(''); }}>
+                <Select
+                  value={allocationType}
+                  onValueChange={(v) => {
+                    setAllocationType(v);
+                    setSelectedOrderId('');
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="shipment">Cargo Shipment ({unallocatedShipments.length} pending)</SelectItem>
-                    <SelectItem value="shopping">Shopping Order ({unallocatedShoppingOrders.length} pending)</SelectItem>
+                    <SelectItem value="shipment">
+                      Cargo Shipment ({unallocatedShipments.length} pending)
+                    </SelectItem>
+                    <SelectItem value="shopping">
+                      Shopping Order ({unallocatedShoppingOrders.length} pending)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -607,33 +718,37 @@ export default function WeightAllocationManager({
                     No unallocated shopping orders available
                   </div>
                 ) : (
-                  <Select value={selectedOrderId} onValueChange={(v) => {
-                    setSelectedOrderId(v);
-                    if (allocationType === 'shipment') {
-                      const s = unallocatedShipments.find(x => x.id === v);
-                      setAllocateWeight(s?.weight_kg?.toString() || '');
-                    } else {
-                      const s = unallocatedShoppingOrders.find(x => x.id === v);
-                      setAllocateWeight((s?.actual_weight || s?.estimated_weight)?.toString() || '');
-                    }
-                  }}>
+                  <Select
+                    value={selectedOrderId}
+                    onValueChange={(v) => {
+                      setSelectedOrderId(v);
+                      if (allocationType === 'shipment') {
+                        const s = unallocatedShipments.find((x) => x.id === v);
+                        setAllocateWeight(s?.weight_kg?.toString() || '');
+                      } else {
+                        const s = unallocatedShoppingOrders.find((x) => x.id === v);
+                        setAllocateWeight(
+                          (s?.actual_weight || s?.estimated_weight)?.toString() || ''
+                        );
+                      }
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select an order..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {allocationType === 'shipment' ? (
-                        unallocatedShipments.map(s => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.tracking_number} - {s.customer_name} ({s.weight_kg} kg)
-                          </SelectItem>
-                        ))
-                      ) : (
-                        unallocatedShoppingOrders.map(s => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.order_number} - {s.customer_name} ({s.actual_weight || s.estimated_weight} kg)
-                          </SelectItem>
-                        ))
-                      )}
+                      {allocationType === 'shipment'
+                        ? unallocatedShipments.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.tracking_number} - {s.customer_name} ({s.weight_kg} kg)
+                            </SelectItem>
+                          ))
+                        : unallocatedShoppingOrders.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.order_number} - {s.customer_name} (
+                              {s.actual_weight || s.estimated_weight} kg)
+                            </SelectItem>
+                          ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -652,17 +767,23 @@ export default function WeightAllocationManager({
                 />
                 {allocateWeight && (
                   <p className="text-xs text-slate-500">
-                    Vendor cost: ฿{(parseFloat(allocateWeight) * (selectedPO.cost_per_kg || 0)).toLocaleString()}
+                    Vendor cost: ฿
+                    {(parseFloat(allocateWeight) * (selectedPO.cost_per_kg || 0)).toLocaleString()}
                   </p>
                 )}
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setShowAllocateDialog(false)} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAllocateDialog(false)}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={handleAllocate} 
+                <Button
+                  onClick={handleAllocate}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                   disabled={!selectedOrderId || !allocateWeight}
                 >

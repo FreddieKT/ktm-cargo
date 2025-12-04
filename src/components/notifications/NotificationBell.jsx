@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, Package, Truck, ClipboardList, Users, Check, X, CreditCard, FileText, DollarSign, PlusCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Bell,
+  Package,
+  Truck,
+  ClipboardList,
+  Users,
+  Check,
+  X,
+  CreditCard,
+  FileText,
+  DollarSign,
+  PlusCircle,
+  RefreshCw,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -19,7 +32,7 @@ const typeIcons = {
   task_assigned: ClipboardList,
   segment_alert: Users,
   vendor_payment: DollarSign,
-  system: Bell
+  system: Bell,
 };
 
 const typeColors = {
@@ -32,14 +45,14 @@ const typeColors = {
   task_assigned: 'bg-purple-100 text-purple-600',
   segment_alert: 'bg-rose-100 text-rose-600',
   vendor_payment: 'bg-orange-100 text-orange-600',
-  system: 'bg-slate-100 text-slate-600'
+  system: 'bg-slate-100 text-slate-600',
 };
 
 const priorityColors = {
   critical: 'border-l-rose-500',
   high: 'border-l-amber-500',
   medium: 'border-l-blue-500',
-  low: 'border-l-slate-300'
+  low: 'border-l-slate-300',
 };
 
 export default function NotificationBell() {
@@ -49,17 +62,17 @@ export default function NotificationBell() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => base44.entities.Notification.filter({ status: 'unread' }, '-created_date', 20),
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const markReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { status: 'read' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
   const dismissMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { status: 'dismissed' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
   const markAllRead = async () => {
@@ -71,14 +84,22 @@ export default function NotificationBell() {
 
   const getLink = (notification) => {
     switch (notification.reference_type) {
-      case 'inventory': return createPageUrl('Inventory');
-      case 'shipment': return createPageUrl('Shipments');
-      case 'task': return createPageUrl('Tasks');
-      case 'customer': return createPageUrl('CustomerSegments');
-      case 'invoice': return createPageUrl('Shipments');
-      case 'payment': return createPageUrl('Shipments');
-      case 'vendor': return createPageUrl('Vendors');
-      default: return null;
+      case 'inventory':
+        return createPageUrl('Inventory');
+      case 'shipment':
+        return createPageUrl('Shipments');
+      case 'task':
+        return createPageUrl('Tasks');
+      case 'customer':
+        return createPageUrl('CustomerSegments');
+      case 'invoice':
+        return createPageUrl('Shipments');
+      case 'payment':
+        return createPageUrl('Shipments');
+      case 'vendor':
+        return createPageUrl('Vendors');
+      default:
+        return null;
     }
   };
 
@@ -107,13 +128,13 @@ export default function NotificationBell() {
         </div>
         <div className="max-h-80 overflow-y-auto">
           {notifications.length > 0 ? (
-            notifications.map(notification => {
+            notifications.map((notification) => {
               const Icon = typeIcons[notification.type] || Bell;
               const link = getLink(notification);
-              
+
               return (
-                <div 
-                  key={notification.id} 
+                <div
+                  key={notification.id}
                   className={`p-3 border-b border-l-4 ${priorityColors[notification.priority]} hover:bg-slate-50 transition-colors`}
                 >
                   <div className="flex gap-3">
@@ -121,21 +142,34 @@ export default function NotificationBell() {
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-slate-900 truncate">{notification.title}</p>
-                      <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{notification.message}</p>
+                      <p className="font-medium text-sm text-slate-900 truncate">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">
+                        {notification.message}
+                      </p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs text-slate-400">
-                          {notification.created_date && format(new Date(notification.created_date), 'MMM d, h:mm a')}
+                          {notification.created_date &&
+                            format(new Date(notification.created_date), 'MMM d, h:mm a')}
                         </span>
                         <div className="flex gap-1">
                           {link && (
-                            <Link to={link} onClick={() => { markReadMutation.mutate(notification.id); setOpen(false); }}>
-                              <Button variant="ghost" size="sm" className="h-6 text-xs">View</Button>
+                            <Link
+                              to={link}
+                              onClick={() => {
+                                markReadMutation.mutate(notification.id);
+                                setOpen(false);
+                              }}
+                            >
+                              <Button variant="ghost" size="sm" className="h-6 text-xs">
+                                View
+                              </Button>
                             </Link>
                           )}
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-6 w-6"
                             onClick={() => dismissMutation.mutate(notification.id)}
                           >

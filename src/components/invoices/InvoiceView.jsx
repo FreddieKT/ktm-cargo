@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Printer, Download, Mail, Plane } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -16,7 +17,7 @@ export default function InvoiceView({ invoice, onClose }) {
     queryFn: async () => {
       const list = await base44.entities.CompanySettings.list();
       return list[0] || null;
-    }
+    },
   });
 
   const company = {
@@ -29,7 +30,7 @@ export default function InvoiceView({ invoice, onClose }) {
     taxId: companySettings?.tax_id || '',
     bankName: companySettings?.bank_name || '',
     bankAccount: companySettings?.bank_account || '',
-    bankAccountName: companySettings?.bank_account_name || ''
+    bankAccountName: companySettings?.bank_account_name || '',
   };
 
   const handlePrint = () => {
@@ -73,7 +74,7 @@ export default function InvoiceView({ invoice, onClose }) {
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          ${DOMPurify.sanitize(printContent.innerHTML)}
         </body>
       </html>
     `);
@@ -89,7 +90,7 @@ export default function InvoiceView({ invoice, onClose }) {
     shopping_fashion: 'Shopping + Fashion/Electronics',
     shopping_bulk: 'Shopping + Bulk Order',
     express: 'Express Delivery',
-    standard: 'Standard Delivery'
+    standard: 'Standard Delivery',
   };
 
   return (
@@ -116,7 +117,11 @@ export default function InvoiceView({ invoice, onClose }) {
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-4">
                   {company.logo ? (
-                    <img src={company.logo} alt="Logo" className="w-16 h-16 object-contain bg-white rounded-lg p-2" />
+                    <img
+                      src={company.logo}
+                      alt="Logo"
+                      className="w-16 h-16 object-contain bg-white rounded-lg p-2"
+                    />
                   ) : (
                     <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center">
                       <Plane className="w-8 h-8" />
@@ -130,7 +135,9 @@ export default function InvoiceView({ invoice, onClose }) {
                 <div className="text-right">
                   <h1 className="text-3xl font-bold tracking-tight">INVOICE</h1>
                   <p className="text-blue-100 mt-1">{invoice.invoice_number}</p>
-                  <Badge className={`mt-2 ${invoice.status === 'issued' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                  <Badge
+                    className={`mt-2 ${invoice.status === 'issued' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}
+                  >
                     {invoice.status?.toUpperCase()}
                   </Badge>
                 </div>
@@ -144,18 +151,32 @@ export default function InvoiceView({ invoice, onClose }) {
                 <div>
                   <h3 className="text-xs uppercase tracking-wider text-slate-400 mb-2">Bill To</h3>
                   <p className="font-semibold text-lg text-slate-900">{invoice.customer_name}</p>
-                  {invoice.customer_email && <p className="text-slate-600">{invoice.customer_email}</p>}
-                  {invoice.customer_phone && <p className="text-slate-600">{invoice.customer_phone}</p>}
+                  {invoice.customer_email && (
+                    <p className="text-slate-600">{invoice.customer_email}</p>
+                  )}
+                  {invoice.customer_phone && (
+                    <p className="text-slate-600">{invoice.customer_phone}</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="inline-block text-left">
                     <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                       <span className="text-slate-500">Invoice Date:</span>
-                      <span className="font-medium">{invoice.invoice_date ? format(new Date(invoice.invoice_date), 'MMM dd, yyyy') : '-'}</span>
+                      <span className="font-medium">
+                        {invoice.invoice_date
+                          ? format(new Date(invoice.invoice_date), 'MMM dd, yyyy')
+                          : '-'}
+                      </span>
                       <span className="text-slate-500">Payment Date:</span>
-                      <span className="font-medium">{invoice.payment_date ? format(new Date(invoice.payment_date), 'MMM dd, yyyy') : '-'}</span>
+                      <span className="font-medium">
+                        {invoice.payment_date
+                          ? format(new Date(invoice.payment_date), 'MMM dd, yyyy')
+                          : '-'}
+                      </span>
                       <span className="text-slate-500">Tracking No:</span>
-                      <span className="font-medium text-blue-600">{invoice.tracking_number || '-'}</span>
+                      <span className="font-medium text-blue-600">
+                        {invoice.tracking_number || '-'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -167,28 +188,46 @@ export default function InvoiceView({ invoice, onClose }) {
               <table className="w-full mb-8">
                 <thead>
                   <tr className="border-b-2 border-slate-200">
-                    <th className="text-left py-3 text-xs uppercase tracking-wider text-slate-500">Description</th>
-                    <th className="text-right py-3 text-xs uppercase tracking-wider text-slate-500">Qty/Weight</th>
-                    <th className="text-right py-3 text-xs uppercase tracking-wider text-slate-500">Rate</th>
-                    <th className="text-right py-3 text-xs uppercase tracking-wider text-slate-500">Amount</th>
+                    <th className="text-left py-3 text-xs uppercase tracking-wider text-slate-500">
+                      Description
+                    </th>
+                    <th className="text-right py-3 text-xs uppercase tracking-wider text-slate-500">
+                      Qty/Weight
+                    </th>
+                    <th className="text-right py-3 text-xs uppercase tracking-wider text-slate-500">
+                      Rate
+                    </th>
+                    <th className="text-right py-3 text-xs uppercase tracking-wider text-slate-500">
+                      Amount
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b border-slate-100">
                     <td className="py-4">
-                      <p className="font-medium">{serviceTypeLabels[invoice.service_type] || invoice.service_type}</p>
-                      {invoice.notes && <p className="text-sm text-slate-500 mt-1">{invoice.notes}</p>}
+                      <p className="font-medium">
+                        {serviceTypeLabels[invoice.service_type] || invoice.service_type}
+                      </p>
+                      {invoice.notes && (
+                        <p className="text-sm text-slate-500 mt-1">{invoice.notes}</p>
+                      )}
                     </td>
                     <td className="py-4 text-right">{invoice.weight_kg} kg</td>
-                    <td className="py-4 text-right">฿{invoice.price_per_kg?.toLocaleString()}/kg</td>
-                    <td className="py-4 text-right font-medium">฿{invoice.shipping_amount?.toLocaleString()}</td>
+                    <td className="py-4 text-right">
+                      ฿{invoice.price_per_kg?.toLocaleString()}/kg
+                    </td>
+                    <td className="py-4 text-right font-medium">
+                      ฿{invoice.shipping_amount?.toLocaleString()}
+                    </td>
                   </tr>
                   {invoice.insurance_amount > 0 && (
                     <tr className="border-b border-slate-100">
                       <td className="py-4">Insurance (3%)</td>
                       <td className="py-4 text-right">-</td>
                       <td className="py-4 text-right">3%</td>
-                      <td className="py-4 text-right font-medium">฿{invoice.insurance_amount?.toLocaleString()}</td>
+                      <td className="py-4 text-right font-medium">
+                        ฿{invoice.insurance_amount?.toLocaleString()}
+                      </td>
                     </tr>
                   )}
                   {invoice.packaging_fee > 0 && (
@@ -196,7 +235,9 @@ export default function InvoiceView({ invoice, onClose }) {
                       <td className="py-4">Packaging Fee</td>
                       <td className="py-4 text-right">-</td>
                       <td className="py-4 text-right">-</td>
-                      <td className="py-4 text-right font-medium">฿{invoice.packaging_fee?.toLocaleString()}</td>
+                      <td className="py-4 text-right font-medium">
+                        ฿{invoice.packaging_fee?.toLocaleString()}
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -218,7 +259,9 @@ export default function InvoiceView({ invoice, onClose }) {
                   <Separator className="my-2" />
                   <div className="flex justify-between py-3">
                     <span className="text-lg font-bold text-slate-900">Total</span>
-                    <span className="text-2xl font-bold text-blue-600">฿{invoice.total_amount?.toLocaleString()}</span>
+                    <span className="text-2xl font-bold text-blue-600">
+                      ฿{invoice.total_amount?.toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -228,14 +271,24 @@ export default function InvoiceView({ invoice, onClose }) {
               {/* Footer */}
               <div className="grid md:grid-cols-2 gap-8 text-sm">
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-slate-400 mb-2">Payment Information</h4>
+                  <h4 className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+                    Payment Information
+                  </h4>
                   {company.bankName && <p className="text-slate-600">Bank: {company.bankName}</p>}
-                  {company.bankAccount && <p className="text-slate-600">Account: {company.bankAccount}</p>}
-                  {company.bankAccountName && <p className="text-slate-600">Name: {company.bankAccountName}</p>}
-                  <p className="text-slate-600 mt-2">Method: {invoice.payment_method || 'PromptPay'}</p>
+                  {company.bankAccount && (
+                    <p className="text-slate-600">Account: {company.bankAccount}</p>
+                  )}
+                  {company.bankAccountName && (
+                    <p className="text-slate-600">Name: {company.bankAccountName}</p>
+                  )}
+                  <p className="text-slate-600 mt-2">
+                    Method: {invoice.payment_method || 'PromptPay'}
+                  </p>
                 </div>
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-slate-400 mb-2">Company Details</h4>
+                  <h4 className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+                    Company Details
+                  </h4>
                   <p className="text-slate-600">{company.name}</p>
                   {company.address && <p className="text-slate-600">{company.address}</p>}
                   {company.email && <p className="text-slate-600">{company.email}</p>}

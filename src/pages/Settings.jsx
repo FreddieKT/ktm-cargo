@@ -1,23 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  User, Bell, Shield, Palette, Globe, Mail, Phone,
-  Save, Settings as SettingsIcon, Zap, Database, Clock,
-  DollarSign, Package, Truck, FileText, Users, Target,
-  RefreshCw, CheckCircle, AlertTriangle, Loader2, Building2,
-  MapPin, FileCheck, Calculator, Receipt, Percent, History
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  User,
+  Bell,
+  Shield,
+  Palette,
+  Globe,
+  Mail,
+  Phone,
+  Save,
+  Settings as SettingsIcon,
+  Zap,
+  Database,
+  Clock,
+  DollarSign,
+  Package,
+  Truck,
+  FileText,
+  Users,
+  Target,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
+  Building2,
+  MapPin,
+  FileCheck,
+  Calculator,
+  Receipt,
+  Percent,
+  History,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PricingManager from '@/components/settings/PricingManager';
@@ -34,37 +64,37 @@ export default function Settings() {
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list()
+    queryFn: () => base44.entities.Shipment.list(),
   });
 
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory'],
-    queryFn: () => base44.entities.InventoryItem.list()
+    queryFn: () => base44.entities.InventoryItem.list(),
   });
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
-    queryFn: () => base44.entities.VendorPayment.list()
+    queryFn: () => base44.entities.VendorPayment.list(),
   });
 
   const { data: notificationsList = [] } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => base44.entities.Notification.filter({ status: 'unread' })
+    queryFn: () => base44.entities.Notification.filter({ status: 'unread' }),
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list()
+    queryFn: () => base44.entities.Vendor.list(),
   });
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: () => base44.entities.AuditLog.list('-created_date', 100)
+    queryFn: () => base44.entities.AuditLog.list('-created_date', 100),
   });
 
   const [actionLoading, setActionLoading] = useState(null);
@@ -74,7 +104,7 @@ export default function Settings() {
     phone: '',
     company_name: '',
     default_currency: 'THB',
-    timezone: 'Asia/Bangkok'
+    timezone: 'Asia/Bangkok',
   });
 
   const [notifications, setNotifications] = useState({
@@ -82,7 +112,7 @@ export default function Settings() {
     low_stock_alerts: true,
     payment_reminders: true,
     delivery_updates: true,
-    weekly_reports: false
+    weekly_reports: false,
   });
 
   const [businessSettings, setBusinessSettings] = useState({
@@ -101,7 +131,7 @@ export default function Settings() {
     auto_send_receipts: true,
     require_signature: false,
     default_pickup_city: 'Bangkok',
-    default_delivery_city: 'Yangon'
+    default_delivery_city: 'Yangon',
   });
 
   useEffect(() => {
@@ -111,7 +141,7 @@ export default function Settings() {
         phone: user.phone || '',
         company_name: user.company_name || '',
         default_currency: user.default_currency || 'THB',
-        timezone: user.timezone || 'Asia/Bangkok'
+        timezone: user.timezone || 'Asia/Bangkok',
       });
       setNotifications(user.notification_settings || notifications);
       setBusinessSettings(user.business_settings || businessSettings);
@@ -124,7 +154,7 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast.success('Profile updated');
     },
-    onError: () => toast.error('Failed to update profile')
+    onError: () => toast.error('Failed to update profile'),
   });
 
   const handleSaveProfile = () => {
@@ -142,16 +172,16 @@ export default function Settings() {
   // Quick action handlers
   const handleRunInventoryCheck = async () => {
     setActionLoading('inventory');
-    const lowStockItems = inventoryItems.filter(i => i.current_stock <= i.reorder_point);
-    await new Promise(r => setTimeout(r, 1000));
+    const lowStockItems = inventoryItems.filter((i) => i.current_stock <= i.reorder_point);
+    await new Promise((r) => setTimeout(r, 1000));
     toast.success(`Inventory check complete. ${lowStockItems.length} items need attention.`);
     setActionLoading(null);
   };
 
   const handleProcessPayments = async () => {
     setActionLoading('payments');
-    const pending = vendorPayments.filter(p => p.status === 'pending');
-    await new Promise(r => setTimeout(r, 1000));
+    const pending = vendorPayments.filter((p) => p.status === 'pending');
+    await new Promise((r) => setTimeout(r, 1000));
     toast.success(`Found ${pending.length} pending payments to process.`);
     setActionLoading(null);
   };
@@ -168,16 +198,18 @@ export default function Settings() {
 
   const handleSendWeeklyReport = async () => {
     setActionLoading('report');
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1500));
     toast.success('Weekly report generation started');
     setActionLoading(null);
   };
 
   // Stats calculations
-  const activeShipments = shipments.filter(s => !['delivered', 'cancelled'].includes(s.status)).length;
-  const pendingPayments = vendorPayments.filter(p => p.status === 'pending').length;
-  const lowStockItems = inventoryItems.filter(i => i.current_stock <= i.reorder_point).length;
-  const activeVendors = vendors.filter(v => v.status === 'active').length;
+  const activeShipments = shipments.filter(
+    (s) => !['delivered', 'cancelled'].includes(s.status)
+  ).length;
+  const pendingPayments = vendorPayments.filter((p) => p.status === 'pending').length;
+  const lowStockItems = inventoryItems.filter((i) => i.current_stock <= i.reorder_point).length;
+  const activeVendors = vendors.filter((v) => v.status === 'active').length;
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
@@ -220,13 +252,13 @@ export default function Settings() {
                 <span className="hidden sm:inline">Staff</span>
               </TabsTrigger>
             )}
-            {(user?.role === 'admin') && (
+            {user?.role === 'admin' && (
               <TabsTrigger value="branding" className="gap-2">
                 <Building2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Branding</span>
               </TabsTrigger>
             )}
-            {(user?.role === 'admin') && (
+            {user?.role === 'admin' && (
               <TabsTrigger value="audit" className="gap-2">
                 <History className="w-4 h-4" />
                 <span className="hidden sm:inline">Audit</span>
@@ -274,8 +306,13 @@ export default function Settings() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Default Currency</Label>
-                    <Select value={profile.default_currency} onValueChange={(v) => setProfile({ ...profile, default_currency: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={profile.default_currency}
+                      onValueChange={(v) => setProfile({ ...profile, default_currency: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="THB">Thai Baht (฿)</SelectItem>
                         <SelectItem value="USD">US Dollar ($)</SelectItem>
@@ -285,8 +322,13 @@ export default function Settings() {
                   </div>
                   <div className="space-y-2">
                     <Label>Timezone</Label>
-                    <Select value={profile.timezone} onValueChange={(v) => setProfile({ ...profile, timezone: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={profile.timezone}
+                      onValueChange={(v) => setProfile({ ...profile, timezone: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Asia/Bangkok">Bangkok (GMT+7)</SelectItem>
                         <SelectItem value="Asia/Yangon">Yangon (GMT+6:30)</SelectItem>
@@ -355,17 +397,23 @@ export default function Settings() {
                     <Label>Tax ID / Registration Number</Label>
                     <Input
                       value={businessSettings.tax_id}
-                      onChange={(e) => setBusinessSettings({ ...businessSettings, tax_id: e.target.value })}
+                      onChange={(e) =>
+                        setBusinessSettings({ ...businessSettings, tax_id: e.target.value })
+                      }
                       placeholder="e.g., 1234567890123"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Currency Symbol</Label>
-                    <Select 
-                      value={businessSettings.currency_symbol} 
-                      onValueChange={(v) => setBusinessSettings({ ...businessSettings, currency_symbol: v })}
+                    <Select
+                      value={businessSettings.currency_symbol}
+                      onValueChange={(v) =>
+                        setBusinessSettings({ ...businessSettings, currency_symbol: v })
+                      }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="฿">Thai Baht (฿)</SelectItem>
                         <SelectItem value="$">US Dollar ($)</SelectItem>
@@ -378,7 +426,9 @@ export default function Settings() {
                   <Label>Company Address</Label>
                   <Textarea
                     value={businessSettings.company_address}
-                    onChange={(e) => setBusinessSettings({ ...businessSettings, company_address: e.target.value })}
+                    onChange={(e) =>
+                      setBusinessSettings({ ...businessSettings, company_address: e.target.value })
+                    }
                     placeholder="Enter your business address for invoices..."
                     rows={2}
                   />
@@ -399,11 +449,15 @@ export default function Settings() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Default Service Type</Label>
-                    <Select 
-                      value={businessSettings.default_service_type} 
-                      onValueChange={(v) => setBusinessSettings({ ...businessSettings, default_service_type: v })}
+                    <Select
+                      value={businessSettings.default_service_type}
+                      onValueChange={(v) =>
+                        setBusinessSettings({ ...businessSettings, default_service_type: v })
+                      }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="cargo_small">Cargo Small</SelectItem>
                         <SelectItem value="cargo_medium">Cargo Medium</SelectItem>
@@ -415,11 +469,15 @@ export default function Settings() {
                   </div>
                   <div className="space-y-2">
                     <Label>Weight Unit</Label>
-                    <Select 
-                      value={businessSettings.weight_unit} 
-                      onValueChange={(v) => setBusinessSettings({ ...businessSettings, weight_unit: v })}
+                    <Select
+                      value={businessSettings.weight_unit}
+                      onValueChange={(v) =>
+                        setBusinessSettings({ ...businessSettings, weight_unit: v })
+                      }
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kg">Kilograms (kg)</SelectItem>
                         <SelectItem value="lb">Pounds (lb)</SelectItem>
@@ -435,7 +493,12 @@ export default function Settings() {
                     </Label>
                     <Input
                       value={businessSettings.default_pickup_city}
-                      onChange={(e) => setBusinessSettings({ ...businessSettings, default_pickup_city: e.target.value })}
+                      onChange={(e) =>
+                        setBusinessSettings({
+                          ...businessSettings,
+                          default_pickup_city: e.target.value,
+                        })
+                      }
                       placeholder="Bangkok"
                     />
                   </div>
@@ -446,7 +509,12 @@ export default function Settings() {
                     </Label>
                     <Input
                       value={businessSettings.default_delivery_city}
-                      onChange={(e) => setBusinessSettings({ ...businessSettings, default_delivery_city: e.target.value })}
+                      onChange={(e) =>
+                        setBusinessSettings({
+                          ...businessSettings,
+                          default_delivery_city: e.target.value,
+                        })
+                      }
                       placeholder="Yangon"
                     />
                   </div>
@@ -474,9 +542,16 @@ export default function Settings() {
                         max="100"
                         step="0.5"
                         value={businessSettings.default_insurance_rate}
-                        onChange={(e) => setBusinessSettings({ ...businessSettings, default_insurance_rate: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) =>
+                          setBusinessSettings({
+                            ...businessSettings,
+                            default_insurance_rate: parseFloat(e.target.value) || 0,
+                          })
+                        }
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        %
+                      </span>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -488,19 +563,30 @@ export default function Settings() {
                         max="100"
                         step="0.5"
                         value={businessSettings.default_commission_rate}
-                        onChange={(e) => setBusinessSettings({ ...businessSettings, default_commission_rate: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) =>
+                          setBusinessSettings({
+                            ...businessSettings,
+                            default_commission_rate: parseFloat(e.target.value) || 0,
+                          })
+                        }
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        %
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Default Payment Terms</Label>
-                  <Select 
-                    value={businessSettings.default_payment_terms} 
-                    onValueChange={(v) => setBusinessSettings({ ...businessSettings, default_payment_terms: v })}
+                  <Select
+                    value={businessSettings.default_payment_terms}
+                    onValueChange={(v) =>
+                      setBusinessSettings({ ...businessSettings, default_payment_terms: v })
+                    }
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="immediate">Immediate (COD)</SelectItem>
                       <SelectItem value="net_15">Net 15 Days</SelectItem>
@@ -527,21 +613,35 @@ export default function Settings() {
                     <Label>Invoice Number Prefix</Label>
                     <Input
                       value={businessSettings.invoice_prefix}
-                      onChange={(e) => setBusinessSettings({ ...businessSettings, invoice_prefix: e.target.value.toUpperCase() })}
+                      onChange={(e) =>
+                        setBusinessSettings({
+                          ...businessSettings,
+                          invoice_prefix: e.target.value.toUpperCase(),
+                        })
+                      }
                       placeholder="INV"
                       maxLength={5}
                     />
-                    <p className="text-xs text-slate-500">e.g., {businessSettings.invoice_prefix}-2024-0001</p>
+                    <p className="text-xs text-slate-500">
+                      e.g., {businessSettings.invoice_prefix}-2024-0001
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label>Tracking Number Prefix</Label>
                     <Input
                       value={businessSettings.tracking_prefix}
-                      onChange={(e) => setBusinessSettings({ ...businessSettings, tracking_prefix: e.target.value.toUpperCase() })}
+                      onChange={(e) =>
+                        setBusinessSettings({
+                          ...businessSettings,
+                          tracking_prefix: e.target.value.toUpperCase(),
+                        })
+                      }
                       placeholder="BKK"
                       maxLength={5}
                     />
-                    <p className="text-xs text-slate-500">e.g., {businessSettings.tracking_prefix}1234567890</p>
+                    <p className="text-xs text-slate-500">
+                      e.g., {businessSettings.tracking_prefix}1234567890
+                    </p>
                   </div>
                 </div>
 
@@ -554,11 +654,15 @@ export default function Settings() {
                         <Calculator className="w-4 h-4 text-slate-400" />
                         Auto-generate Tracking Numbers
                       </Label>
-                      <p className="text-sm text-slate-500">Automatically create tracking IDs for new shipments</p>
+                      <p className="text-sm text-slate-500">
+                        Automatically create tracking IDs for new shipments
+                      </p>
                     </div>
                     <Switch
                       checked={businessSettings.auto_generate_tracking}
-                      onCheckedChange={(v) => setBusinessSettings({ ...businessSettings, auto_generate_tracking: v })}
+                      onCheckedChange={(v) =>
+                        setBusinessSettings({ ...businessSettings, auto_generate_tracking: v })
+                      }
                     />
                   </div>
 
@@ -568,11 +672,15 @@ export default function Settings() {
                         <Receipt className="w-4 h-4 text-slate-400" />
                         Auto-send Receipts
                       </Label>
-                      <p className="text-sm text-slate-500">Email receipts to customers when payment is received</p>
+                      <p className="text-sm text-slate-500">
+                        Email receipts to customers when payment is received
+                      </p>
                     </div>
                     <Switch
                       checked={businessSettings.auto_send_receipts}
-                      onCheckedChange={(v) => setBusinessSettings({ ...businessSettings, auto_send_receipts: v })}
+                      onCheckedChange={(v) =>
+                        setBusinessSettings({ ...businessSettings, auto_send_receipts: v })
+                      }
                     />
                   </div>
 
@@ -582,11 +690,15 @@ export default function Settings() {
                         <FileCheck className="w-4 h-4 text-slate-400" />
                         Require Delivery Signature
                       </Label>
-                      <p className="text-sm text-slate-500">Require customer signature on delivery confirmation</p>
+                      <p className="text-sm text-slate-500">
+                        Require customer signature on delivery confirmation
+                      </p>
                     </div>
                     <Switch
                       checked={businessSettings.require_signature}
-                      onCheckedChange={(v) => setBusinessSettings({ ...businessSettings, require_signature: v })}
+                      onCheckedChange={(v) =>
+                        setBusinessSettings({ ...businessSettings, require_signature: v })
+                      }
                     />
                   </div>
                 </div>
@@ -595,7 +707,10 @@ export default function Settings() {
 
             {/* Save Button */}
             <div className="flex justify-end">
-              <Button onClick={handleSaveBusinessSettings} className="bg-blue-600 hover:bg-blue-700 px-8">
+              <Button
+                onClick={handleSaveBusinessSettings}
+                className="bg-blue-600 hover:bg-blue-700 px-8"
+              >
                 <Save className="w-4 h-4 mr-2" />
                 Save All Business Settings
               </Button>
@@ -610,12 +725,21 @@ export default function Settings() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">Active Shipments</p>
+                      <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">
+                        Active Shipments
+                      </p>
                       <p className="text-3xl font-bold text-blue-900">{activeShipments}</p>
                     </div>
                     <Package className="w-10 h-10 text-blue-400" />
                   </div>
-                  <Progress value={activeShipments > 0 ? Math.min((activeShipments / shipments.length) * 100, 100) : 0} className="h-1 mt-3" />
+                  <Progress
+                    value={
+                      activeShipments > 0
+                        ? Math.min((activeShipments / shipments.length) * 100, 100)
+                        : 0
+                    }
+                    className="h-1 mt-3"
+                  />
                 </CardContent>
               </Card>
 
@@ -623,7 +747,9 @@ export default function Settings() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Pending Payments</p>
+                      <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">
+                        Pending Payments
+                      </p>
                       <p className="text-3xl font-bold text-emerald-900">{pendingPayments}</p>
                     </div>
                     <DollarSign className="w-10 h-10 text-emerald-400" />
@@ -638,7 +764,9 @@ export default function Settings() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-medium text-amber-600 uppercase tracking-wide">Low Stock Items</p>
+                      <p className="text-xs font-medium text-amber-600 uppercase tracking-wide">
+                        Low Stock Items
+                      </p>
                       <p className="text-3xl font-bold text-amber-900">{lowStockItems}</p>
                     </div>
                     <Database className="w-10 h-10 text-amber-400" />
@@ -653,7 +781,9 @@ export default function Settings() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">Active Vendors</p>
+                      <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">
+                        Active Vendors
+                      </p>
                       <p className="text-3xl font-bold text-purple-900">{activeVendors}</p>
                     </div>
                     <Truck className="w-10 h-10 text-purple-400" />
@@ -674,52 +804,70 @@ export default function Settings() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-auto py-4 justify-start gap-3 hover:bg-blue-50 hover:border-blue-200"
                     onClick={handleRunInventoryCheck}
                     disabled={actionLoading === 'inventory'}
                   >
-                    {actionLoading === 'inventory' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Database className="w-5 h-5 text-blue-600" />}
+                    {actionLoading === 'inventory' ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Database className="w-5 h-5 text-blue-600" />
+                    )}
                     <div className="text-left">
                       <p className="font-medium">Run Inventory Check</p>
                       <p className="text-xs text-slate-500">Scan for low stock items</p>
                     </div>
                   </Button>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-auto py-4 justify-start gap-3 hover:bg-emerald-50 hover:border-emerald-200"
                     onClick={handleProcessPayments}
                     disabled={actionLoading === 'payments'}
                   >
-                    {actionLoading === 'payments' ? <Loader2 className="w-5 h-5 animate-spin" /> : <DollarSign className="w-5 h-5 text-emerald-600" />}
+                    {actionLoading === 'payments' ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
+                    )}
                     <div className="text-left">
                       <p className="font-medium">Process Payments</p>
                       <p className="text-xs text-slate-500">Review pending vendor payments</p>
                     </div>
                   </Button>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-auto py-4 justify-start gap-3 hover:bg-amber-50 hover:border-amber-200"
                     onClick={handleClearNotifications}
                     disabled={actionLoading === 'notifications'}
                   >
-                    {actionLoading === 'notifications' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bell className="w-5 h-5 text-amber-600" />}
+                    {actionLoading === 'notifications' ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Bell className="w-5 h-5 text-amber-600" />
+                    )}
                     <div className="text-left">
                       <p className="font-medium">Clear Notifications</p>
-                      <p className="text-xs text-slate-500">{notificationsList.length} unread notifications</p>
+                      <p className="text-xs text-slate-500">
+                        {notificationsList.length} unread notifications
+                      </p>
                     </div>
                   </Button>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-auto py-4 justify-start gap-3 hover:bg-purple-50 hover:border-purple-200"
                     onClick={handleSendWeeklyReport}
                     disabled={actionLoading === 'report'}
                   >
-                    {actionLoading === 'report' ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5 text-purple-600" />}
+                    {actionLoading === 'report' ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-purple-600" />
+                    )}
                     <div className="text-left">
                       <p className="font-medium">Send Weekly Report</p>
                       <p className="text-xs text-slate-500">Generate and email report now</p>
@@ -741,8 +889,16 @@ export default function Settings() {
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <StatusItem label="API Connection" status="connected" detail="Response: 45ms" />
-                  <StatusItem label="Database Sync" status="connected" detail="Last sync: Just now" />
-                  <StatusItem label="Email Service" status="connected" detail="Emails sent today: 12" />
+                  <StatusItem
+                    label="Database Sync"
+                    status="connected"
+                    detail="Last sync: Just now"
+                  />
+                  <StatusItem
+                    label="Email Service"
+                    status="connected"
+                    detail="Emails sent today: 12"
+                  />
                   <StatusItem label="File Storage" status="connected" detail="95% available" />
                 </div>
               </CardContent>
@@ -757,14 +913,14 @@ export default function Settings() {
           )}
 
           {/* Company Branding Tab - Admin Only */}
-          {(user?.role === 'admin') && (
+          {user?.role === 'admin' && (
             <TabsContent value="branding" className="mt-6">
               <CompanyBranding />
             </TabsContent>
           )}
 
           {/* Audit Log Tab - Admin Only */}
-          {(user?.role === 'admin') && (
+          {user?.role === 'admin' && (
             <TabsContent value="audit" className="mt-6">
               <AuditLogViewer logs={auditLogs} />
             </TabsContent>
@@ -789,7 +945,11 @@ function StatusItem({ label, status, detail }) {
           {detail && <p className="text-xs text-slate-500">{detail}</p>}
         </div>
       </div>
-      <Badge className={status === 'connected' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}>
+      <Badge
+        className={
+          status === 'connected' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+        }
+      >
         {status === 'connected' ? 'Online' : 'Offline'}
       </Badge>
     </div>

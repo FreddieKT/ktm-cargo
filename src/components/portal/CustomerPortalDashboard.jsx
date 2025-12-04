@@ -1,12 +1,21 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  Package, Truck, Clock, CheckCircle, AlertTriangle,
-  TrendingUp, Calendar, MapPin, ArrowRight, Bell, X
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Package,
+  Truck,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  TrendingUp,
+  Calendar,
+  MapPin,
+  ArrowRight,
+  Bell,
+  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -19,7 +28,7 @@ const STATUS_CONFIG = {
   in_transit: { label: 'In Transit', color: 'bg-amber-100 text-amber-700', icon: Truck },
   customs: { label: 'Customs', color: 'bg-purple-100 text-purple-700', icon: AlertTriangle },
   delivered: { label: 'Delivered', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700', icon: AlertTriangle }
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
 };
 
 export default function CustomerPortalDashboard({ customer, user }) {
@@ -29,11 +38,15 @@ export default function CustomerPortalDashboard({ customer, user }) {
       if (customer?.id) {
         return base44.entities.Shipment.filter({ customer_id: customer.id }, '-created_date', 50);
       } else if (customer?.name) {
-        return base44.entities.Shipment.filter({ customer_name: customer.name }, '-created_date', 50);
+        return base44.entities.Shipment.filter(
+          { customer_name: customer.name },
+          '-created_date',
+          50
+        );
       }
       return [];
     },
-    enabled: !!(customer?.id || customer?.name)
+    enabled: !!(customer?.id || customer?.name),
   });
 
   const { data: notifications = [] } = useQuery({
@@ -41,15 +54,19 @@ export default function CustomerPortalDashboard({ customer, user }) {
     queryFn: async () => {
       const email = customer?.email || user?.email;
       if (email) {
-        return base44.entities.Notification.filter({ recipient_email: email, status: 'unread' }, '-created_date', 10);
+        return base44.entities.Notification.filter(
+          { recipient_email: email, status: 'unread' },
+          '-created_date',
+          10
+        );
       }
       return [];
     },
-    enabled: !!(customer?.email || user?.email)
+    enabled: !!(customer?.email || user?.email),
   });
 
-  const activeShipments = shipments.filter(s => !['delivered', 'cancelled'].includes(s.status));
-  const recentDelivered = shipments.filter(s => s.status === 'delivered').slice(0, 3);
+  const activeShipments = shipments.filter((s) => !['delivered', 'cancelled'].includes(s.status));
+  const recentDelivered = shipments.filter((s) => s.status === 'delivered').slice(0, 3);
   const totalSpent = shipments.reduce((sum, s) => sum + (s.total_amount || 0), 0);
   const totalShipments = shipments.length;
 
@@ -60,7 +77,9 @@ export default function CustomerPortalDashboard({ customer, user }) {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold">Welcome back, {customer?.name || user?.full_name || 'Customer'}!</h2>
+              <h2 className="text-2xl font-bold">
+                Welcome back, {customer?.name || user?.full_name || 'Customer'}!
+              </h2>
               <p className="text-blue-100 mt-1">Track your shipments and manage your orders</p>
             </div>
             <div className="flex gap-3">
@@ -83,8 +102,11 @@ export default function CustomerPortalDashboard({ customer, user }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {notifications.slice(0, 3).map(notif => (
-                <div key={notif.id} className="flex items-start justify-between p-3 bg-amber-50 rounded-lg">
+              {notifications.slice(0, 3).map((notif) => (
+                <div
+                  key={notif.id}
+                  className="flex items-start justify-between p-3 bg-amber-50 rounded-lg"
+                >
                   <div className="flex-1">
                     <p className="font-medium text-sm">{notif.title}</p>
                     <p className="text-xs text-slate-600 mt-1">{notif.message}</p>
@@ -121,7 +143,9 @@ export default function CustomerPortalDashboard({ customer, user }) {
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{shipments.filter(s => s.status === 'delivered').length}</p>
+                <p className="text-2xl font-bold">
+                  {shipments.filter((s) => s.status === 'delivered').length}
+                </p>
                 <p className="text-xs text-slate-500">Delivered</p>
               </div>
             </div>
@@ -159,29 +183,39 @@ export default function CustomerPortalDashboard({ customer, user }) {
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Active Shipments</CardTitle>
-          <Button variant="ghost" size="sm">View All <ArrowRight className="w-4 h-4 ml-1" /></Button>
+          <Button variant="ghost" size="sm">
+            View All <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </CardHeader>
         <CardContent>
           {activeShipments.length > 0 ? (
             <div className="space-y-3">
-              {activeShipments.slice(0, 5).map(shipment => {
+              {activeShipments.slice(0, 5).map((shipment) => {
                 const status = STATUS_CONFIG[shipment.status] || STATUS_CONFIG.pending;
                 const StatusIcon = status.icon;
                 return (
-                  <div key={shipment.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                  <div
+                    key={shipment.id}
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                  >
                     <div className="flex items-center gap-4">
                       <div className={`p-2 rounded-lg ${status.color}`}>
                         <StatusIcon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="font-medium">{shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}</p>
-                        <p className="text-sm text-slate-500">{shipment.items_description || 'Package'}</p>
+                        <p className="font-medium">
+                          {shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {shipment.items_description || 'Package'}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <Badge className={status.color}>{status.label}</Badge>
                       <p className="text-xs text-slate-500 mt-1">
-                        {shipment.estimated_delivery && format(new Date(shipment.estimated_delivery), 'MMM d')}
+                        {shipment.estimated_delivery &&
+                          format(new Date(shipment.estimated_delivery), 'MMM d')}
                       </p>
                     </div>
                   </div>
@@ -192,7 +226,9 @@ export default function CustomerPortalDashboard({ customer, user }) {
             <div className="text-center py-8 text-slate-500">
               <Package className="w-12 h-12 mx-auto mb-3 text-slate-300" />
               <p>No active shipments</p>
-              <Button variant="outline" className="mt-3">Create New Shipment</Button>
+              <Button variant="outline" className="mt-3">
+                Create New Shipment
+              </Button>
             </div>
           )}
         </CardContent>
@@ -206,14 +242,21 @@ export default function CustomerPortalDashboard({ customer, user }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentDelivered.map(shipment => (
-                <div key={shipment.id} className="flex items-center justify-between p-3 border rounded-lg">
+              {recentDelivered.map((shipment) => (
+                <div
+                  key={shipment.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-emerald-500" />
                     <div>
-                      <p className="font-medium">{shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}</p>
+                      <p className="font-medium">
+                        {shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}
+                      </p>
                       <p className="text-xs text-slate-500">
-                        Delivered {shipment.actual_delivery && format(new Date(shipment.actual_delivery), 'MMM d, yyyy')}
+                        Delivered{' '}
+                        {shipment.actual_delivery &&
+                          format(new Date(shipment.actual_delivery), 'MMM d, yyyy')}
                       </p>
                     </div>
                   </div>

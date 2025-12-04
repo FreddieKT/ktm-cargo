@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { X, Megaphone, Users, Gift, Mail, MessageSquare } from 'lucide-react';
 
 const segmentOptions = [
@@ -15,7 +21,7 @@ const segmentOptions = [
   { value: 'sme_importer', label: 'SME Importers', description: 'Business customers' },
   { value: 'high_value', label: 'High Value', description: 'Top spending customers' },
   { value: 'inactive', label: 'Inactive', description: 'No orders in 30+ days' },
-  { value: 'new_customers', label: 'New Customers', description: 'First-time users' }
+  { value: 'new_customers', label: 'New Customers', description: 'First-time users' },
 ];
 
 const campaignTypes = [
@@ -23,7 +29,7 @@ const campaignTypes = [
   { value: 'referral', label: 'Referral Program', icon: Users },
   { value: 'promotion', label: 'General Promotion', icon: Megaphone },
   { value: 'announcement', label: 'Announcement', icon: MessageSquare },
-  { value: 'loyalty', label: 'Loyalty Reward', icon: Gift }
+  { value: 'loyalty', label: 'Loyalty Reward', icon: Gift },
 ];
 
 const channels = [
@@ -31,7 +37,7 @@ const channels = [
   { value: 'email', label: 'Email' },
   { value: 'line', label: 'LINE' },
   { value: 'facebook', label: 'Facebook Messenger' },
-  { value: 'sms', label: 'SMS' }
+  { value: 'sms', label: 'SMS' },
 ];
 
 const messageTemplates = {
@@ -69,7 +75,7 @@ As one of our top customers, enjoy:
 - Priority handling
 - Free packaging
 
-Code: {code}`
+Code: {code}`,
 };
 
 export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel }) {
@@ -85,14 +91,14 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
     start_date: '',
     end_date: '',
     budget: 0,
-    ...campaign
+    ...campaign,
   });
 
   const handleTypeChange = (type) => {
-    setForm({ 
-      ...form, 
+    setForm({
+      ...form,
       campaign_type: type,
-      message_template: messageTemplates[type] || form.message_template
+      message_template: messageTemplates[type] || form.message_template,
     });
   };
 
@@ -101,11 +107,11 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
     onSubmit({
       ...form,
       target_count: targetCount,
-      discount_code: form.discount_code || `PROMO${Date.now().toString(36).toUpperCase()}`
+      discount_code: form.discount_code || `PROMO${Date.now().toString(36).toUpperCase()}`,
     });
   };
 
-  const selectedSegment = segmentOptions.find(s => s.value === form.target_segment);
+  const selectedSegment = segmentOptions.find((s) => s.value === form.target_segment);
 
   return (
     <Card className="border-0 shadow-xl max-h-[90vh] overflow-y-auto">
@@ -145,7 +151,7 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
           <div className="space-y-3">
             <Label>Target Segment</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {segmentOptions.map(segment => (
+              {segmentOptions.map((segment) => (
                 <button
                   key={segment.value}
                   type="button"
@@ -175,7 +181,7 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
           <div className="space-y-3">
             <Label>Campaign Type</Label>
             <div className="flex flex-wrap gap-2">
-              {campaignTypes.map(type => {
+              {campaignTypes.map((type) => {
                 const Icon = type.icon;
                 return (
                   <button
@@ -201,8 +207,8 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Discount Percentage</Label>
-                <Select 
-                  value={form.discount_percentage.toString()} 
+                <Select
+                  value={form.discount_percentage.toString()}
                   onValueChange={(v) => setForm({ ...form, discount_percentage: parseInt(v) })}
                 >
                   <SelectTrigger>
@@ -221,7 +227,9 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                 <Label>Discount Code</Label>
                 <Input
                   value={form.discount_code}
-                  onChange={(e) => setForm({ ...form, discount_code: e.target.value.toUpperCase() })}
+                  onChange={(e) =>
+                    setForm({ ...form, discount_code: e.target.value.toUpperCase() })
+                  }
                   placeholder="Auto-generated if empty"
                 />
               </div>
@@ -236,8 +244,10 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {channels.map(ch => (
-                  <SelectItem key={ch.value} value={ch.value}>{ch.label}</SelectItem>
+                {channels.map((ch) => (
+                  <SelectItem key={ch.value} value={ch.value}>
+                    {ch.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

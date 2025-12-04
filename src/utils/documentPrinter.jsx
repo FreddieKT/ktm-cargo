@@ -8,16 +8,16 @@ import { flushSync } from 'react-dom';
  * @param {Object} props - Props to pass to the component
  */
 export function printDocument(Component, props) {
-    const printWindow = window.open('', '_blank');
+  const printWindow = window.open('', '_blank');
 
-    if (!printWindow) {
-        console.error('Popup blocked');
-        return;
-    }
+  if (!printWindow) {
+    console.error('Popup blocked');
+    return;
+  }
 
-    // Basic HTML structure with Tailwind CDN for styling (since we can't easily bundle styles in a new window without complex setup)
-    // In a real prod app, you might want to inline critical CSS or link to your stylesheet
-    const html = `
+  // Basic HTML structure with Tailwind CDN for styling (since we can't easily bundle styles in a new window without complex setup)
+  // In a real prod app, you might want to inline critical CSS or link to your stylesheet
+  const html = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -41,26 +41,26 @@ export function printDocument(Component, props) {
     </html>
   `;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
+  printWindow.document.write(html);
+  printWindow.document.close();
 
-    // Wait for resources to load
-    printWindow.onload = () => {
-        const rootElement = printWindow.document.getElementById('print-root');
-        if (rootElement) {
-            const root = createRoot(rootElement);
+  // Wait for resources to load
+  printWindow.onload = () => {
+    const rootElement = printWindow.document.getElementById('print-root');
+    if (rootElement) {
+      const root = createRoot(rootElement);
 
-            // Use flushSync to ensure render is complete before printing
-            flushSync(() => {
-                root.render(<Component {...props} />);
-            });
+      // Use flushSync to ensure render is complete before printing
+      flushSync(() => {
+        root.render(<Component {...props} />);
+      });
 
-            // Small delay to ensure styles are applied
-            setTimeout(() => {
-                printWindow.print();
-                // Optional: close after print
-                // printWindow.close(); 
-            }, 500);
-        }
-    };
+      // Small delay to ensure styles are applied
+      setTimeout(() => {
+        printWindow.print();
+        // Optional: close after print
+        // printWindow.close();
+      }, 500);
+    }
+  };
 }

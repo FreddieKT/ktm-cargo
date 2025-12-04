@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { DollarSign, Scale, Clock, Star } from 'lucide-react';
 
 const vendorTypes = [
@@ -44,7 +50,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
     lead_time_days: 3,
     // Preferred status
     is_preferred: false,
-    rating: 5
+    rating: 5,
   });
 
   useEffect(() => {
@@ -71,7 +77,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
         min_order_kg: vendor.min_order_kg || 0,
         lead_time_days: vendor.lead_time_days || 3,
         is_preferred: vendor.is_preferred || false,
-        rating: vendor.rating || 5
+        rating: vendor.rating || 5,
       });
     }
   }, [vendor]);
@@ -87,13 +93,14 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
       monthly_capacity_kg: parseFloat(form.monthly_capacity_kg) || 0,
       min_order_kg: parseFloat(form.min_order_kg) || 0,
       lead_time_days: parseInt(form.lead_time_days) || 3,
-      rating: parseFloat(form.rating) || 5
+      rating: parseFloat(form.rating) || 5,
     });
   };
 
-  const capacityUsedPercent = form.monthly_capacity_kg > 0 
-    ? ((form.current_month_allocated_kg / form.monthly_capacity_kg) * 100).toFixed(1)
-    : 0;
+  const capacityUsedPercent =
+    form.monthly_capacity_kg > 0
+      ? ((form.current_month_allocated_kg / form.monthly_capacity_kg) * 100).toFixed(1)
+      : 0;
 
   return (
     <Card className="border-0 shadow-lg max-h-[85vh] overflow-y-auto">
@@ -129,19 +136,31 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Vendor Type</Label>
-                  <Select value={form.vendor_type} onValueChange={(v) => setForm({ ...form, vendor_type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.vendor_type}
+                    onValueChange={(v) => setForm({ ...form, vendor_type: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {vendorTypes.map(t => (
-                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      {vendorTypes.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.status}
+                    onValueChange={(v) => setForm({ ...form, status: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
@@ -173,8 +192,13 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Payment Terms</Label>
-                  <Select value={form.payment_terms} onValueChange={(v) => setForm({ ...form, payment_terms: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.payment_terms}
+                    onValueChange={(v) => setForm({ ...form, payment_terms: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="immediate">Immediate</SelectItem>
                       <SelectItem value="net_15">Net 15</SelectItem>
@@ -291,26 +315,36 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                     placeholder="Minimum kg for bulk pricing"
                     className="max-w-xs"
                   />
-                  <p className="text-xs text-slate-500">Orders above this weight qualify for bulk pricing</p>
+                  <p className="text-xs text-slate-500">
+                    Orders above this weight qualify for bulk pricing
+                  </p>
                 </div>
               </div>
 
               {/* Pricing Summary */}
-              {(form.cost_per_kg > 0 || form.cost_per_kg_express > 0 || form.cost_per_kg_bulk > 0) && (
+              {(form.cost_per_kg > 0 ||
+                form.cost_per_kg_express > 0 ||
+                form.cost_per_kg_bulk > 0) && (
                 <div className="p-4 bg-slate-50 rounded-lg">
                   <h4 className="font-medium mb-3">Pricing Summary</h4>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-slate-500">Standard</p>
-                      <p className="font-bold text-lg">฿{parseFloat(form.cost_per_kg || 0).toFixed(2)}/kg</p>
+                      <p className="font-bold text-lg">
+                        ฿{parseFloat(form.cost_per_kg || 0).toFixed(2)}/kg
+                      </p>
                     </div>
                     <div>
                       <p className="text-slate-500">Express</p>
-                      <p className="font-bold text-lg text-amber-600">฿{parseFloat(form.cost_per_kg_express || 0).toFixed(2)}/kg</p>
+                      <p className="font-bold text-lg text-amber-600">
+                        ฿{parseFloat(form.cost_per_kg_express || 0).toFixed(2)}/kg
+                      </p>
                     </div>
                     <div>
                       <p className="text-slate-500">Bulk ({form.bulk_threshold_kg}+ kg)</p>
-                      <p className="font-bold text-lg text-emerald-600">฿{parseFloat(form.cost_per_kg_bulk || 0).toFixed(2)}/kg</p>
+                      <p className="font-bold text-lg text-emerald-600">
+                        ฿{parseFloat(form.cost_per_kg_bulk || 0).toFixed(2)}/kg
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -351,16 +385,20 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                   <div className="mt-4 p-3 bg-white rounded-lg">
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-slate-600">Current Month Usage</span>
-                      <span className="font-medium">{form.current_month_allocated_kg} / {form.monthly_capacity_kg} kg</span>
+                      <span className="font-medium">
+                        {form.current_month_allocated_kg} / {form.monthly_capacity_kg} kg
+                      </span>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-3">
-                      <div 
+                      <div
                         className={`h-3 rounded-full ${parseFloat(capacityUsedPercent) > 80 ? 'bg-rose-500' : parseFloat(capacityUsedPercent) > 50 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                         style={{ width: `${Math.min(100, capacityUsedPercent)}%` }}
                       />
                     </div>
                     <p className="text-xs text-slate-500 mt-1">
-                      {capacityUsedPercent}% capacity used • {Math.max(0, form.monthly_capacity_kg - form.current_month_allocated_kg)} kg available
+                      {capacityUsedPercent}% capacity used •{' '}
+                      {Math.max(0, form.monthly_capacity_kg - form.current_month_allocated_kg)} kg
+                      available
                     </p>
                   </div>
                 )}

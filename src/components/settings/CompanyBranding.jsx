@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Building2, Upload, Save, Loader2, Image, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -18,7 +18,7 @@ export default function CompanyBranding() {
     queryFn: async () => {
       const list = await base44.entities.CompanySettings.list();
       return list[0] || null;
-    }
+    },
   });
 
   const [form, setForm] = useState({
@@ -33,7 +33,7 @@ export default function CompanyBranding() {
     bank_account: '',
     bank_account_name: '',
     primary_color: '#2563eb',
-    currency: 'THB'
+    currency: 'THB',
   });
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function CompanyBranding() {
         bank_account: settings.bank_account || '',
         bank_account_name: settings.bank_account_name || '',
         primary_color: settings.primary_color || '#2563eb',
-        currency: settings.currency || 'THB'
+        currency: settings.currency || 'THB',
       });
     }
   }, [settings]);
@@ -69,7 +69,7 @@ export default function CompanyBranding() {
     },
     onError: () => {
       toast.error('Failed to save settings');
-    }
+    },
   });
 
   const handleLogoUpload = async (e) => {
@@ -79,7 +79,7 @@ export default function CompanyBranding() {
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setForm(prev => ({ ...prev, logo_url: file_url }));
+      setForm((prev) => ({ ...prev, logo_url: file_url }));
       toast.success('Logo uploaded');
     } catch (err) {
       toast.error('Failed to upload logo');
@@ -111,7 +111,8 @@ export default function CompanyBranding() {
             Company Branding
           </CardTitle>
           <CardDescription>
-            Customize your company logo and name. These will appear on invoices and throughout the app.
+            Customize your company logo and name. These will appear on invoices and throughout the
+            app.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -281,8 +282,8 @@ export default function CompanyBranding() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button 
-          onClick={handleSave} 
+        <Button
+          onClick={handleSave}
           disabled={saveMutation.isPending}
           className="bg-blue-600 hover:bg-blue-700"
         >

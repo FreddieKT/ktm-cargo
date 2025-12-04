@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Package, Search, Filter, Eye, CheckCircle, Truck,
-  Calendar, Clock, AlertTriangle, Loader2
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Package,
+  Search,
+  Filter,
+  Eye,
+  CheckCircle,
+  Truck,
+  Calendar,
+  Clock,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -22,7 +36,7 @@ const STATUS_CONFIG = {
   sent: { label: 'Sent', color: 'bg-indigo-100 text-indigo-700' },
   partial_received: { label: 'Partial', color: 'bg-purple-100 text-purple-700' },
   received: { label: 'Received', color: 'bg-emerald-100 text-emerald-700' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' }
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
 };
 
 export default function VendorOrders({ vendor }) {
@@ -42,14 +56,16 @@ export default function VendorOrders({ vendor }) {
       }
       return [];
     },
-    enabled: !!(vendor?.id || vendor?.name)
+    enabled: !!(vendor?.id || vendor?.name),
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ orderId, status }) => {
-      await base44.entities.PurchaseOrder.update(orderId, { 
+      await base44.entities.PurchaseOrder.update(orderId, {
         status,
-        notes: updateNotes ? `${selectedOrder?.notes || ''}\n[Vendor] ${updateNotes}` : selectedOrder?.notes
+        notes: updateNotes
+          ? `${selectedOrder?.notes || ''}\n[Vendor] ${updateNotes}`
+          : selectedOrder?.notes,
       });
     },
     onSuccess: () => {
@@ -57,12 +73,11 @@ export default function VendorOrders({ vendor }) {
       toast.success('Order status updated');
       setSelectedOrder(null);
       setUpdateNotes('');
-    }
+    },
   });
 
-  const filteredOrders = purchaseOrders.filter(po => {
-    const matchesSearch = !search || 
-      po.po_number?.toLowerCase().includes(search.toLowerCase());
+  const filteredOrders = purchaseOrders.filter((po) => {
+    const matchesSearch = !search || po.po_number?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || po.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -110,10 +125,10 @@ export default function VendorOrders({ vendor }) {
         <CardContent>
           {filteredOrders.length > 0 ? (
             <div className="space-y-3">
-              {filteredOrders.map(po => {
+              {filteredOrders.map((po) => {
                 const status = STATUS_CONFIG[po.status] || STATUS_CONFIG.draft;
                 return (
-                  <div 
+                  <div
                     key={po.id}
                     className="flex items-center justify-between p-4 border rounded-xl hover:bg-slate-50"
                   >
@@ -179,12 +194,18 @@ export default function VendorOrders({ vendor }) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Order Date</p>
-                  <p className="font-medium">{format(new Date(selectedOrder.order_date || selectedOrder.created_date), 'MMM d, yyyy')}</p>
+                  <p className="font-medium">
+                    {format(
+                      new Date(selectedOrder.order_date || selectedOrder.created_date),
+                      'MMM d, yyyy'
+                    )}
+                  </p>
                 </div>
                 <div>
                   <p className="text-slate-500">Expected Delivery</p>
                   <p className="font-medium">
-                    {selectedOrder.expected_delivery && format(new Date(selectedOrder.expected_delivery), 'MMM d, yyyy')}
+                    {selectedOrder.expected_delivery &&
+                      format(new Date(selectedOrder.expected_delivery), 'MMM d, yyyy')}
                   </p>
                 </div>
               </div>
@@ -209,11 +230,19 @@ export default function VendorOrders({ vendor }) {
                             <tr key={idx} className="border-t">
                               <td className="p-2">{item.name}</td>
                               <td className="text-center p-2">{item.quantity}</td>
-                              <td className="text-right p-2">฿{(item.total || 0).toLocaleString()}</td>
+                              <td className="text-right p-2">
+                                ฿{(item.total || 0).toLocaleString()}
+                              </td>
                             </tr>
                           ));
                         } catch {
-                          return <tr><td colSpan={3} className="p-2 text-center text-slate-400">No items</td></tr>;
+                          return (
+                            <tr>
+                              <td colSpan={3} className="p-2 text-center text-slate-400">
+                                No items
+                              </td>
+                            </tr>
+                          );
                         }
                       })()}
                     </tbody>
@@ -224,7 +253,9 @@ export default function VendorOrders({ vendor }) {
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center text-lg">
                   <span className="font-medium">Total Amount</span>
-                  <span className="font-bold text-blue-600">฿{selectedOrder.total_amount?.toLocaleString()}</span>
+                  <span className="font-bold text-blue-600">
+                    ฿{selectedOrder.total_amount?.toLocaleString()}
+                  </span>
                 </div>
               </div>
 
@@ -237,7 +268,7 @@ export default function VendorOrders({ vendor }) {
                     onChange={(e) => setUpdateNotes(e.target.value)}
                     rows={2}
                   />
-                  <Button 
+                  <Button
                     className="w-full bg-emerald-600 hover:bg-emerald-700"
                     onClick={handleConfirmOrder}
                     disabled={updateOrderMutation.isPending}

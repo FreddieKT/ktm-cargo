@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { 
-  Bell, Package, AlertTriangle, CheckCircle, 
-  Truck, CreditCard, MessageSquare, X
+  Bell,
+  Package,
+  AlertTriangle,
+  CheckCircle,
+  Truck,
+  CreditCard,
+  MessageSquare,
+  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -20,13 +22,13 @@ const TYPE_ICONS = {
   payment: CreditCard,
   alert: AlertTriangle,
   support: MessageSquare,
-  system: Bell
+  system: Bell,
 };
 
 const PRIORITY_COLORS = {
   high: 'border-l-red-500 bg-red-50',
   medium: 'border-l-amber-500 bg-amber-50',
-  low: 'border-l-blue-500 bg-blue-50'
+  low: 'border-l-blue-500 bg-blue-50',
 };
 
 export default function ClientNotificationBell({ user, clientData }) {
@@ -40,13 +42,13 @@ export default function ClientNotificationBell({ user, clientData }) {
     queryFn: async () => {
       if (!email) return [];
       return base44.entities.Notification.filter(
-        { recipient_email: email, status: 'unread' }, 
-        '-created_date', 
+        { recipient_email: email, status: 'unread' },
+        '-created_date',
         20
       );
     },
     enabled: !!email,
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const markReadMutation = useMutation({
@@ -54,19 +56,19 @@ export default function ClientNotificationBell({ user, clientData }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['customer-notifications'] });
-    }
+    },
   });
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      await Promise.all(notifications.map(n => 
-        base44.entities.Notification.update(n.id, { status: 'read' })
-      ));
+      await Promise.all(
+        notifications.map((n) => base44.entities.Notification.update(n.id, { status: 'read' }))
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['customer-notifications'] });
-    }
+    },
   });
 
   const unreadCount = notifications.length;
@@ -87,9 +89,9 @@ export default function ClientNotificationBell({ user, clientData }) {
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-xs text-blue-600"
               onClick={() => markAllReadMutation.mutate()}
             >
@@ -100,13 +102,13 @@ export default function ClientNotificationBell({ user, clientData }) {
 
         <div className="max-h-80 overflow-y-auto">
           {notifications.length > 0 ? (
-            notifications.map(notif => {
+            notifications.map((notif) => {
               const Icon = TYPE_ICONS[notif.type] || Bell;
               const priorityClass = PRIORITY_COLORS[notif.priority] || PRIORITY_COLORS.low;
-              
+
               return (
-                <div 
-                  key={notif.id} 
+                <div
+                  key={notif.id}
                   className={`p-3 border-b border-l-4 hover:bg-slate-50 ${priorityClass}`}
                 >
                   <div className="flex items-start gap-3">
@@ -115,7 +117,8 @@ export default function ClientNotificationBell({ user, clientData }) {
                       <p className="font-medium text-sm">{notif.title}</p>
                       <p className="text-xs text-slate-600 mt-1 line-clamp-2">{notif.message}</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {notif.created_date && format(new Date(notif.created_date), 'MMM d, h:mm a')}
+                        {notif.created_date &&
+                          format(new Date(notif.created_date), 'MMM d, h:mm a')}
                       </p>
                     </div>
                     <Button

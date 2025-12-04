@@ -1,22 +1,39 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { 
-  Plus, Pencil, Trash2, Shield, Zap, Users, DollarSign, ArrowRight
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Plus, Pencil, Trash2, Shield, Zap, Users, DollarSign, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const RULE_TYPES = {
   auto_approve: { label: 'Auto-Approve', icon: Zap, color: 'bg-emerald-100 text-emerald-800' },
-  amount_threshold: { label: 'Amount Threshold', icon: DollarSign, color: 'bg-blue-100 text-blue-800' },
-  vendor_tier: { label: 'Vendor Type', icon: Users, color: 'bg-purple-100 text-purple-800' }
+  amount_threshold: {
+    label: 'Amount Threshold',
+    icon: DollarSign,
+    color: 'bg-blue-100 text-blue-800',
+  },
+  vendor_tier: { label: 'Vendor Type', icon: Users, color: 'bg-purple-100 text-purple-800' },
 };
 
 export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDelete }) {
@@ -35,7 +52,7 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
     approval_level: 1,
     auto_approve: false,
     is_active: true,
-    priority: 1
+    priority: 1,
   });
 
   const openForm = (rule = null) => {
@@ -54,7 +71,7 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
         approval_level: 1,
         auto_approve: false,
         is_active: true,
-        priority: 1
+        priority: 1,
       });
       setEditingRule(null);
     }
@@ -66,7 +83,7 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
     const data = {
       ...formData,
       max_amount: formData.max_amount ? parseFloat(formData.max_amount) : null,
-      min_amount: parseFloat(formData.min_amount) || 0
+      min_amount: parseFloat(formData.min_amount) || 0,
     };
 
     if (editingRule) {
@@ -101,9 +118,12 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
               {sortedRules.map((rule, idx) => {
                 const typeConfig = RULE_TYPES[rule.rule_type] || RULE_TYPES.amount_threshold;
                 const TypeIcon = typeConfig.icon;
-                
+
                 return (
-                  <div key={rule.id} className={`flex items-center justify-between p-4 rounded-lg border ${rule.is_active ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-100 opacity-60'}`}>
+                  <div
+                    key={rule.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border ${rule.is_active ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-100 opacity-60'}`}
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">
                         {rule.priority || idx + 1}
@@ -124,12 +144,14 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
                         <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
                           {rule.rule_type === 'amount_threshold' && (
                             <span>
-                              ฿{(rule.min_amount || 0).toLocaleString()} 
+                              ฿{(rule.min_amount || 0).toLocaleString()}
                               {rule.max_amount ? ` - ฿${rule.max_amount.toLocaleString()}` : '+'}
                             </span>
                           )}
                           {rule.rule_type === 'vendor_tier' && (
-                            <span className="capitalize">{rule.vendor_types?.replace(/,/g, ', ')}</span>
+                            <span className="capitalize">
+                              {rule.vendor_types?.replace(/,/g, ', ')}
+                            </span>
                           )}
                           {rule.rule_type === 'auto_approve' && (
                             <span>Up to ฿{(rule.max_amount || 0).toLocaleString()}</span>
@@ -137,20 +159,37 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
                           {!rule.auto_approve && rule.approver_name && (
                             <>
                               <ArrowRight className="w-3 h-3" />
-                              <span>Level {rule.approval_level}: {rule.approver_name}</span>
+                              <span>
+                                Level {rule.approval_level}: {rule.approver_name}
+                              </span>
                             </>
                           )}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={rule.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}>
+                      <Badge
+                        className={
+                          rule.is_active
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-slate-100 text-slate-600'
+                        }
+                      >
                         {rule.is_active ? 'Active' : 'Inactive'}
                       </Badge>
-                      <Button variant="ghost" size="icon" onClick={() => setEditConfirm({ open: true, rule })}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditConfirm({ open: true, rule })}
+                      >
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => setDeleteConfirm({ open: true, rule })}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-rose-600"
+                        onClick={() => setDeleteConfirm({ open: true, rule })}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -194,15 +233,22 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
                   type="number"
                   min="1"
                   value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, priority: parseInt(e.target.value) || 1 })
+                  }
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Rule Type</Label>
-              <Select value={formData.rule_type} onValueChange={(v) => setFormData({ ...formData, rule_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={formData.rule_type}
+                onValueChange={(v) => setFormData({ ...formData, rule_type: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="auto_approve">Auto-Approve (No approval needed)</SelectItem>
                   <SelectItem value="amount_threshold">Amount Threshold</SelectItem>
@@ -211,7 +257,8 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
               </Select>
             </div>
 
-            {(formData.rule_type === 'amount_threshold' || formData.rule_type === 'auto_approve') && (
+            {(formData.rule_type === 'amount_threshold' ||
+              formData.rule_type === 'auto_approve') && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Min Amount (฿)</Label>
@@ -250,7 +297,9 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
               <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                 <div>
                   <Label className="text-emerald-800">Auto-Approve</Label>
-                  <p className="text-sm text-emerald-600">Orders matching this rule are approved instantly</p>
+                  <p className="text-sm text-emerald-600">
+                    Orders matching this rule are approved instantly
+                  </p>
                 </div>
                 <Switch
                   checked={formData.auto_approve}
@@ -263,11 +312,13 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
               <>
                 <div className="space-y-2">
                   <Label>Approval Level</Label>
-                  <Select 
-                    value={String(formData.approval_level)} 
+                  <Select
+                    value={String(formData.approval_level)}
                     onValueChange={(v) => setFormData({ ...formData, approval_level: parseInt(v) })}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">Level 1 (First Approval)</SelectItem>
                       <SelectItem value="2">Level 2 (Second Approval)</SelectItem>
@@ -306,7 +357,12 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="flex-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowForm(false)}
+                className="flex-1"
+              >
                 Cancel
               </Button>
               <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
@@ -318,7 +374,10 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteConfirm.open} onOpenChange={(open) => setDeleteConfirm({ open, rule: null })}>
+      <AlertDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, rule: null })}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-rose-600">
@@ -326,12 +385,14 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
               Delete Approval Rule
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete rule <span className="font-semibold">{deleteConfirm.rule?.name}</span>? This action cannot be undone.
+              Are you sure you want to delete rule{' '}
+              <span className="font-semibold">{deleteConfirm.rule?.name}</span>? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="bg-rose-600 hover:bg-rose-700"
               onClick={() => {
                 onDelete?.(deleteConfirm.rule?.id);
@@ -345,7 +406,10 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
       </AlertDialog>
 
       {/* Edit Confirmation Dialog */}
-      <AlertDialog open={editConfirm.open} onOpenChange={(open) => setEditConfirm({ open, rule: null })}>
+      <AlertDialog
+        open={editConfirm.open}
+        onOpenChange={(open) => setEditConfirm({ open, rule: null })}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
@@ -353,12 +417,14 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
               Edit Approval Rule
             </AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to edit rule <span className="font-semibold">{editConfirm.rule?.name}</span>. Do you want to proceed?
+              You are about to edit rule{' '}
+              <span className="font-semibold">{editConfirm.rule?.name}</span>. Do you want to
+              proceed?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
                 openForm(editConfirm.rule);

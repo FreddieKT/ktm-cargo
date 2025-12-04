@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Search, Package, Truck, CheckCircle, Clock, MapPin,
-  Plane, AlertTriangle, Calendar, ChevronRight
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Search,
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  MapPin,
+  Plane,
+  AlertTriangle,
+  Calendar,
+  ChevronRight,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -17,7 +25,7 @@ const TRACKING_STEPS = [
   { status: 'picked_up', label: 'Picked Up', icon: Package },
   { status: 'in_transit', label: 'In Transit', icon: Plane },
   { status: 'customs', label: 'Customs', icon: AlertTriangle },
-  { status: 'delivered', label: 'Delivered', icon: CheckCircle }
+  { status: 'delivered', label: 'Delivered', icon: CheckCircle },
 ];
 
 const STATUS_INDEX = {
@@ -27,7 +35,7 @@ const STATUS_INDEX = {
   in_transit: 3,
   customs: 4,
   delivered: 5,
-  cancelled: -1
+  cancelled: -1,
 };
 
 export default function CustomerShipmentTracker({ customer }) {
@@ -44,27 +52,28 @@ export default function CustomerShipmentTracker({ customer }) {
       }
       return [];
     },
-    enabled: !!(customer?.id || customer?.name)
+    enabled: !!(customer?.id || customer?.name),
   });
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-    
+
     // Search by tracking number
     const results = await base44.entities.Shipment.filter({ tracking_number: searchQuery.trim() });
     if (results.length > 0) {
       setSelectedShipment(results[0]);
     } else {
       // Try partial match in existing shipments
-      const found = shipments.find(s => 
-        s.tracking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.id?.includes(searchQuery)
+      const found = shipments.find(
+        (s) =>
+          s.tracking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.id?.includes(searchQuery)
       );
       setSelectedShipment(found || null);
     }
   };
 
-  const activeShipments = shipments.filter(s => !['delivered', 'cancelled'].includes(s.status));
+  const activeShipments = shipments.filter((s) => !['delivered', 'cancelled'].includes(s.status));
 
   return (
     <div className="space-y-6">
@@ -99,10 +108,18 @@ export default function CustomerShipmentTracker({ customer }) {
           <CardHeader className="border-b">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>{selectedShipment.tracking_number || `SHP-${selectedShipment.id?.slice(-6)}`}</CardTitle>
+                <CardTitle>
+                  {selectedShipment.tracking_number || `SHP-${selectedShipment.id?.slice(-6)}`}
+                </CardTitle>
                 <CardDescription>{selectedShipment.items_description || 'Package'}</CardDescription>
               </div>
-              <Badge className={selectedShipment.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}>
+              <Badge
+                className={
+                  selectedShipment.status === 'delivered'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-blue-100 text-blue-700'
+                }
+              >
                 {selectedShipment.status?.replace('_', ' ')}
               </Badge>
             </div>
@@ -116,15 +133,19 @@ export default function CustomerShipmentTracker({ customer }) {
                   const isComplete = idx <= currentIdx;
                   const isCurrent = idx === currentIdx;
                   const StepIcon = step.icon;
-                  
+
                   return (
                     <div key={step.status} className="flex flex-col items-center relative z-10">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-                      } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                          isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
+                        } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}
+                      >
                         <StepIcon className="w-5 h-5" />
                       </div>
-                      <span className={`text-xs mt-2 text-center ${isComplete ? 'text-blue-600 font-medium' : 'text-slate-400'}`}>
+                      <span
+                        className={`text-xs mt-2 text-center ${isComplete ? 'text-blue-600 font-medium' : 'text-slate-400'}`}
+                      >
                         {step.label}
                       </span>
                     </div>
@@ -133,7 +154,7 @@ export default function CustomerShipmentTracker({ customer }) {
               </div>
               {/* Progress Line */}
               <div className="absolute top-5 left-0 right-0 h-0.5 bg-slate-200 -z-0">
-                <div 
+                <div
                   className="h-full bg-blue-600 transition-all"
                   style={{ width: `${(STATUS_INDEX[selectedShipment.status] / 5) * 100}%` }}
                 />
@@ -151,12 +172,15 @@ export default function CustomerShipmentTracker({ customer }) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Service</span>
-                    <span className="font-medium">{selectedShipment.service_type?.replace('_', ' ')}</span>
+                    <span className="font-medium">
+                      {selectedShipment.service_type?.replace('_', ' ')}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Order Date</span>
                     <span className="font-medium">
-                      {selectedShipment.created_date && format(new Date(selectedShipment.created_date), 'MMM d, yyyy')}
+                      {selectedShipment.created_date &&
+                        format(new Date(selectedShipment.created_date), 'MMM d, yyyy')}
                     </span>
                   </div>
                   {selectedShipment.estimated_delivery && (
@@ -178,7 +202,9 @@ export default function CustomerShipmentTracker({ customer }) {
                       <MapPin className="w-4 h-4 text-blue-600" />
                       <span className="text-sm font-medium">Bangkok</span>
                     </div>
-                    <p className="text-xs text-slate-500 ml-6">{selectedShipment.pickup_address || 'Pickup location'}</p>
+                    <p className="text-xs text-slate-500 ml-6">
+                      {selectedShipment.pickup_address || 'Pickup location'}
+                    </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-300" />
                   <div className="flex-1">
@@ -186,7 +212,9 @@ export default function CustomerShipmentTracker({ customer }) {
                       <MapPin className="w-4 h-4 text-emerald-600" />
                       <span className="text-sm font-medium">Yangon</span>
                     </div>
-                    <p className="text-xs text-slate-500 ml-6">{selectedShipment.delivery_address || 'Delivery location'}</p>
+                    <p className="text-xs text-slate-500 ml-6">
+                      {selectedShipment.delivery_address || 'Delivery location'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -197,9 +225,17 @@ export default function CustomerShipmentTracker({ customer }) {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-slate-500">Total Amount</span>
-                  <p className="text-2xl font-bold">฿{selectedShipment.total_amount?.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    ฿{selectedShipment.total_amount?.toLocaleString()}
+                  </p>
                 </div>
-                <Badge className={selectedShipment.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>
+                <Badge
+                  className={
+                    selectedShipment.payment_status === 'paid'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }
+                >
                   {selectedShipment.payment_status === 'paid' ? 'Paid' : 'Payment Pending'}
                 </Badge>
               </div>
@@ -216,12 +252,14 @@ export default function CustomerShipmentTracker({ customer }) {
         <CardContent>
           {activeShipments.length > 0 ? (
             <div className="space-y-3">
-              {activeShipments.map(shipment => (
+              {activeShipments.map((shipment) => (
                 <button
                   key={shipment.id}
                   onClick={() => setSelectedShipment(shipment)}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${
-                    selectedShipment?.id === shipment.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'
+                    selectedShipment?.id === shipment.id
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 hover:border-blue-200'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -229,8 +267,12 @@ export default function CustomerShipmentTracker({ customer }) {
                       <Package className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="font-medium">{shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}</p>
-                      <p className="text-sm text-slate-500">{shipment.items_description?.slice(0, 30) || 'Package'}</p>
+                      <p className="font-medium">
+                        {shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {shipment.items_description?.slice(0, 30) || 'Package'}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">

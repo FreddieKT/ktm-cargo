@@ -1,32 +1,46 @@
 import { base44 } from '@/api/base44Client';
-import { format, subDays, startOfMonth, endOfMonth, subMonths, parseISO, isWithinInterval } from 'date-fns';
+import {
+  format,
+  subDays,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  parseISO,
+  isWithinInterval,
+} from 'date-fns';
 
 // Apply date range filter
 function getDateRange(rangeType) {
   const today = new Date();
   switch (rangeType) {
-    case '7d': return { from: subDays(today, 7), to: today };
-    case '30d': return { from: subDays(today, 30), to: today };
-    case '90d': return { from: subDays(today, 90), to: today };
-    case 'this_month': return { from: startOfMonth(today), to: endOfMonth(today) };
-    case 'last_month': return { from: startOfMonth(subMonths(today, 1)), to: endOfMonth(subMonths(today, 1)) };
-    default: return null;
+    case '7d':
+      return { from: subDays(today, 7), to: today };
+    case '30d':
+      return { from: subDays(today, 30), to: today };
+    case '90d':
+      return { from: subDays(today, 90), to: today };
+    case 'this_month':
+      return { from: startOfMonth(today), to: endOfMonth(today) };
+    case 'last_month':
+      return { from: startOfMonth(subMonths(today, 1)), to: endOfMonth(subMonths(today, 1)) };
+    default:
+      return null;
   }
 }
 
 // Apply filters to data
 function applyFilters(data, filters, dateField = 'created_date') {
   if (!filters || filters.length === 0) return data;
-  
-  return data.filter(item => {
-    return filters.every(filter => {
+
+  return data.filter((item) => {
+    return filters.every((filter) => {
       if (filter.field === 'date_range' && filter.value) {
         const range = getDateRange(filter.value);
         if (!range || !item[dateField]) return true;
         const itemDate = parseISO(item[dateField]);
         return isWithinInterval(itemDate, range);
       }
-      
+
       if (!filter.value) return true;
       const itemValue = item[filter.field];
       return itemValue === filter.value;
@@ -37,23 +51,23 @@ function applyFilters(data, filters, dateField = 'created_date') {
 // Sort data
 function sortData(data, sortBy, sortOrder) {
   if (!sortBy) return data;
-  
+
   return [...data].sort((a, b) => {
     let aVal = a[sortBy];
     let bVal = b[sortBy];
-    
+
     // Handle numeric values
     if (typeof aVal === 'number' && typeof bVal === 'number') {
       return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
     }
-    
+
     // Handle dates
     if (sortBy.includes('date')) {
       aVal = aVal ? new Date(aVal).getTime() : 0;
       bVal = bVal ? new Date(bVal).getTime() : 0;
       return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
     }
-    
+
     // Handle strings
     aVal = String(aVal || '').toLowerCase();
     bVal = String(bVal || '').toLowerCase();
@@ -63,23 +77,23 @@ function sortData(data, sortBy, sortOrder) {
 
 // Generate CSV content
 export function generateCSV(data, columns) {
-  const headers = columns.map(c => c.replace(/_/g, ' ').toUpperCase());
-  const rows = data.map(item => 
-    columns.map(col => {
+  const headers = columns.map((c) => c.replace(/_/g, ' ').toUpperCase());
+  const rows = data.map((item) =>
+    columns.map((col) => {
       const val = item[col];
       if (val === null || val === undefined) return '';
       if (typeof val === 'string' && val.includes(',')) return `"${val}"`;
       return val;
     })
   );
-  
-  return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+  return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
 }
 
 // Generate PDF content (HTML for printing)
 export function generatePDFHTML(data, columns, title) {
-  const headers = columns.map(c => c.replace(/_/g, ' '));
-  
+  const headers = columns.map((c) => c.replace(/_/g, ' '));
+
   return `
     <!DOCTYPE html>
     <html>
@@ -101,12 +115,16 @@ export function generatePDFHTML(data, columns, title) {
       <div class="meta">Generated on ${format(new Date(), 'PPpp')} | ${data.length} records</div>
       <table>
         <thead>
-          <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+          <tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr>
         </thead>
         <tbody>
-          ${data.map(item => `
-            <tr>${columns.map(col => `<td>${item[col] ?? ''}</td>`).join('')}</tr>
-          `).join('')}
+          ${data
+            .map(
+              (item) => `
+            <tr>${columns.map((col) => `<td>${item[col] ?? ''}</td>`).join('')}</tr>
+          `
+            )
+            .join('')}
         </tbody>
       </table>
       <div class="footer">BKK-YGN Cargo & Shopping Services</div>
@@ -138,24 +156,40 @@ export function openPDFPrint(htmlContent) {
 
 // Main export function
 export async function exportReport(report, allData) {
-  const { report_type, columns: columnsStr, filters: filtersStr, sort_by, sort_order, format: exportFormat, name } = report;
-  
+  const {
+    report_type,
+    columns: columnsStr,
+    filters: filtersStr,
+    sort_by,
+    sort_order,
+    format: exportFormat,
+    name,
+  } = report;
+
   let columns = [];
   let filters = [];
-  
-  try { columns = JSON.parse(columnsStr); } catch(e) { columns = []; }
-  try { filters = JSON.parse(filtersStr); } catch(e) { filters = []; }
-  
+
+  try {
+    columns = JSON.parse(columnsStr);
+  } catch (e) {
+    columns = [];
+  }
+  try {
+    filters = JSON.parse(filtersStr);
+  } catch (e) {
+    filters = [];
+  }
+
   if (columns.length === 0) {
     columns = Object.keys(allData[0] || {}).slice(0, 5);
   }
-  
+
   // Apply filters and sorting
   let data = applyFilters(allData, filters);
   data = sortData(data, sort_by, sort_order);
-  
+
   const timestamp = format(new Date(), 'yyyy-MM-dd');
-  
+
   if (exportFormat === 'pdf') {
     const html = generatePDFHTML(data, columns, name || `${report_type} Report`);
     openPDFPrint(html);
@@ -163,7 +197,7 @@ export async function exportReport(report, allData) {
     const csv = generateCSV(data, columns);
     downloadFile(csv, `${name || report_type}_${timestamp}.csv`);
   }
-  
+
   return data.length;
 }
 
@@ -171,26 +205,31 @@ export async function exportReport(report, allData) {
 export async function sendReportEmail(report, data, recipients) {
   const columns = JSON.parse(report.columns || '[]');
   const title = report.name || `${report.report_type} Report`;
-  
+
   // Generate simple HTML table for email
   const tableHTML = `
     <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;">
       <thead>
         <tr style="background:#f1f5f9;">
-          ${columns.map(c => `<th style="padding:10px;border:1px solid #e2e8f0;text-align:left;">${c.replace(/_/g, ' ')}</th>`).join('')}
+          ${columns.map((c) => `<th style="padding:10px;border:1px solid #e2e8f0;text-align:left;">${c.replace(/_/g, ' ')}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
-        ${data.slice(0, 50).map((item, i) => `
+        ${data
+          .slice(0, 50)
+          .map(
+            (item, i) => `
           <tr style="background:${i % 2 === 0 ? '#fff' : '#f8fafc'};">
-            ${columns.map(col => `<td style="padding:8px;border:1px solid #e2e8f0;">${item[col] ?? ''}</td>`).join('')}
+            ${columns.map((col) => `<td style="padding:8px;border:1px solid #e2e8f0;">${item[col] ?? ''}</td>`).join('')}
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
     ${data.length > 50 ? `<p style="color:#64748b;font-size:12px;">Showing first 50 of ${data.length} records.</p>` : ''}
   `;
-  
+
   const emailBody = `
     <div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;">
       <div style="background:linear-gradient(135deg,#3b82f6,#1e40af);padding:20px;border-radius:8px 8px 0 0;">
@@ -205,16 +244,19 @@ export async function sendReportEmail(report, data, recipients) {
       </div>
     </div>
   `;
-  
-  const recipientList = recipients.split(',').map(e => e.trim()).filter(e => e);
-  
+
+  const recipientList = recipients
+    .split(',')
+    .map((e) => e.trim())
+    .filter((e) => e);
+
   for (const recipient of recipientList) {
     await base44.integrations.Core.SendEmail({
       to: recipient,
       subject: `[Report] ${title} - ${format(new Date(), 'MMM d, yyyy')}`,
-      body: emailBody
+      body: emailBody,
     });
   }
-  
+
   return recipientList.length;
 }

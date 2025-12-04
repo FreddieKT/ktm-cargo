@@ -1,12 +1,17 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  FileText, Download, Clock, CheckCircle, AlertTriangle,
-  Calendar, DollarSign
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  FileText,
+  Download,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Calendar,
+  DollarSign,
 } from 'lucide-react';
 import { format, isPast } from 'date-fns';
 
@@ -14,7 +19,7 @@ const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700', icon: Clock },
   scheduled: { label: 'Scheduled', color: 'bg-blue-100 text-blue-700', icon: Calendar },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-  overdue: { label: 'Overdue', color: 'bg-red-100 text-red-700', icon: AlertTriangle }
+  overdue: { label: 'Overdue', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
 };
 
 export default function VendorInvoices({ vendor }) {
@@ -26,20 +31,24 @@ export default function VendorInvoices({ vendor }) {
       }
       return [];
     },
-    enabled: !!vendor?.id
+    enabled: !!vendor?.id,
   });
 
   // Enrich with overdue status
-  const enrichedPayments = payments.map(p => ({
+  const enrichedPayments = payments.map((p) => ({
     ...p,
-    status: p.status === 'pending' && p.due_date && isPast(new Date(p.due_date)) ? 'overdue' : p.status
+    status:
+      p.status === 'pending' && p.due_date && isPast(new Date(p.due_date)) ? 'overdue' : p.status,
   }));
 
-  const pendingAmount = enrichedPayments.filter(p => ['pending', 'scheduled'].includes(p.status))
+  const pendingAmount = enrichedPayments
+    .filter((p) => ['pending', 'scheduled'].includes(p.status))
     .reduce((sum, p) => sum + (p.total_amount || 0), 0);
-  const paidAmount = enrichedPayments.filter(p => p.status === 'paid')
+  const paidAmount = enrichedPayments
+    .filter((p) => p.status === 'paid')
     .reduce((sum, p) => sum + (p.total_amount || 0), 0);
-  const overdueAmount = enrichedPayments.filter(p => p.status === 'overdue')
+  const overdueAmount = enrichedPayments
+    .filter((p) => p.status === 'overdue')
     .reduce((sum, p) => sum + (p.total_amount || 0), 0);
 
   return (
@@ -95,11 +104,11 @@ export default function VendorInvoices({ vendor }) {
         <CardContent>
           {enrichedPayments.length > 0 ? (
             <div className="space-y-3">
-              {enrichedPayments.map(payment => {
+              {enrichedPayments.map((payment) => {
                 const status = STATUS_CONFIG[payment.status] || STATUS_CONFIG.pending;
                 const StatusIcon = status.icon;
                 return (
-                  <div 
+                  <div
                     key={payment.id}
                     className="flex items-center justify-between p-4 border rounded-xl"
                   >
@@ -108,7 +117,9 @@ export default function VendorInvoices({ vendor }) {
                         <StatusIcon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="font-medium">{payment.reference_number || `PAY-${payment.id?.slice(-6)}`}</p>
+                        <p className="font-medium">
+                          {payment.reference_number || `PAY-${payment.id?.slice(-6)}`}
+                        </p>
                         <div className="flex items-center gap-3 text-sm text-slate-500">
                           {payment.due_date && (
                             <span>Due: {format(new Date(payment.due_date), 'MMM d, yyyy')}</span>

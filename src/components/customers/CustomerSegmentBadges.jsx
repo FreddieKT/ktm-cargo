@@ -1,6 +1,15 @@
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Crown, AlertTriangle, Sparkles, Clock, RefreshCw, Star, TrendingUp, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Crown,
+  AlertTriangle,
+  Sparkles,
+  Clock,
+  RefreshCw,
+  Star,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 
 const behaviorIcons = {
   loyal: Crown,
@@ -20,7 +29,7 @@ const tierIcons = {
 export function ValueTierBadge({ tier }) {
   if (!tier) return null;
   const Icon = tierIcons[tier.key] || Users;
-  
+
   return (
     <Badge className={`${tier.color} gap-1`}>
       <Icon className="w-3 h-3" />
@@ -32,7 +41,7 @@ export function ValueTierBadge({ tier }) {
 export function BehavioralBadge({ segment }) {
   if (!segment) return null;
   const Icon = behaviorIcons[segment.key] || Users;
-  
+
   return (
     <Badge className={`${segment.color} gap-1`}>
       <Icon className="w-3 h-3" />
@@ -47,14 +56,10 @@ export function CustomerTypeBadge({ type }) {
     online_shopper: { label: 'Online Shopper', color: 'bg-purple-100 text-purple-800' },
     sme_importer: { label: 'SME Importer', color: 'bg-amber-100 text-amber-800' },
   };
-  
+
   const config = typeConfig[type] || typeConfig.individual;
-  
-  return (
-    <Badge className={config.color}>
-      {config.label}
-    </Badge>
-  );
+
+  return <Badge className={config.color}>{config.label}</Badge>;
 }
 
 export function CustomerScoreBadge({ score }) {
@@ -63,12 +68,8 @@ export function CustomerScoreBadge({ score }) {
   else if (score >= 60) color = 'bg-blue-100 text-blue-800';
   else if (score >= 40) color = 'bg-amber-100 text-amber-800';
   else color = 'bg-rose-100 text-rose-800';
-  
-  return (
-    <Badge className={color}>
-      Score: {score}
-    </Badge>
-  );
+
+  return <Badge className={color}>Score: {score}</Badge>;
 }
 
 export default function CustomerSegmentBadges({ customer, showScore = false }) {

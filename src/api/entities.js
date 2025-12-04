@@ -1,6 +1,5 @@
 import { base44 } from './base44Client';
 
-
 export const Customer = base44.entities.Customer;
 
 export const Shipment = base44.entities.Shipment;
@@ -58,8 +57,6 @@ export const VendorPayout = base44.entities.VendorPayout;
 export const CompanySettings = base44.entities.CompanySettings;
 
 export const NotificationTemplate = base44.entities.NotificationTemplate;
-
-
 
 // auth sdk:
 export const User = base44.auth;

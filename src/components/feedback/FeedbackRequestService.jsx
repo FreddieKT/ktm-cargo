@@ -4,7 +4,7 @@ export async function sendFeedbackRequest(shipment, customer) {
   if (!customer?.email) return false;
 
   const feedbackLink = `${window.location.origin}/Feedback?shipment=${shipment.id}`;
-  
+
   const emailBody = `
 Dear ${customer.name || shipment.customer_name},
 
@@ -28,7 +28,7 @@ The BKK-YGN Team
     await base44.integrations.Core.SendEmail({
       to: customer.email,
       subject: `How was your delivery? Rate your experience - ${shipment.tracking_number}`,
-      body: emailBody
+      body: emailBody,
     });
 
     // Create pending feedback record
@@ -38,7 +38,7 @@ The BKK-YGN Team
       customer_name: customer.name || shipment.customer_name,
       customer_email: customer.email,
       service_type: shipment.service_type,
-      status: 'pending'
+      status: 'pending',
     });
 
     return true;
@@ -50,10 +50,10 @@ The BKK-YGN Team
 
 export async function checkAndRequestFeedback(shipment, customers) {
   // Find customer by name or phone
-  const customer = customers.find(c => 
-    c.name === shipment.customer_name || c.phone === shipment.customer_phone
+  const customer = customers.find(
+    (c) => c.name === shipment.customer_name || c.phone === shipment.customer_phone
   );
-  
+
   if (customer?.email) {
     return sendFeedbackRequest(shipment, customer);
   }

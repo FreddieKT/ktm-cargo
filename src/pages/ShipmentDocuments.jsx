@@ -1,18 +1,39 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
-  FileText, Printer, Download, Package, Search,
-  CheckCircle, Clock, ArrowLeft, Filter, FileCheck,
-  Plane, ClipboardList, AlertTriangle, RefreshCw,
-  Eye, ChevronRight, Truck, Calendar, DollarSign
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  FileText,
+  Printer,
+  Download,
+  Package,
+  Search,
+  CheckCircle,
+  Clock,
+  ArrowLeft,
+  Filter,
+  FileCheck,
+  Plane,
+  ClipboardList,
+  AlertTriangle,
+  RefreshCw,
+  Eye,
+  ChevronRight,
+  Truck,
+  Calendar,
+  DollarSign,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -31,14 +52,34 @@ const STATUS_CONFIG = {
   in_transit: { label: 'In Transit', color: 'bg-cyan-100 text-cyan-800', icon: Truck },
   customs: { label: 'Customs', color: 'bg-purple-100 text-purple-800', icon: FileCheck },
   delivered: { label: 'Delivered', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
-  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-800', icon: AlertTriangle }
+  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-800', icon: AlertTriangle },
 };
 
 const DOCUMENT_TYPES = [
-  { id: 'commercial_invoice', label: 'Commercial Invoice', icon: FileText, description: 'Invoice for customs and payment' },
-  { id: 'packing_list', label: 'Packing List', icon: ClipboardList, description: 'List of items and quantities' },
-  { id: 'air_waybill', label: 'Air Waybill', icon: Plane, description: 'Shipping contract document' },
-  { id: 'customs_declaration', label: 'Customs Declaration', icon: FileCheck, description: 'Export/import declaration' }
+  {
+    id: 'commercial_invoice',
+    label: 'Commercial Invoice',
+    icon: FileText,
+    description: 'Invoice for customs and payment',
+  },
+  {
+    id: 'packing_list',
+    label: 'Packing List',
+    icon: ClipboardList,
+    description: 'List of items and quantities',
+  },
+  {
+    id: 'air_waybill',
+    label: 'Air Waybill',
+    icon: Plane,
+    description: 'Shipping contract document',
+  },
+  {
+    id: 'customs_declaration',
+    label: 'Customs Declaration',
+    icon: FileCheck,
+    description: 'Export/import declaration',
+  },
 ];
 
 export default function ShipmentDocuments() {
@@ -51,7 +92,7 @@ export default function ShipmentDocuments() {
 
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 200)
+    queryFn: () => base44.entities.Shipment.list('-created_date', 200),
   });
 
   const { data: companySettings } = useQuery({
@@ -59,12 +100,12 @@ export default function ShipmentDocuments() {
     queryFn: async () => {
       const list = await base44.entities.CompanySettings.list();
       return list[0] || null;
-    }
+    },
   });
 
   // Filter eligible shipments
   const eligibleShipments = useMemo(() => {
-    return shipments.filter(s => {
+    return shipments.filter((s) => {
       // Must be confirmed or later
       if (!['confirmed', 'picked_up', 'in_transit', 'customs', 'delivered'].includes(s.status)) {
         return false;
@@ -74,22 +115,26 @@ export default function ShipmentDocuments() {
       // Search
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        return s.tracking_number?.toLowerCase().includes(query) ||
+        return (
+          s.tracking_number?.toLowerCase().includes(query) ||
           s.customer_name?.toLowerCase().includes(query) ||
-          s.items_description?.toLowerCase().includes(query);
+          s.items_description?.toLowerCase().includes(query)
+        );
       }
       return true;
     });
   }, [shipments, statusFilter, searchQuery]);
 
-  const selectedShipment = shipments.find(s => s.id === selectedShipmentId);
+  const selectedShipment = shipments.find((s) => s.id === selectedShipmentId);
 
   // Stats
   const stats = useMemo(() => {
     const total = eligibleShipments.length;
-    const needsDocs = eligibleShipments.filter(s => !generatedDocs[s.id] || Object.keys(generatedDocs[s.id]).length < 4).length;
-    const inTransit = eligibleShipments.filter(s => s.status === 'in_transit').length;
-    const customs = eligibleShipments.filter(s => s.status === 'customs').length;
+    const needsDocs = eligibleShipments.filter(
+      (s) => !generatedDocs[s.id] || Object.keys(generatedDocs[s.id]).length < 4
+    ).length;
+    const inTransit = eligibleShipments.filter((s) => s.status === 'in_transit').length;
+    const customs = eligibleShipments.filter((s) => s.status === 'customs').length;
     return { total, needsDocs, inTransit, customs };
   }, [eligibleShipments, generatedDocs]);
 
@@ -98,14 +143,14 @@ export default function ShipmentDocuments() {
       commercial_invoice: CommercialInvoiceTemplate,
       packing_list: PackingListTemplate,
       air_waybill: AWBTemplate,
-      customs_declaration: CustomsDeclarationTemplate
+      customs_declaration: CustomsDeclarationTemplate,
     };
 
     const Component = templates[docType];
     if (Component) {
       printDocument(Component, {
         data: { shipment },
-        settings: companySettings
+        settings: companySettings,
       });
     } else {
       toast.error('Document template not found');
@@ -113,24 +158,24 @@ export default function ShipmentDocuments() {
   };
 
   const handleGenerateDoc = (shipmentId, docType) => {
-    setGeneratedDocs(prev => ({
+    setGeneratedDocs((prev) => ({
       ...prev,
       [shipmentId]: {
         ...(prev[shipmentId] || {}),
-        [docType]: true
-      }
+        [docType]: true,
+      },
     }));
-    toast.success(`${DOCUMENT_TYPES.find(d => d.id === docType)?.label} generated`);
+    toast.success(`${DOCUMENT_TYPES.find((d) => d.id === docType)?.label} generated`);
   };
 
   const handleGenerateAllDocs = (shipmentId) => {
     const allDocs = {};
-    DOCUMENT_TYPES.forEach(doc => {
+    DOCUMENT_TYPES.forEach((doc) => {
       allDocs[doc.id] = true;
     });
-    setGeneratedDocs(prev => ({
+    setGeneratedDocs((prev) => ({
       ...prev,
-      [shipmentId]: allDocs
+      [shipmentId]: allDocs,
     }));
     toast.success('All documents generated');
   };
@@ -140,8 +185,8 @@ export default function ShipmentDocuments() {
       toast.error('Select shipments to print');
       return;
     }
-    selectedShipments.forEach(id => {
-      const shipment = shipments.find(s => s.id === id);
+    selectedShipments.forEach((id) => {
+      const shipment = shipments.find((s) => s.id === id);
       if (shipment) {
         handlePrintDocument(activeDoc, shipment);
       }
@@ -150,8 +195,8 @@ export default function ShipmentDocuments() {
   };
 
   const toggleShipmentSelection = (id) => {
-    setSelectedShipments(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    setSelectedShipments((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
@@ -159,7 +204,7 @@ export default function ShipmentDocuments() {
     if (selectedShipments.length === eligibleShipments.length) {
       setSelectedShipments([]);
     } else {
-      setSelectedShipments(eligibleShipments.map(s => s.id));
+      setSelectedShipments(eligibleShipments.map((s) => s.id));
     }
   };
 
@@ -184,7 +229,9 @@ export default function ShipmentDocuments() {
             </Link>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Shipping Documents</h1>
-              <p className="text-slate-500 mt-1">Generate, preview and print shipping documentation</p>
+              <p className="text-slate-500 mt-1">
+                Generate, preview and print shipping documentation
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -285,12 +332,17 @@ export default function ShipmentDocuments() {
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <Checkbox
-                      checked={selectedShipments.length === eligibleShipments.length && eligibleShipments.length > 0}
+                      checked={
+                        selectedShipments.length === eligibleShipments.length &&
+                        eligibleShipments.length > 0
+                      }
                       onCheckedChange={selectAllShipments}
                     />
                     <span className="text-sm text-slate-600">Select All</span>
                   </div>
-                  <span className="text-xs text-slate-500">{eligibleShipments.length} shipments</span>
+                  <span className="text-xs text-slate-500">
+                    {eligibleShipments.length} shipments
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -304,7 +356,7 @@ export default function ShipmentDocuments() {
                 {isLoading ? (
                   <div className="text-center py-8 text-slate-500">Loading...</div>
                 ) : eligibleShipments.length > 0 ? (
-                  eligibleShipments.map(shipment => {
+                  eligibleShipments.map((shipment) => {
                     const statusConfig = STATUS_CONFIG[shipment.status] || STATUS_CONFIG.pending;
                     const docStatus = getDocStatus(shipment.id);
                     const isSelected = selectedShipmentId === shipment.id;
@@ -313,8 +365,11 @@ export default function ShipmentDocuments() {
                     return (
                       <div
                         key={shipment.id}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'
-                          }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-blue-200'
+                        }`}
                       >
                         <div className="flex items-start gap-3">
                           <Checkbox
@@ -330,11 +385,11 @@ export default function ShipmentDocuments() {
                               <span className="font-semibold text-slate-900 truncate">
                                 {shipment.tracking_number || 'Pending'}
                               </span>
-                              <Badge className={statusConfig.color}>
-                                {statusConfig.label}
-                              </Badge>
+                              <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
                             </div>
-                            <p className="text-sm text-slate-600 truncate">{shipment.customer_name}</p>
+                            <p className="text-sm text-slate-600 truncate">
+                              {shipment.customer_name}
+                            </p>
                             <div className="flex items-center justify-between mt-2">
                               <span className="text-xs text-slate-500">
                                 {shipment.weight_kg} kg • ฿{shipment.total_amount?.toLocaleString()}
@@ -379,7 +434,11 @@ export default function ShipmentDocuments() {
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4 text-slate-400" />
-                          <span>{selectedShipment.created_date ? format(new Date(selectedShipment.created_date), 'MMM d, yyyy') : '-'}</span>
+                          <span>
+                            {selectedShipment.created_date
+                              ? format(new Date(selectedShipment.created_date), 'MMM d, yyyy')
+                              : '-'}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Package className="w-4 h-4 text-slate-400" />
@@ -390,7 +449,10 @@ export default function ShipmentDocuments() {
                           <span>฿{selectedShipment.total_amount?.toLocaleString()}</span>
                         </div>
                       </div>
-                      <Button onClick={() => handleGenerateAllDocs(selectedShipment.id)} variant="outline">
+                      <Button
+                        onClick={() => handleGenerateAllDocs(selectedShipment.id)}
+                        variant="outline"
+                      >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Generate All Docs
                       </Button>
@@ -400,7 +462,7 @@ export default function ShipmentDocuments() {
 
                 {/* Document Types Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {DOCUMENT_TYPES.map(doc => {
+                  {DOCUMENT_TYPES.map((doc) => {
                     const Icon = doc.icon;
                     const isGenerated = generatedDocs[selectedShipment.id]?.[doc.id];
                     const isActive = activeDoc === doc.id;
@@ -408,14 +470,20 @@ export default function ShipmentDocuments() {
                     return (
                       <Card
                         key={doc.id}
-                        className={`border-2 cursor-pointer transition-all ${isActive ? 'border-blue-500 bg-blue-50' :
-                          isGenerated ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 hover:border-blue-200'
-                          }`}
+                        className={`border-2 cursor-pointer transition-all ${
+                          isActive
+                            ? 'border-blue-500 bg-blue-50'
+                            : isGenerated
+                              ? 'border-emerald-300 bg-emerald-50'
+                              : 'border-slate-200 hover:border-blue-200'
+                        }`}
                         onClick={() => setActiveDoc(doc.id)}
                       >
                         <CardContent className="p-3">
                           <div className="flex items-center gap-2 mb-2">
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : isGenerated ? 'text-emerald-600' : 'text-slate-500'}`} />
+                            <Icon
+                              className={`w-4 h-4 ${isActive ? 'text-blue-600' : isGenerated ? 'text-emerald-600' : 'text-slate-500'}`}
+                            />
                             {isGenerated && <CheckCircle className="w-3 h-3 text-emerald-500" />}
                           </div>
                           <p className="font-medium text-sm">{doc.label}</p>
@@ -430,7 +498,9 @@ export default function ShipmentDocuments() {
                 <Card className="border-0 shadow-sm">
                   <CardHeader className="flex flex-row items-center justify-between border-b">
                     <div>
-                      <CardTitle className="text-lg">{DOCUMENT_TYPES.find(d => d.id === activeDoc)?.label}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {DOCUMENT_TYPES.find((d) => d.id === activeDoc)?.label}
+                      </CardTitle>
                       <CardDescription>Preview and print document</CardDescription>
                     </div>
                     <div className="flex gap-2">
@@ -441,7 +511,10 @@ export default function ShipmentDocuments() {
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Generate
                       </Button>
-                      <Button onClick={() => handlePrintDocument(activeDoc, selectedShipment)} className="bg-blue-600 hover:bg-blue-700">
+                      <Button
+                        onClick={() => handlePrintDocument(activeDoc, selectedShipment)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
                         <Printer className="w-4 h-4 mr-2" />
                         Print
                       </Button>
@@ -450,7 +523,11 @@ export default function ShipmentDocuments() {
                   <CardContent className="p-0">
                     <div className="bg-white border-t min-h-[600px] overflow-auto">
                       <div className="p-6">
-                        <DocumentPreview type={activeDoc} shipment={selectedShipment} companySettings={companySettings} />
+                        <DocumentPreview
+                          type={activeDoc}
+                          shipment={selectedShipment}
+                          companySettings={companySettings}
+                        />
                       </div>
                     </div>
                   </CardContent>
@@ -461,7 +538,9 @@ export default function ShipmentDocuments() {
                 <CardContent className="py-24 text-center">
                   <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300" />
                   <h3 className="text-lg font-medium text-slate-900 mb-2">Select a Shipment</h3>
-                  <p className="text-slate-500">Choose a shipment from the list to preview and generate documents</p>
+                  <p className="text-slate-500">
+                    Choose a shipment from the list to preview and generate documents
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -484,13 +563,29 @@ function DocumentPreview({ type, shipment, companySettings }) {
 
   switch (type) {
     case 'commercial_invoice':
-      return <PreviewWrapper><CommercialInvoiceTemplate {...props} /></PreviewWrapper>;
+      return (
+        <PreviewWrapper>
+          <CommercialInvoiceTemplate {...props} />
+        </PreviewWrapper>
+      );
     case 'packing_list':
-      return <PreviewWrapper><PackingListTemplate {...props} /></PreviewWrapper>;
+      return (
+        <PreviewWrapper>
+          <PackingListTemplate {...props} />
+        </PreviewWrapper>
+      );
     case 'air_waybill':
-      return <PreviewWrapper><AWBTemplate {...props} /></PreviewWrapper>;
+      return (
+        <PreviewWrapper>
+          <AWBTemplate {...props} />
+        </PreviewWrapper>
+      );
     case 'customs_declaration':
-      return <PreviewWrapper><CustomsDeclarationTemplate {...props} /></PreviewWrapper>;
+      return (
+        <PreviewWrapper>
+          <CustomsDeclarationTemplate {...props} />
+        </PreviewWrapper>
+      );
     default:
       return null;
   }

@@ -1,16 +1,29 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Star, TrendingUp, Clock, CheckCircle, Package, 
-  AlertTriangle, Award, Target
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  Star,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  Package,
+  AlertTriangle,
+  Award,
+  Target,
 } from 'lucide-react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
 } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
@@ -25,7 +38,7 @@ export default function VendorPerformance({ vendor }) {
       }
       return [];
     },
-    enabled: !!(vendor?.id || vendor?.name)
+    enabled: !!(vendor?.id || vendor?.name),
   });
 
   const { data: goodsReceipts = [] } = useQuery({
@@ -36,19 +49,19 @@ export default function VendorPerformance({ vendor }) {
       }
       return [];
     },
-    enabled: !!vendor?.id
+    enabled: !!vendor?.id,
   });
 
   // Calculate metrics
   const totalOrders = purchaseOrders.length;
-  const completedOrders = purchaseOrders.filter(po => po.status === 'received').length;
+  const completedOrders = purchaseOrders.filter((po) => po.status === 'received').length;
   const completionRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
-  
+
   const rating = vendor?.rating || 5;
   const onTimeRate = vendor?.on_time_rate || 100;
-  
+
   // Quality metrics from goods receipts
-  const qualityPassed = goodsReceipts.filter(gr => gr.quality_status === 'passed').length;
+  const qualityPassed = goodsReceipts.filter((gr) => gr.quality_status === 'passed').length;
   const qualityRate = goodsReceipts.length > 0 ? (qualityPassed / goodsReceipts.length) * 100 : 100;
 
   // Monthly performance
@@ -56,25 +69,25 @@ export default function VendorPerformance({ vendor }) {
     const date = subMonths(new Date(), 5 - i);
     const start = startOfMonth(date);
     const end = endOfMonth(date);
-    
-    const monthOrders = purchaseOrders.filter(po => {
+
+    const monthOrders = purchaseOrders.filter((po) => {
       const poDate = new Date(po.order_date || po.created_date);
       return isWithinInterval(poDate, { start, end });
     });
-    
-    const completed = monthOrders.filter(po => po.status === 'received').length;
+
+    const completed = monthOrders.filter((po) => po.status === 'received').length;
     const revenue = monthOrders.reduce((sum, po) => sum + (po.total_amount || 0), 0);
-    
+
     return {
       month: format(date, 'MMM'),
       orders: monthOrders.length,
       completed,
-      revenue: revenue / 1000 // In thousands
+      revenue: revenue / 1000, // In thousands
     };
   });
 
   // Performance score
-  const performanceScore = Math.round((rating / 5 * 30) + (onTimeRate * 0.35) + (qualityRate * 0.35));
+  const performanceScore = Math.round((rating / 5) * 30 + onTimeRate * 0.35 + qualityRate * 0.35);
 
   return (
     <div className="space-y-6">
@@ -237,7 +250,13 @@ export default function VendorPerformance({ vendor }) {
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip formatter={(v) => [`฿${(v * 1000).toLocaleString()}`, 'Revenue']} />
-                <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6' }} />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#8b5cf6"
+                  strokeWidth={2}
+                  dot={{ fill: '#8b5cf6' }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

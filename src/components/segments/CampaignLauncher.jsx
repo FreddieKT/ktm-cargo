@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Mail, Send, Megaphone, Percent, Gift, Users, Loader2, CheckCircle
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Mail, Send, Megaphone, Percent, Gift, Users, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CampaignLauncher({ targetCustomers, segment, onClose, onSuccess }) {
@@ -26,10 +30,10 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
     discount_code: '',
     message_template: '',
     channel: 'email',
-    send_immediately: true
+    send_immediately: true,
   });
 
-  const customersWithEmail = targetCustomers.filter(c => c.email);
+  const customersWithEmail = targetCustomers.filter((c) => c.email);
 
   const generateDiscountCode = () => {
     const code = `PROMO${Date.now().toString(36).toUpperCase()}`;
@@ -54,7 +58,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
         status: 'active',
         target_count: targetCustomers.length,
         sent_count: 0,
-        start_date: new Date().toISOString().split('T')[0]
+        start_date: new Date().toISOString().split('T')[0],
       });
 
       // Send emails
@@ -81,13 +85,17 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                   <p style="font-size: 16px; color: #334155; line-height: 1.6;">
                     ${personalizedMessage}
                   </p>
-                  ${form.discount_code ? `
+                  ${
+                    form.discount_code
+                      ? `
                     <div style="background: #dbeafe; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
                       <p style="color: #1e40af; margin: 0 0 8px 0;">Your exclusive code:</p>
                       <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0; letter-spacing: 2px;">${form.discount_code}</p>
                       ${form.discount_percentage > 0 ? `<p style="color: #3b82f6; margin: 8px 0 0 0;">${form.discount_percentage}% OFF</p>` : ''}
                     </div>
-                  ` : ''}
+                  `
+                      : ''
+                  }
                 </div>
                 <div style="background: #f1f5f9; padding: 20px; border-radius: 0 0 12px 12px; text-align: center;">
                   <p style="color: #64748b; margin: 0; font-size: 12px;">
@@ -95,7 +103,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                   </p>
                 </div>
               </div>
-            `
+            `,
           });
           sent++;
           setSentCount(sent);
@@ -130,7 +138,9 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
             <Loader2 className="w-12 h-12 animate-spin text-purple-500 mx-auto" />
             <p className="text-lg font-medium">Sending campaign...</p>
             <Progress value={(sentCount / customersWithEmail.length) * 100} className="h-2" />
-            <p className="text-slate-500">{sentCount} of {customersWithEmail.length} emails sent</p>
+            <p className="text-slate-500">
+              {sentCount} of {customersWithEmail.length} emails sent
+            </p>
           </div>
         ) : sentCount > 0 ? (
           <div className="py-8 text-center space-y-4">
@@ -169,8 +179,13 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
 
                 <div className="space-y-2">
                   <Label>Campaign Type</Label>
-                  <Select value={form.campaign_type} onValueChange={(v) => setForm({ ...form, campaign_type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.campaign_type}
+                    onValueChange={(v) => setForm({ ...form, campaign_type: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="discount">Discount Offer</SelectItem>
                       <SelectItem value="promotion">Promotion</SelectItem>
@@ -188,7 +203,9 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                       <Input
                         type="number"
                         value={form.discount_percentage}
-                        onChange={(e) => setForm({ ...form, discount_percentage: parseInt(e.target.value) || 0 })}
+                        onChange={(e) =>
+                          setForm({ ...form, discount_percentage: parseInt(e.target.value) || 0 })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
@@ -196,7 +213,9 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                       <div className="flex gap-2">
                         <Input
                           value={form.discount_code}
-                          onChange={(e) => setForm({ ...form, discount_code: e.target.value.toUpperCase() })}
+                          onChange={(e) =>
+                            setForm({ ...form, discount_code: e.target.value.toUpperCase() })
+                          }
                           placeholder="SUMMER20"
                         />
                         <Button type="button" variant="outline" onClick={generateDiscountCode}>
@@ -208,9 +227,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                 )}
 
                 <div className="flex justify-end">
-                  <Button onClick={() => setStep(2)}>
-                    Next: Message
-                  </Button>
+                  <Button onClick={() => setStep(2)}>Next: Message</Button>
                 </div>
               </div>
             )}
@@ -234,10 +251,12 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                   <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                     Back
                   </Button>
-                  <Button 
-                    onClick={handleSendCampaign} 
+                  <Button
+                    onClick={handleSendCampaign}
                     className="flex-1 bg-purple-600 hover:bg-purple-700"
-                    disabled={!form.name || !form.message_template || customersWithEmail.length === 0}
+                    disabled={
+                      !form.name || !form.message_template || customersWithEmail.length === 0
+                    }
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Send to {customersWithEmail.length} customers

@@ -40,7 +40,12 @@ const createEntityClient = (tableName) => ({
   },
 
   update: async (id, updates) => {
-    const { data: updated, error } = await supabase.from(tableName).update(updates).eq('id', id).select().single();
+    const { data: updated, error } = await supabase
+      .from(tableName)
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
     if (error) throw error;
     return updated;
   },
@@ -67,31 +72,25 @@ const createEntityClient = (tableName) => ({
     const { data, error } = await query;
     if (error) throw error;
     return data || [];
-  }
+  },
 });
 
 // Auth Adapter
 const authAdapter = {
   isAuthenticated: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return !!session;
   },
 
   me: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    // DEV MODE BYPASS: If no user is logged in (because Auth isn't set up yet),
-    // return a Mock Admin user so the UI works.
     if (!user) {
-      console.warn('No Supabase session found. Using MOCK ADMIN for development.');
-      return {
-        id: 'mock-admin-id',
-        email: 'admin@ktmcargo.com',
-        full_name: 'Dev Admin',
-        role: 'admin', // Full access
-        staff_role: 'managing_director',
-        created_date: new Date().toISOString()
-      };
+      return null;
     }
 
     // Fetch profile data
@@ -107,10 +106,14 @@ const authAdapter = {
         role: 'staff',
         staff_role: 'marketing_manager', // Default role
         created_date: new Date().toISOString(),
-        updated_date: new Date().toISOString()
+        updated_date: new Date().toISOString(),
       };
 
-      const { data: created, error } = await supabase.from('profiles').insert(newProfile).select().single();
+      const { data: created, error } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .single();
       if (!error) {
         profile = created;
       } else {
@@ -128,7 +131,7 @@ const authAdapter = {
       id: user.id,
       // Ensure staff_role is present for RBAC
       staff_role: profile?.staff_role || 'marketing_manager',
-      role: profile?.role || 'staff'
+      role: profile?.role || 'staff',
     };
   },
 
@@ -147,25 +150,23 @@ const authAdapter = {
   redirectToLogin: (redirectUrl) => {
     // Redirect to the client portal for login
     window.location.href = '/ClientPortal';
-  }
+  },
 };
 
 // Integrations Adapter (Mock for now)
+import { uploadFile } from './integrations/storage';
+import { sendEmail } from './integrations/email';
+
+// Integrations Adapter
 const integrationsAdapter = {
   Core: {
-    SendEmail: async (params) => {
-      console.log('MOCK EMAIL SENT:', params);
-      return { success: true };
-    },
-    UploadFile: async (file) => {
-      console.log('MOCK FILE UPLOAD:', file);
-      return { url: 'https://via.placeholder.com/150' };
-    },
+    SendEmail: sendEmail,
+    UploadFile: uploadFile,
     GenerateImage: async (prompt) => {
       console.log('MOCK IMAGE GEN:', prompt);
       return { url: 'https://via.placeholder.com/150' };
-    }
-  }
+    },
+  },
 };
 
 // Export the 'base44' object that mimics the old SDK
@@ -199,8 +200,8 @@ export const base44 = {
     CustomerInvoice: createEntityClient('customer_invoices'),
     VendorPayout: createEntityClient('vendor_payouts'),
     CompanySettings: createEntityClient('company_settings'),
-    NotificationTemplate: createEntityClient('notification_templates')
+    NotificationTemplate: createEntityClient('notification_templates'),
   },
   auth: authAdapter,
-  integrations: integrationsAdapter
+  integrations: integrationsAdapter,
 };

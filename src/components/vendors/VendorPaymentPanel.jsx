@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  DollarSign, Clock, AlertTriangle, CheckCircle, 
-  CreditCard, Calendar, FileText
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  DollarSign,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  CreditCard,
+  Calendar,
+  FileText,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 
@@ -17,7 +28,7 @@ const statusConfig = {
   scheduled: { label: 'Scheduled', color: 'bg-blue-100 text-blue-800', icon: Calendar },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
   overdue: { label: 'Overdue', color: 'bg-rose-100 text-rose-800', icon: AlertTriangle },
-  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-800', icon: FileText }
+  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-800', icon: FileText },
 };
 
 export default function VendorPaymentPanel({ payments, onMarkPaid, onProcess }) {
@@ -27,8 +38,10 @@ export default function VendorPaymentPanel({ payments, onMarkPaid, onProcess }) 
   const [referenceNumber, setReferenceNumber] = useState('');
 
   const today = new Date();
-  const pendingPayments = payments.filter(p => p.status === 'pending' || p.status === 'scheduled');
-  const overduePayments = payments.filter(p => p.status === 'overdue');
+  const pendingPayments = payments.filter(
+    (p) => p.status === 'pending' || p.status === 'scheduled'
+  );
+  const overduePayments = payments.filter((p) => p.status === 'overdue');
   const totalPending = pendingPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
   const totalOverdue = overduePayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
 
@@ -102,67 +115,83 @@ export default function VendorPaymentPanel({ payments, onMarkPaid, onProcess }) 
         <CardContent>
           {payments.length > 0 ? (
             <div className="space-y-3">
-              {payments.filter(p => p.status !== 'paid').map(payment => {
-                const config = statusConfig[payment.status];
-                const StatusIcon = config?.icon || Clock;
-                const daysInfo = getDaysInfo(payment);
-                
-                return (
-                  <div 
-                    key={payment.id} 
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      payment.status === 'overdue' ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-lg ${config?.color || 'bg-slate-100'}`}>
-                        <StatusIcon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{payment.vendor_name}</p>
-                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                          <span>{payment.payment_terms?.replace('_', ' ')}</span>
-                          {daysInfo && (
-                            <span className={daysInfo.urgent ? 'text-rose-600 font-medium' : ''}>
-                              • {daysInfo.text}
-                            </span>
-                          )}
+              {payments
+                .filter((p) => p.status !== 'paid')
+                .map((payment) => {
+                  const config = statusConfig[payment.status];
+                  const StatusIcon = config?.icon || Clock;
+                  const daysInfo = getDaysInfo(payment);
+
+                  return (
+                    <div
+                      key={payment.id}
+                      className={`flex items-center justify-between p-4 rounded-lg border ${
+                        payment.status === 'overdue'
+                          ? 'border-rose-200 bg-rose-50'
+                          : 'border-slate-200 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-lg ${config?.color || 'bg-slate-100'}`}>
+                          <StatusIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{payment.vendor_name}</p>
+                          <div className="flex items-center gap-2 text-sm text-slate-500">
+                            <span>{payment.payment_terms?.replace('_', ' ')}</span>
+                            {daysInfo && (
+                              <span className={daysInfo.urgent ? 'text-rose-600 font-medium' : ''}>
+                                • {daysInfo.text}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="font-bold text-lg">฿{payment.total_amount?.toLocaleString()}</p>
-                        <p className="text-xs text-slate-500">Due: {payment.due_date}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-bold text-lg">
+                            ฿{payment.total_amount?.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-slate-500">Due: {payment.due_date}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => handlePayClick(payment)}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          Pay
+                        </Button>
                       </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => handlePayClick(payment)}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        Pay
-                      </Button>
                     </div>
-                  </div>
-                );
-              })}
-              
+                  );
+                })}
+
               {/* Paid payments (collapsed) */}
-              {payments.filter(p => p.status === 'paid').length > 0 && (
+              {payments.filter((p) => p.status === 'paid').length > 0 && (
                 <div className="pt-4 border-t">
                   <p className="text-sm text-slate-500 mb-2">Recently Paid</p>
-                  {payments.filter(p => p.status === 'paid').slice(0, 5).map(payment => (
-                    <div key={payment.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg mb-2">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                        <span className="text-sm">{payment.vendor_name}</span>
+                  {payments
+                    .filter((p) => p.status === 'paid')
+                    .slice(0, 5)
+                    .map((payment) => (
+                      <div
+                        key={payment.id}
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg mb-2"
+                      >
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="w-4 h-4 text-emerald-500" />
+                          <span className="text-sm">{payment.vendor_name}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-medium">
+                            ฿{payment.total_amount?.toLocaleString()}
+                          </span>
+                          <span className="text-xs text-slate-500 ml-2">
+                            {payment.payment_date}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-sm font-medium">฿{payment.total_amount?.toLocaleString()}</span>
-                        <span className="text-xs text-slate-500 ml-2">{payment.payment_date}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>
@@ -185,12 +214,16 @@ export default function VendorPaymentPanel({ payments, onMarkPaid, onProcess }) 
             <div className="space-y-4 mt-4">
               <div className="p-4 bg-slate-50 rounded-lg">
                 <p className="font-medium">{selectedPayment.vendor_name}</p>
-                <p className="text-2xl font-bold text-blue-600">฿{selectedPayment.total_amount?.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  ฿{selectedPayment.total_amount?.toLocaleString()}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Payment Method</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                     <SelectItem value="cash">Cash</SelectItem>
@@ -208,10 +241,17 @@ export default function VendorPaymentPanel({ payments, onMarkPaid, onProcess }) 
                 />
               </div>
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setShowPayDialog(false)} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPayDialog(false)}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleConfirmPayment} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                <Button
+                  onClick={handleConfirmPayment}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
                   Confirm Payment
                 </Button>
               </div>

@@ -1,12 +1,20 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  Package, Truck, DollarSign, Star, TrendingUp, Clock,
-  CheckCircle, AlertTriangle, ArrowRight, Calendar
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Package,
+  Truck,
+  DollarSign,
+  Star,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  ArrowRight,
+  Calendar,
 } from 'lucide-react';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
@@ -21,7 +29,7 @@ export default function VendorPortalDashboard({ vendor }) {
       }
       return [];
     },
-    enabled: !!(vendor?.id || vendor?.name)
+    enabled: !!(vendor?.id || vendor?.name),
   });
 
   const { data: vendorOrders = [] } = useQuery({
@@ -32,7 +40,7 @@ export default function VendorPortalDashboard({ vendor }) {
       }
       return [];
     },
-    enabled: !!vendor?.id
+    enabled: !!vendor?.id,
   });
 
   const { data: payments = [] } = useQuery({
@@ -43,14 +51,18 @@ export default function VendorPortalDashboard({ vendor }) {
       }
       return [];
     },
-    enabled: !!vendor?.id
+    enabled: !!vendor?.id,
   });
 
   // Stats
-  const activeOrders = purchaseOrders.filter(po => !['received', 'cancelled'].includes(po.status));
-  const pendingPayments = payments.filter(p => p.status === 'pending');
-  const totalEarnings = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.total_amount || 0), 0);
-  
+  const activeOrders = purchaseOrders.filter(
+    (po) => !['received', 'cancelled'].includes(po.status)
+  );
+  const pendingPayments = payments.filter((p) => p.status === 'pending');
+  const totalEarnings = payments
+    .filter((p) => p.status === 'paid')
+    .reduce((sum, p) => sum + (p.total_amount || 0), 0);
+
   // Performance metrics
   const rating = vendor?.rating || 5;
   const onTimeRate = vendor?.on_time_rate || 100;
@@ -60,14 +72,14 @@ export default function VendorPortalDashboard({ vendor }) {
     const date = subMonths(new Date(), 2 - i);
     const start = startOfMonth(date);
     const end = endOfMonth(date);
-    const monthPayments = payments.filter(p => {
+    const monthPayments = payments.filter((p) => {
       if (!p.payment_date) return false;
       const pDate = new Date(p.payment_date);
       return isWithinInterval(pDate, { start, end }) && p.status === 'paid';
     });
     return {
       month: format(date, 'MMM'),
-      amount: monthPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0)
+      amount: monthPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0),
     };
   });
 
@@ -120,7 +132,9 @@ export default function VendorPortalDashboard({ vendor }) {
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">฿{pendingPayments.reduce((s, p) => s + (p.total_amount || 0), 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  ฿{pendingPayments.reduce((s, p) => s + (p.total_amount || 0), 0).toLocaleString()}
+                </p>
                 <p className="text-xs text-slate-500">Pending Payment</p>
               </div>
             </div>
@@ -158,13 +172,18 @@ export default function VendorPortalDashboard({ vendor }) {
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Recent Orders</CardTitle>
-          <Button variant="ghost" size="sm">View All <ArrowRight className="w-4 h-4 ml-1" /></Button>
+          <Button variant="ghost" size="sm">
+            View All <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </CardHeader>
         <CardContent>
           {purchaseOrders.slice(0, 5).length > 0 ? (
             <div className="space-y-3">
-              {purchaseOrders.slice(0, 5).map(po => (
-                <div key={po.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              {purchaseOrders.slice(0, 5).map((po) => (
+                <div
+                  key={po.id}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                >
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Package className="w-5 h-5 text-blue-600" />
@@ -179,11 +198,15 @@ export default function VendorPortalDashboard({ vendor }) {
                   </div>
                   <div className="text-right">
                     <p className="font-bold">฿{po.total_amount?.toLocaleString()}</p>
-                    <Badge className={
-                      po.status === 'received' ? 'bg-emerald-100 text-emerald-700' :
-                      po.status === 'approved' ? 'bg-blue-100 text-blue-700' :
-                      'bg-amber-100 text-amber-700'
-                    }>
+                    <Badge
+                      className={
+                        po.status === 'received'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : po.status === 'approved'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-amber-100 text-amber-700'
+                      }
+                    >
                       {po.status?.replace('_', ' ')}
                     </Badge>
                   </div>

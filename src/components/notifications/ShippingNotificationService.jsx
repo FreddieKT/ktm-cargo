@@ -21,7 +21,7 @@ const DEFAULT_TEMPLATES = {
       
       <p>We'll notify you again once your order has been delivered.</p>
       <p>Thank you for your order!</p>
-    `
+    `,
   },
   shopping_delivered: {
     subject: 'Your Order {{order_number}} Has Been Delivered! ✅',
@@ -38,7 +38,7 @@ const DEFAULT_TEMPLATES = {
       
       <p>We hope you enjoy your purchase! If you have any questions or concerns, please don't hesitate to contact us.</p>
       <p>Thank you for shopping with us!</p>
-    `
+    `,
   },
   shipment_shipped: {
     subject: 'Your Shipment {{tracking_number}} is In Transit! 🚚',
@@ -54,7 +54,7 @@ const DEFAULT_TEMPLATES = {
       </div>
       
       <p>We'll notify you once your shipment has been delivered.</p>
-    `
+    `,
   },
   shipment_delivered: {
     subject: 'Your Shipment {{tracking_number}} Has Been Delivered! ✅',
@@ -69,8 +69,8 @@ const DEFAULT_TEMPLATES = {
       </div>
       
       <p>Thank you for using our service!</p>
-    `
-  }
+    `,
+  },
 };
 
 /**
@@ -78,15 +78,15 @@ const DEFAULT_TEMPLATES = {
  */
 function processTemplate(template, data) {
   let result = template;
-  
+
   // Simple placeholder replacement
-  Object.keys(data).forEach(key => {
+  Object.keys(data).forEach((key) => {
     const value = data[key] || '';
     result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
   });
-  
+
   // Handle conditional blocks {{#field}}...{{/field}}
-  Object.keys(data).forEach(key => {
+  Object.keys(data).forEach((key) => {
     const conditionalRegex = new RegExp(`{{#${key}}}([\\s\\S]*?){{/${key}}}`, 'g');
     if (data[key]) {
       result = result.replace(conditionalRegex, '$1');
@@ -94,10 +94,10 @@ function processTemplate(template, data) {
       result = result.replace(conditionalRegex, '');
     }
   });
-  
+
   // Clean up any remaining placeholders
   result = result.replace(/{{[^}]+}}/g, '');
-  
+
   return result;
 }
 
@@ -106,21 +106,21 @@ function processTemplate(template, data) {
  */
 async function getTemplate(templateType) {
   try {
-    const templates = await base44.entities.NotificationTemplate.filter({ 
-      template_type: templateType, 
-      is_active: true 
+    const templates = await base44.entities.NotificationTemplate.filter({
+      template_type: templateType,
+      is_active: true,
     });
-    
+
     if (templates.length > 0) {
       return {
         subject: templates[0].subject,
-        body: templates[0].body
+        body: templates[0].body,
       };
     }
   } catch (e) {
     console.log('Using default template for:', templateType);
   }
-  
+
   return DEFAULT_TEMPLATES[templateType] || null;
 }
 
@@ -132,37 +132,41 @@ export async function sendShoppingOrderNotification(order, newStatus, customerEm
     console.log('No customer email provided, skipping notification');
     return { sent: false, reason: 'no_email' };
   }
-  
-  const templateType = newStatus === 'shipping' ? 'shopping_shipping' : 
-                       newStatus === 'delivered' ? 'shopping_delivered' : null;
-  
+
+  const templateType =
+    newStatus === 'shipping'
+      ? 'shopping_shipping'
+      : newStatus === 'delivered'
+        ? 'shopping_delivered'
+        : null;
+
   if (!templateType) {
     return { sent: false, reason: 'invalid_status' };
   }
-  
+
   const template = await getTemplate(templateType);
   if (!template) {
     return { sent: false, reason: 'no_template' };
   }
-  
+
   const data = {
     customer_name: order.customer_name || 'Valued Customer',
     order_number: order.order_number || order.id,
     tracking_number: order.tracking_number || '',
     delivery_address: order.delivery_address || 'N/A',
-    status: newStatus
+    status: newStatus,
   };
-  
+
   const subject = processTemplate(template.subject, data);
   const body = processTemplate(template.body, data);
-  
+
   try {
     await base44.integrations.Core.SendEmail({
       to: customerEmail,
       subject,
-      body
+      body,
     });
-    
+
     // Log notification
     await base44.entities.Notification.create({
       type: 'shipment_status',
@@ -172,9 +176,9 @@ export async function sendShoppingOrderNotification(order, newStatus, customerEm
       reference_id: order.id,
       recipient_email: customerEmail,
       status: 'read',
-      email_sent: true
+      email_sent: true,
     });
-    
+
     return { sent: true };
   } catch (error) {
     console.error('Failed to send notification:', error);
@@ -189,37 +193,41 @@ export async function sendShipmentNotification(shipment, newStatus, customerEmai
   if (!customerEmail) {
     return { sent: false, reason: 'no_email' };
   }
-  
-  const templateType = newStatus === 'in_transit' ? 'shipment_shipped' : 
-                       newStatus === 'delivered' ? 'shipment_delivered' : null;
-  
+
+  const templateType =
+    newStatus === 'in_transit'
+      ? 'shipment_shipped'
+      : newStatus === 'delivered'
+        ? 'shipment_delivered'
+        : null;
+
   if (!templateType) {
     return { sent: false, reason: 'invalid_status' };
   }
-  
+
   const template = await getTemplate(templateType);
   if (!template) {
     return { sent: false, reason: 'no_template' };
   }
-  
+
   const data = {
     customer_name: shipment.customer_name || 'Valued Customer',
     tracking_number: shipment.tracking_number || shipment.id,
     delivery_address: shipment.delivery_address || 'N/A',
     items: shipment.items_description || 'Cargo shipment',
-    status: newStatus
+    status: newStatus,
   };
-  
+
   const subject = processTemplate(template.subject, data);
   const body = processTemplate(template.body, data);
-  
+
   try {
     await base44.integrations.Core.SendEmail({
       to: customerEmail,
       subject,
-      body
+      body,
     });
-    
+
     await base44.entities.Notification.create({
       type: 'shipment_status',
       title: `Shipment ${data.tracking_number} - ${newStatus}`,
@@ -228,9 +236,9 @@ export async function sendShipmentNotification(shipment, newStatus, customerEmai
       reference_id: shipment.id,
       recipient_email: customerEmail,
       status: 'read',
-      email_sent: true
+      email_sent: true,
     });
-    
+
     return { sent: true };
   } catch (error) {
     console.error('Failed to send notification:', error);

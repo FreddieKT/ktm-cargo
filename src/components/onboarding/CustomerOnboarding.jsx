@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  CheckCircle, Circle, Package, Calculator, Users, 
-  Gift, Play, ArrowRight, Mail, Sparkles
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  CheckCircle,
+  Circle,
+  Package,
+  Calculator,
+  Users,
+  Gift,
+  Play,
+  ArrowRight,
+  Mail,
+  Sparkles,
 } from 'lucide-react';
 
 const onboardingSteps = [
   {
     id: 1,
-    title: "Welcome to BKK-YGN Cargo",
-    description: "Your trusted partner for shipping between Bangkok and Yangon",
+    title: 'Welcome to BKK-YGN Cargo',
+    description: 'Your trusted partner for shipping between Bangkok and Yangon',
     icon: Package,
     content: `Welcome aboard! We're excited to help you ship goods between Bangkok and Yangon with ease. 
     
@@ -20,12 +28,12 @@ Our services include:
 • Fast cargo shipping (3-5 days standard, 1-2 days express)
 • Personal shopping assistance from Thai stores
 • Real-time tracking for all shipments
-• Competitive rates starting at ฿85/kg`
+• Competitive rates starting at ฿85/kg`,
   },
   {
     id: 2,
-    title: "Using the Price Calculator",
-    description: "Get instant quotes for your shipments",
+    title: 'Using the Price Calculator',
+    description: 'Get instant quotes for your shipments',
     icon: Calculator,
     content: `Our Price Calculator helps you estimate shipping costs instantly:
 
@@ -35,12 +43,12 @@ Our services include:
 4. Set the exchange rate for MMK conversion
 5. View your detailed price breakdown
 
-Try it now to see how affordable shipping can be!`
+Try it now to see how affordable shipping can be!`,
   },
   {
     id: 3,
-    title: "Customer Benefits & Rewards",
-    description: "Unlock exclusive perks as you ship more",
+    title: 'Customer Benefits & Rewards',
+    description: 'Unlock exclusive perks as you ship more',
     icon: Gift,
     content: `As a valued customer, you're automatically enrolled in our rewards program:
 
@@ -49,12 +57,12 @@ Try it now to see how affordable shipping can be!`
 🥇 Premium (20+ shipments): 10% discount + priority handling
 💎 VIP (50+ shipments): 15% discount + dedicated support
 
-You'll also receive exclusive campaign offers and seasonal promotions!`
+You'll also receive exclusive campaign offers and seasonal promotions!`,
   },
   {
     id: 4,
-    title: "Track Your Shipments",
-    description: "Real-time updates on your packages",
+    title: 'Track Your Shipments',
+    description: 'Real-time updates on your packages',
     icon: Users,
     content: `Stay informed with our tracking system:
 
@@ -63,8 +71,8 @@ You'll also receive exclusive campaign offers and seasonal promotions!`
 • Access your complete shipment history anytime
 • Download invoices and shipping documents
 
-Your unique tracking number will be provided for every shipment.`
-  }
+Your unique tracking number will be provided for every shipment.`,
+  },
 ];
 
 export default function CustomerOnboarding({ customer, onComplete }) {
@@ -105,11 +113,11 @@ export default function CustomerOnboarding({ customer, onComplete }) {
             </Badge>
           </div>
           <Progress value={progress} className="h-2 bg-white/20" />
-          
+
           {/* Step indicators */}
           <div className="flex justify-between mt-4">
             {onboardingSteps.map((step, idx) => (
-              <div 
+              <div
                 key={step.id}
                 className={`flex items-center gap-1 text-sm ${
                   idx <= currentStep ? 'text-white' : 'text-white/50'

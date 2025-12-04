@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  Search, Package, Filter, Download, Eye, Calendar,
-  CheckCircle, Clock, Truck, AlertTriangle
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Search,
+  Package,
+  Filter,
+  Download,
+  Eye,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Truck,
+  AlertTriangle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -20,7 +34,7 @@ const STATUS_CONFIG = {
   in_transit: { label: 'In Transit', color: 'bg-amber-100 text-amber-700' },
   customs: { label: 'Customs', color: 'bg-purple-100 text-purple-700' },
   delivered: { label: 'Delivered', color: 'bg-emerald-100 text-emerald-700' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' }
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
 };
 
 export default function CustomerOrderHistory({ customer }) {
@@ -38,11 +52,12 @@ export default function CustomerOrderHistory({ customer }) {
       }
       return [];
     },
-    enabled: !!(customer?.id || customer?.name)
+    enabled: !!(customer?.id || customer?.name),
   });
 
-  const filteredShipments = shipments.filter(s => {
-    const matchesSearch = !search || 
+  const filteredShipments = shipments.filter((s) => {
+    const matchesSearch =
+      !search ||
       s.tracking_number?.toLowerCase().includes(search.toLowerCase()) ||
       s.items_description?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
@@ -52,14 +67,16 @@ export default function CustomerOrderHistory({ customer }) {
   const handleExport = () => {
     const csv = [
       ['Tracking', 'Date', 'Items', 'Weight', 'Amount', 'Status'].join(','),
-      ...filteredShipments.map(s => [
-        s.tracking_number || s.id,
-        format(new Date(s.created_date), 'yyyy-MM-dd'),
-        `"${s.items_description || ''}"`,
-        s.weight_kg,
-        s.total_amount,
-        s.status
-      ].join(','))
+      ...filteredShipments.map((s) =>
+        [
+          s.tracking_number || s.id,
+          format(new Date(s.created_date), 'yyyy-MM-dd'),
+          `"${s.items_description || ''}"`,
+          s.weight_kg,
+          s.total_amount,
+          s.status,
+        ].join(',')
+      ),
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -113,11 +130,11 @@ export default function CustomerOrderHistory({ customer }) {
         <CardContent>
           {filteredShipments.length > 0 ? (
             <div className="space-y-3">
-              {filteredShipments.map(shipment => {
+              {filteredShipments.map((shipment) => {
                 const status = STATUS_CONFIG[shipment.status] || STATUS_CONFIG.pending;
                 return (
-                  <div 
-                    key={shipment.id} 
+                  <div
+                    key={shipment.id}
                     className="flex items-center justify-between p-4 border rounded-xl hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
@@ -125,8 +142,12 @@ export default function CustomerOrderHistory({ customer }) {
                         <Package className="w-5 h-5 text-slate-600" />
                       </div>
                       <div>
-                        <p className="font-medium">{shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}</p>
-                        <p className="text-sm text-slate-500">{shipment.items_description?.slice(0, 40) || 'Package'}</p>
+                        <p className="font-medium">
+                          {shipment.tracking_number || `SHP-${shipment.id?.slice(-6)}`}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {shipment.items_description?.slice(0, 40) || 'Package'}
+                        </p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(shipment.created_date), 'MMM d, yyyy')}
@@ -138,7 +159,11 @@ export default function CustomerOrderHistory({ customer }) {
                         <p className="font-bold">฿{shipment.total_amount?.toLocaleString()}</p>
                         <Badge className={status.color}>{status.label}</Badge>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(shipment)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSelectedOrder(shipment)}
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
                     </div>
@@ -164,7 +189,9 @@ export default function CustomerOrderHistory({ customer }) {
           {selectedOrder && (
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 rounded-lg">
-                <p className="font-mono text-lg font-bold">{selectedOrder.tracking_number || `SHP-${selectedOrder.id?.slice(-6)}`}</p>
+                <p className="font-mono text-lg font-bold">
+                  {selectedOrder.tracking_number || `SHP-${selectedOrder.id?.slice(-6)}`}
+                </p>
                 <Badge className={STATUS_CONFIG[selectedOrder.status]?.color}>
                   {STATUS_CONFIG[selectedOrder.status]?.label}
                 </Badge>
@@ -173,7 +200,9 @@ export default function CustomerOrderHistory({ customer }) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Order Date</p>
-                  <p className="font-medium">{format(new Date(selectedOrder.created_date), 'MMM d, yyyy')}</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedOrder.created_date), 'MMM d, yyyy')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-slate-500">Service</p>
@@ -196,7 +225,9 @@ export default function CustomerOrderHistory({ customer }) {
 
               <div className="pt-4 border-t flex justify-between items-center">
                 <span className="text-slate-500">Total Amount</span>
-                <span className="text-2xl font-bold">฿{selectedOrder.total_amount?.toLocaleString()}</span>
+                <span className="text-2xl font-bold">
+                  ฿{selectedOrder.total_amount?.toLocaleString()}
+                </span>
               </div>
             </div>
           )}

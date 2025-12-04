@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Users, Filter } from 'lucide-react';
 
 const CRITERIA_TYPES = [
   { value: 'total_spent', label: 'Total Spent (฿)', type: 'number' },
   { value: 'shipment_count', label: 'Number of Shipments', type: 'number' },
   { value: 'days_since_last_order', label: 'Days Since Last Order', type: 'number' },
-  { value: 'customer_type', label: 'Customer Type', type: 'select', options: ['individual', 'online_shopper', 'sme_importer'] },
+  {
+    value: 'customer_type',
+    label: 'Customer Type',
+    type: 'select',
+    options: ['individual', 'online_shopper', 'sme_importer'],
+  },
   { value: 'avg_order_value', label: 'Average Order Value (฿)', type: 'number' },
   { value: 'customer_age_days', label: 'Customer Age (Days)', type: 'number' },
   { value: 'has_email', label: 'Has Email', type: 'boolean' },
@@ -31,9 +42,7 @@ const OPERATORS = {
     { value: 'eq', label: 'Is' },
     { value: 'neq', label: 'Is Not' },
   ],
-  boolean: [
-    { value: 'eq', label: 'Is' },
-  ]
+  boolean: [{ value: 'eq', label: 'Is' }],
 };
 
 const COLORS = ['blue', 'purple', 'emerald', 'amber', 'rose', 'cyan', 'pink'];
@@ -44,7 +53,7 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
     description: '',
     color: 'blue',
     is_active: true,
-    auto_refresh: true
+    auto_refresh: true,
   });
 
   const [criteria, setCriteria] = useState([]);
@@ -56,7 +65,7 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
         description: segment.description || '',
         color: segment.color || 'blue',
         is_active: segment.is_active !== false,
-        auto_refresh: segment.auto_refresh !== false
+        auto_refresh: segment.auto_refresh !== false,
       });
       if (segment.criteria) {
         try {
@@ -87,12 +96,12 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
     onSubmit({
       ...form,
       criteria: JSON.stringify(criteria),
-      customer_count: previewCount || 0
+      customer_count: previewCount || 0,
     });
   };
 
   const getCriteriaType = (field) => {
-    return CRITERIA_TYPES.find(c => c.value === field)?.type || 'number';
+    return CRITERIA_TYPES.find((c) => c.value === field)?.type || 'number';
   };
 
   return (
@@ -123,7 +132,7 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {COLORS.map(color => (
+                  {COLORS.map((color) => (
                     <SelectItem key={color} value={color}>
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full bg-${color}-500`} />
@@ -164,38 +173,46 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
               <div className="space-y-3">
                 {criteria.map((criterion, index) => {
                   const criteriaType = getCriteriaType(criterion.field);
-                  const criteriaConfig = CRITERIA_TYPES.find(c => c.value === criterion.field);
-                  
+                  const criteriaConfig = CRITERIA_TYPES.find((c) => c.value === criterion.field);
+
                   return (
                     <div key={index} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
                       {index > 0 && (
-                        <Badge variant="outline" className="text-xs">AND</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          AND
+                        </Badge>
                       )}
-                      
-                      <Select 
-                        value={criterion.field} 
-                        onValueChange={(v) => updateCriterion(index, { field: v, operator: 'gte', value: '' })}
+
+                      <Select
+                        value={criterion.field}
+                        onValueChange={(v) =>
+                          updateCriterion(index, { field: v, operator: 'gte', value: '' })
+                        }
                       >
                         <SelectTrigger className="w-48">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {CRITERIA_TYPES.map(c => (
-                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                          {CRITERIA_TYPES.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
 
-                      <Select 
-                        value={criterion.operator} 
+                      <Select
+                        value={criterion.operator}
                         onValueChange={(v) => updateCriterion(index, { operator: v })}
                       >
                         <SelectTrigger className="w-24">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {OPERATORS[criteriaType]?.map(op => (
-                            <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+                          {OPERATORS[criteriaType]?.map((op) => (
+                            <SelectItem key={op.value} value={op.value}>
+                              {op.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -211,15 +228,15 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
                       )}
 
                       {criteriaType === 'select' && (
-                        <Select 
-                          value={criterion.value} 
+                        <Select
+                          value={criterion.value}
                           onValueChange={(v) => updateCriterion(index, { value: v })}
                         >
                           <SelectTrigger className="w-40">
                             <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {criteriaConfig?.options?.map(opt => (
+                            {criteriaConfig?.options?.map((opt) => (
                               <SelectItem key={opt} value={opt}>
                                 {opt.replace('_', ' ')}
                               </SelectItem>
@@ -229,8 +246,8 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
                       )}
 
                       {criteriaType === 'boolean' && (
-                        <Select 
-                          value={criterion.value} 
+                        <Select
+                          value={criterion.value}
                           onValueChange={(v) => updateCriterion(index, { value: v })}
                         >
                           <SelectTrigger className="w-24">
@@ -243,10 +260,10 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
                         </Select>
                       )}
 
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeCriterion(index)}
                         className="text-rose-600"
                       >
@@ -263,9 +280,7 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
           {previewCount !== undefined && (
             <div className="p-4 bg-blue-50 rounded-lg flex items-center justify-between">
               <span className="text-blue-700">Matching customers:</span>
-              <Badge className="bg-blue-600 text-white text-lg px-4 py-1">
-                {previewCount}
-              </Badge>
+              <Badge className="bg-blue-600 text-white text-lg px-4 py-1">{previewCount}</Badge>
             </div>
           )}
 
@@ -299,10 +314,10 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
 // Helper function to evaluate criteria against a customer
 export function evaluateCustomerCriteria(customer, criteria) {
   if (!criteria || criteria.length === 0) return true;
-  
-  return criteria.every(criterion => {
+
+  return criteria.every((criterion) => {
     let customerValue;
-    
+
     switch (criterion.field) {
       case 'total_spent':
         customerValue = customer.totalSpent || 0;
@@ -329,20 +344,28 @@ export function evaluateCustomerCriteria(customer, criteria) {
         return true;
     }
 
-    const targetValue = criterion.field === 'has_email' 
-      ? criterion.value === 'true' 
-      : criterion.type === 'number' 
-        ? parseFloat(criterion.value) 
-        : criterion.value;
+    const targetValue =
+      criterion.field === 'has_email'
+        ? criterion.value === 'true'
+        : criterion.type === 'number'
+          ? parseFloat(criterion.value)
+          : criterion.value;
 
     switch (criterion.operator) {
-      case 'gte': return customerValue >= targetValue;
-      case 'lte': return customerValue <= targetValue;
-      case 'gt': return customerValue > targetValue;
-      case 'lt': return customerValue < targetValue;
-      case 'eq': return customerValue == targetValue;
-      case 'neq': return customerValue != targetValue;
-      default: return true;
+      case 'gte':
+        return customerValue >= targetValue;
+      case 'lte':
+        return customerValue <= targetValue;
+      case 'gt':
+        return customerValue > targetValue;
+      case 'lt':
+        return customerValue < targetValue;
+      case 'eq':
+        return customerValue == targetValue;
+      case 'neq':
+        return customerValue != targetValue;
+      default:
+        return true;
     }
   });
 }

@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  FileText, Download, Eye, CreditCard, Clock, CheckCircle,
-  AlertTriangle, Calendar, Printer
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  FileText,
+  Download,
+  Eye,
+  CreditCard,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Calendar,
+  Printer,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700', icon: Clock },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-  overdue: { label: 'Overdue', color: 'bg-red-100 text-red-700', icon: AlertTriangle }
+  overdue: { label: 'Overdue', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
 };
 
 export default function CustomerInvoices({ customer }) {
@@ -31,23 +38,31 @@ export default function CustomerInvoices({ customer }) {
       }
       return [];
     },
-    enabled: !!(customer?.id || customer?.name)
+    enabled: !!(customer?.id || customer?.name),
   });
 
   // Convert shipments to invoice-like objects
-  const invoices = shipments.map(s => ({
+  const invoices = shipments.map((s) => ({
     id: s.id,
     invoice_number: `INV-${s.id?.slice(-8).toUpperCase()}`,
     date: s.created_date,
     due_date: s.estimated_delivery,
     amount: s.total_amount || 0,
-    status: s.payment_status === 'paid' ? 'paid' : 
-            new Date(s.estimated_delivery) < new Date() && s.payment_status !== 'paid' ? 'overdue' : 'pending',
-    shipment: s
+    status:
+      s.payment_status === 'paid'
+        ? 'paid'
+        : new Date(s.estimated_delivery) < new Date() && s.payment_status !== 'paid'
+          ? 'overdue'
+          : 'pending',
+    shipment: s,
   }));
 
-  const pendingTotal = invoices.filter(i => i.status !== 'paid').reduce((sum, i) => sum + i.amount, 0);
-  const paidTotal = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0);
+  const pendingTotal = invoices
+    .filter((i) => i.status !== 'paid')
+    .reduce((sum, i) => sum + i.amount, 0);
+  const paidTotal = invoices
+    .filter((i) => i.status === 'paid')
+    .reduce((sum, i) => sum + i.amount, 0);
 
   const handleDownload = (invoice) => {
     // Generate simple invoice text
@@ -123,11 +138,11 @@ Status: ${invoice.status.toUpperCase()}
         <CardContent>
           {invoices.length > 0 ? (
             <div className="space-y-3">
-              {invoices.map(invoice => {
+              {invoices.map((invoice) => {
                 const status = STATUS_CONFIG[invoice.status];
                 const StatusIcon = status.icon;
                 return (
-                  <div 
+                  <div
                     key={invoice.id}
                     className="flex items-center justify-between p-4 border rounded-xl hover:bg-slate-50"
                   >
@@ -149,7 +164,11 @@ Status: ${invoice.status.toUpperCase()}
                         <Badge className={status.color}>{status.label}</Badge>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedInvoice(invoice)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDownload(invoice)}>
@@ -188,12 +207,15 @@ Status: ${invoice.status.toUpperCase()}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Invoice Date</p>
-                  <p className="font-medium">{format(new Date(selectedInvoice.date), 'MMM d, yyyy')}</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedInvoice.date), 'MMM d, yyyy')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-slate-500">Due Date</p>
                   <p className="font-medium">
-                    {selectedInvoice.due_date && format(new Date(selectedInvoice.due_date), 'MMM d, yyyy')}
+                    {selectedInvoice.due_date &&
+                      format(new Date(selectedInvoice.due_date), 'MMM d, yyyy')}
                   </p>
                 </div>
               </div>
@@ -216,7 +238,9 @@ Status: ${invoice.status.toUpperCase()}
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium">Total Amount</span>
-                  <span className="text-2xl font-bold text-blue-600">฿{selectedInvoice.amount.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-blue-600">
+                    ฿{selectedInvoice.amount.toLocaleString()}
+                  </span>
                 </div>
               </div>
 
@@ -232,7 +256,11 @@ Status: ${invoice.status.toUpperCase()}
               )}
 
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => handleDownload(selectedInvoice)}>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleDownload(selectedInvoice)}
+                >
                   <Download className="w-4 h-4 mr-2" /> Download
                 </Button>
                 <Button variant="outline" className="flex-1" onClick={() => window.print()}>

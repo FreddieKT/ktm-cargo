@@ -1,44 +1,49 @@
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
-} from "@/components/ui/table";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Phone, Mail, Package, TrendingUp, Star } from 'lucide-react';
 import { format } from 'date-fns';
 
 const typeConfig = {
   individual: { label: 'Individual', color: 'bg-blue-100 text-blue-800' },
   online_shopper: { label: 'Online Shopper', color: 'bg-purple-100 text-purple-800' },
-  sme_importer: { label: 'SME Importer', color: 'bg-amber-100 text-amber-800' }
+  sme_importer: { label: 'SME Importer', color: 'bg-amber-100 text-amber-800' },
 };
 
 const valueLabels = {
   high: { label: 'High Value', color: 'bg-emerald-100 text-emerald-800' },
   medium: { label: 'Medium', color: 'bg-blue-100 text-blue-800' },
-  low: { label: 'New/Low', color: 'bg-slate-100 text-slate-800' }
+  low: { label: 'New/Low', color: 'bg-slate-100 text-slate-800' },
 };
 
-export default function CustomerSegmentTable({ 
-  customers, 
-  shipments, 
-  selectedCustomers, 
-  onSelectCustomer, 
-  onSelectAll 
+export default function CustomerSegmentTable({
+  customers,
+  shipments,
+  selectedCustomers,
+  onSelectCustomer,
+  onSelectAll,
 }) {
   // Calculate customer metrics
-  const customersWithMetrics = customers.map(customer => {
+  const customersWithMetrics = customers.map((customer) => {
     const customerShipments = shipments.filter(
-      s => s.customer_name === customer.name || s.customer_phone === customer.phone
+      (s) => s.customer_name === customer.name || s.customer_phone === customer.phone
     );
     const totalSpent = customerShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0);
     const shipmentCount = customerShipments.length;
-    const lastShipment = customerShipments.length > 0 
-      ? customerShipments.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
-      : null;
-    
+    const lastShipment =
+      customerShipments.length > 0
+        ? customerShipments.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
+        : null;
+
     // Determine value tier
     let valueTier = 'low';
     if (totalSpent > 50000 || shipmentCount > 10) valueTier = 'high';
@@ -49,7 +54,7 @@ export default function CustomerSegmentTable({
       totalSpent,
       shipmentCount,
       lastShipment,
-      valueTier
+      valueTier,
     };
   });
 
@@ -61,10 +66,7 @@ export default function CustomerSegmentTable({
         <TableHeader>
           <TableRow className="bg-slate-50">
             <TableHead className="w-12">
-              <Checkbox 
-                checked={allSelected}
-                onCheckedChange={(checked) => onSelectAll(checked)}
-              />
+              <Checkbox checked={allSelected} onCheckedChange={(checked) => onSelectAll(checked)} />
             </TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Segment</TableHead>
@@ -75,18 +77,18 @@ export default function CustomerSegmentTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {customersWithMetrics.map(customer => {
+          {customersWithMetrics.map((customer) => {
             const typeConf = typeConfig[customer.customer_type] || typeConfig.individual;
             const valueConf = valueLabels[customer.valueTier];
             const isSelected = selectedCustomers.includes(customer.id);
 
             return (
-              <TableRow 
-                key={customer.id} 
+              <TableRow
+                key={customer.id}
                 className={`hover:bg-slate-50 ${isSelected ? 'bg-blue-50' : ''}`}
               >
                 <TableCell>
-                  <Checkbox 
+                  <Checkbox
                     checked={isSelected}
                     onCheckedChange={(checked) => onSelectCustomer(customer.id, checked)}
                   />
@@ -141,11 +143,9 @@ export default function CustomerSegmentTable({
           })}
         </TableBody>
       </Table>
-      
+
       {customers.length === 0 && (
-        <div className="text-center py-12 text-slate-500">
-          No customers in this segment
-        </div>
+        <div className="text-center py-12 text-slate-500">No customers in this segment</div>
       )}
     </div>
   );

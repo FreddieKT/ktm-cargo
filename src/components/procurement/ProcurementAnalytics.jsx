@@ -1,27 +1,59 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area, ComposedChart
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+  AreaChart,
+  Area,
+  ComposedChart,
 } from 'recharts';
-import { 
-  TrendingUp, TrendingDown, DollarSign, Package, 
-  Users, Clock, Star, AlertTriangle, CheckCircle, XCircle,
-  Timer, Truck, Receipt, BarChart3
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Package,
+  Users,
+  Clock,
+  Star,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Timer,
+  Truck,
+  Receipt,
+  BarChart3,
 } from 'lucide-react';
-import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, differenceInDays } from 'date-fns';
+import {
+  format,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  isWithinInterval,
+  differenceInDays,
+} from 'date-fns';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-export default function ProcurementAnalytics({ 
-  purchaseOrders = [], 
-  goodsReceipts = [], 
-  vendorPayments = [], 
+export default function ProcurementAnalytics({
+  purchaseOrders = [],
+  goodsReceipts = [],
+  vendorPayments = [],
   vendors = [],
-  approvalHistory = []
+  approvalHistory = [],
 }) {
   // Calculate spending by month
   const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -29,28 +61,28 @@ export default function ProcurementAnalytics({
     return {
       month: format(date, 'MMM'),
       start: startOfMonth(date),
-      end: endOfMonth(date)
+      end: endOfMonth(date),
     };
   });
 
   const monthlySpending = last6Months.map(({ month, start, end }) => {
-    const monthPOs = purchaseOrders.filter(po => {
+    const monthPOs = purchaseOrders.filter((po) => {
       const poDate = new Date(po.order_date);
       return isWithinInterval(poDate, { start, end });
     });
     return {
       month,
       amount: monthPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0),
-      count: monthPOs.length
+      count: monthPOs.length,
     };
   });
 
   // Spending by vendor type
   const spendingByVendorType = vendors.reduce((acc, vendor) => {
-    const vendorPOs = purchaseOrders.filter(po => po.vendor_id === vendor.id);
+    const vendorPOs = purchaseOrders.filter((po) => po.vendor_id === vendor.id);
     const totalSpent = vendorPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0);
     const type = vendor.vendor_type || 'other';
-    
+
     if (!acc[type]) acc[type] = 0;
     acc[type] += totalSpent;
     return acc;
@@ -58,36 +90,44 @@ export default function ProcurementAnalytics({
 
   const vendorTypeData = Object.entries(spendingByVendorType).map(([name, value]) => ({
     name: name.replace('_', ' '),
-    value
+    value,
   }));
 
   // Top vendors by spend
-  const vendorSpend = vendors.map(vendor => {
-    const vendorPOs = purchaseOrders.filter(po => po.vendor_id === vendor.id);
-    return {
-      name: vendor.name,
-      totalSpent: vendorPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0),
-      orderCount: vendorPOs.length,
-      rating: vendor.rating || 5,
-      onTimeRate: vendor.on_time_rate || 100
-    };
-  }).sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 5);
+  const vendorSpend = vendors
+    .map((vendor) => {
+      const vendorPOs = purchaseOrders.filter((po) => po.vendor_id === vendor.id);
+      return {
+        name: vendor.name,
+        totalSpent: vendorPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0),
+        orderCount: vendorPOs.length,
+        rating: vendor.rating || 5,
+        onTimeRate: vendor.on_time_rate || 100,
+      };
+    })
+    .sort((a, b) => b.totalSpent - a.totalSpent)
+    .slice(0, 5);
 
   // KPIs
   const totalSpent = purchaseOrders.reduce((sum, po) => sum + (po.total_amount || 0), 0);
   const avgOrderValue = purchaseOrders.length > 0 ? totalSpent / purchaseOrders.length : 0;
-  const pendingOrders = purchaseOrders.filter(po => !['received', 'cancelled'].includes(po.status)).length;
+  const pendingOrders = purchaseOrders.filter(
+    (po) => !['received', 'cancelled'].includes(po.status)
+  ).length;
   const avgLeadTime = 7; // Could calculate from actual data
 
   const currentMonthSpend = monthlySpending[5]?.amount || 0;
   const lastMonthSpend = monthlySpending[4]?.amount || 0;
-  const spendTrend = lastMonthSpend > 0 ? ((currentMonthSpend - lastMonthSpend) / lastMonthSpend * 100).toFixed(1) : 0;
+  const spendTrend =
+    lastMonthSpend > 0
+      ? (((currentMonthSpend - lastMonthSpend) / lastMonthSpend) * 100).toFixed(1)
+      : 0;
 
   // === NEW: Spending trend by vendor over time ===
   const vendorTrendData = last6Months.map(({ month, start, end }) => {
     const monthData = { month };
-    vendors.slice(0, 5).forEach(vendor => {
-      const vendorPOs = purchaseOrders.filter(po => {
+    vendors.slice(0, 5).forEach((vendor) => {
+      const vendorPOs = purchaseOrders.filter((po) => {
         const poDate = new Date(po.order_date);
         return po.vendor_id === vendor.id && isWithinInterval(poDate, { start, end });
       });
@@ -97,50 +137,57 @@ export default function ProcurementAnalytics({
   });
 
   // === NEW: Tax and Shipping breakdown ===
-  const costBreakdown = purchaseOrders.reduce((acc, po) => {
-    acc.subtotal += po.subtotal || 0;
-    acc.tax += po.tax_amount || 0;
-    acc.shipping += po.shipping_cost || 0;
-    return acc;
-  }, { subtotal: 0, tax: 0, shipping: 0 });
-  
+  const costBreakdown = purchaseOrders.reduce(
+    (acc, po) => {
+      acc.subtotal += po.subtotal || 0;
+      acc.tax += po.tax_amount || 0;
+      acc.shipping += po.shipping_cost || 0;
+      return acc;
+    },
+    { subtotal: 0, tax: 0, shipping: 0 }
+  );
+
   const costBreakdownData = [
     { name: 'Base Cost', value: costBreakdown.subtotal, color: '#3b82f6' },
     { name: 'Tax', value: costBreakdown.tax, color: '#f59e0b' },
-    { name: 'Shipping', value: costBreakdown.shipping, color: '#10b981' }
-  ].filter(d => d.value > 0);
+    { name: 'Shipping', value: costBreakdown.shipping, color: '#10b981' },
+  ].filter((d) => d.value > 0);
 
   // === NEW: PO Cycle Time Analysis ===
   const cycleTimeData = purchaseOrders
-    .filter(po => po.status === 'approved' && po.order_date && po.approved_date)
-    .map(po => {
+    .filter((po) => po.status === 'approved' && po.order_date && po.approved_date)
+    .map((po) => {
       const created = new Date(po.order_date);
       const approved = new Date(po.approved_date);
       return differenceInDays(approved, created);
     });
-  
-  const avgCycleTime = cycleTimeData.length > 0 
-    ? (cycleTimeData.reduce((a, b) => a + b, 0) / cycleTimeData.length).toFixed(1) 
-    : 0;
-  
+
+  const avgCycleTime =
+    cycleTimeData.length > 0
+      ? (cycleTimeData.reduce((a, b) => a + b, 0) / cycleTimeData.length).toFixed(1)
+      : 0;
+
   const cycleTimeDistribution = [
-    { range: '0-1 days', count: cycleTimeData.filter(d => d <= 1).length },
-    { range: '2-3 days', count: cycleTimeData.filter(d => d >= 2 && d <= 3).length },
-    { range: '4-7 days', count: cycleTimeData.filter(d => d >= 4 && d <= 7).length },
-    { range: '7+ days', count: cycleTimeData.filter(d => d > 7).length }
+    { range: '0-1 days', count: cycleTimeData.filter((d) => d <= 1).length },
+    { range: '2-3 days', count: cycleTimeData.filter((d) => d >= 2 && d <= 3).length },
+    { range: '4-7 days', count: cycleTimeData.filter((d) => d >= 4 && d <= 7).length },
+    { range: '7+ days', count: cycleTimeData.filter((d) => d > 7).length },
   ];
 
   // === NEW: Approval bottleneck analysis ===
-  const approvalStats = approvalHistory.reduce((acc, h) => {
-    if (h.action === 'submitted') acc.submitted++;
-    if (h.action === 'approved') acc.approved++;
-    if (h.action === 'rejected') acc.rejected++;
-    if (h.action === 'auto_approved') acc.autoApproved++;
-    if (h.approver_name) {
-      acc.byApprover[h.approver_name] = (acc.byApprover[h.approver_name] || 0) + 1;
-    }
-    return acc;
-  }, { submitted: 0, approved: 0, rejected: 0, autoApproved: 0, byApprover: {} });
+  const approvalStats = approvalHistory.reduce(
+    (acc, h) => {
+      if (h.action === 'submitted') acc.submitted++;
+      if (h.action === 'approved') acc.approved++;
+      if (h.action === 'rejected') acc.rejected++;
+      if (h.action === 'auto_approved') acc.autoApproved++;
+      if (h.approver_name) {
+        acc.byApprover[h.approver_name] = (acc.byApprover[h.approver_name] || 0) + 1;
+      }
+      return acc;
+    },
+    { submitted: 0, approved: 0, rejected: 0, autoApproved: 0, byApprover: {} }
+  );
 
   const approverWorkload = Object.entries(approvalStats.byApprover)
     .map(([name, count]) => ({ name, count }))
@@ -148,23 +195,28 @@ export default function ProcurementAnalytics({
     .slice(0, 5);
 
   // === NEW: Vendor Performance Metrics ===
-  const vendorPerformance = vendors.map(vendor => {
-    const vendorPOs = purchaseOrders.filter(po => po.vendor_id === vendor.id);
-    const deliveredPOs = vendorPOs.filter(po => po.status === 'received');
-    const vendorReceipts = goodsReceipts.filter(r => r.vendor_id === vendor.id);
-    
-    const qualityPassed = vendorReceipts.filter(r => r.quality_status === 'passed').length;
-    const qualityRate = vendorReceipts.length > 0 ? (qualityPassed / vendorReceipts.length) * 100 : 100;
-    
-    return {
-      name: vendor.name,
-      rating: vendor.rating || 5,
-      onTimeRate: vendor.on_time_rate || 100,
-      qualityRate: Math.round(qualityRate),
-      totalOrders: vendorPOs.length,
-      totalSpent: vendorPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0)
-    };
-  }).filter(v => v.totalOrders > 0).sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 8);
+  const vendorPerformance = vendors
+    .map((vendor) => {
+      const vendorPOs = purchaseOrders.filter((po) => po.vendor_id === vendor.id);
+      const deliveredPOs = vendorPOs.filter((po) => po.status === 'received');
+      const vendorReceipts = goodsReceipts.filter((r) => r.vendor_id === vendor.id);
+
+      const qualityPassed = vendorReceipts.filter((r) => r.quality_status === 'passed').length;
+      const qualityRate =
+        vendorReceipts.length > 0 ? (qualityPassed / vendorReceipts.length) * 100 : 100;
+
+      return {
+        name: vendor.name,
+        rating: vendor.rating || 5,
+        onTimeRate: vendor.on_time_rate || 100,
+        qualityRate: Math.round(qualityRate),
+        totalOrders: vendorPOs.length,
+        totalSpent: vendorPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0),
+      };
+    })
+    .filter((v) => v.totalOrders > 0)
+    .sort((a, b) => b.totalSpent - a.totalSpent)
+    .slice(0, 8);
 
   return (
     <div className="space-y-6">
@@ -192,7 +244,10 @@ export default function ProcurementAnalytics({
                 <p className="text-xs text-slate-500 uppercase font-medium">Auto-Approved</p>
                 <p className="text-2xl font-bold mt-1">{approvalStats.autoApproved}</p>
                 <p className="text-xs text-emerald-600 mt-1">
-                  {approvalStats.submitted > 0 ? Math.round((approvalStats.autoApproved / approvalStats.submitted) * 100) : 0}% of total
+                  {approvalStats.submitted > 0
+                    ? Math.round((approvalStats.autoApproved / approvalStats.submitted) * 100)
+                    : 0}
+                  % of total
                 </p>
               </div>
               <div className="p-3 bg-emerald-100 rounded-lg">
@@ -208,7 +263,10 @@ export default function ProcurementAnalytics({
               <div>
                 <p className="text-xs text-slate-500 uppercase font-medium">Rejection Rate</p>
                 <p className="text-2xl font-bold mt-1">
-                  {approvalStats.submitted > 0 ? Math.round((approvalStats.rejected / approvalStats.submitted) * 100) : 0}%
+                  {approvalStats.submitted > 0
+                    ? Math.round((approvalStats.rejected / approvalStats.submitted) * 100)
+                    : 0}
+                  %
                 </p>
                 <p className="text-xs text-slate-500 mt-1">{approvalStats.rejected} rejected</p>
               </div>
@@ -224,9 +282,14 @@ export default function ProcurementAnalytics({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-slate-500 uppercase font-medium">Tax & Shipping</p>
-                <p className="text-2xl font-bold mt-1">฿{(costBreakdown.tax + costBreakdown.shipping).toLocaleString()}</p>
+                <p className="text-2xl font-bold mt-1">
+                  ฿{(costBreakdown.tax + costBreakdown.shipping).toLocaleString()}
+                </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  {totalSpent > 0 ? (((costBreakdown.tax + costBreakdown.shipping) / totalSpent) * 100).toFixed(1) : 0}% of total
+                  {totalSpent > 0
+                    ? (((costBreakdown.tax + costBreakdown.shipping) / totalSpent) * 100).toFixed(1)
+                    : 0}
+                  % of total
                 </p>
               </div>
               <div className="p-3 bg-amber-100 rounded-lg">
@@ -245,8 +308,14 @@ export default function ProcurementAnalytics({
               <div>
                 <p className="text-xs text-slate-500 uppercase font-medium">Total Procurement</p>
                 <p className="text-2xl font-bold mt-1">฿{totalSpent.toLocaleString()}</p>
-                <div className={`flex items-center text-xs mt-1 ${spendTrend >= 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                  {spendTrend >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
+                <div
+                  className={`flex items-center text-xs mt-1 ${spendTrend >= 0 ? 'text-rose-600' : 'text-emerald-600'}`}
+                >
+                  {spendTrend >= 0 ? (
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3 mr-1" />
+                  )}
                   {Math.abs(spendTrend)}% vs last month
                 </div>
               </div>
@@ -277,7 +346,9 @@ export default function ProcurementAnalytics({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-slate-500 uppercase font-medium">Active Vendors</p>
-                <p className="text-2xl font-bold mt-1">{vendors.filter(v => v.status === 'active').length}</p>
+                <p className="text-2xl font-bold mt-1">
+                  {vendors.filter((v) => v.status === 'active').length}
+                </p>
                 <p className="text-xs text-slate-500 mt-1">{vendors.length} total vendors</p>
               </div>
               <div className="p-3 bg-purple-100 rounded-lg">
@@ -316,8 +387,8 @@ export default function ProcurementAnalytics({
               <BarChart data={monthlySpending}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="month" />
-                <YAxis tickFormatter={(v) => `฿${(v/1000).toFixed(0)}k`} />
-                <Tooltip 
+                <YAxis tickFormatter={(v) => `฿${(v / 1000).toFixed(0)}k`} />
+                <Tooltip
                   formatter={(v) => [`฿${v.toLocaleString()}`, 'Amount']}
                   contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
                 />
@@ -388,16 +459,16 @@ export default function ProcurementAnalytics({
                   <AreaChart data={vendorTrendData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(v) => `฿${(v/1000).toFixed(0)}k`} />
+                    <YAxis tickFormatter={(v) => `฿${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(v) => `฿${v.toLocaleString()}`} />
                     <Legend />
                     {vendors.slice(0, 5).map((vendor, idx) => (
-                      <Area 
-                        key={vendor.id} 
-                        type="monotone" 
-                        dataKey={vendor.name} 
+                      <Area
+                        key={vendor.id}
+                        type="monotone"
+                        dataKey={vendor.name}
                         stackId="1"
-                        stroke={COLORS[idx % COLORS.length]} 
+                        stroke={COLORS[idx % COLORS.length]}
                         fill={COLORS[idx % COLORS.length]}
                         fillOpacity={0.6}
                       />
@@ -418,12 +489,30 @@ export default function ProcurementAnalytics({
                   <ComposedChart data={monthlySpending}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" />
-                    <YAxis yAxisId="left" tickFormatter={(v) => `฿${(v/1000).toFixed(0)}k`} />
+                    <YAxis yAxisId="left" tickFormatter={(v) => `฿${(v / 1000).toFixed(0)}k`} />
                     <YAxis yAxisId="right" orientation="right" />
-                    <Tooltip formatter={(v, name) => [name === 'count' ? v : `฿${v.toLocaleString()}`, name === 'count' ? 'Orders' : 'Amount']} />
+                    <Tooltip
+                      formatter={(v, name) => [
+                        name === 'count' ? v : `฿${v.toLocaleString()}`,
+                        name === 'count' ? 'Orders' : 'Amount',
+                      ]}
+                    />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Spend" />
-                    <Line yAxisId="right" type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} name="Orders" />
+                    <Bar
+                      yAxisId="left"
+                      dataKey="amount"
+                      fill="#3b82f6"
+                      radius={[4, 4, 0, 0]}
+                      name="Spend"
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      name="Orders"
+                    />
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -450,7 +539,9 @@ export default function ProcurementAnalytics({
                         </div>
                         <div>
                           <p className="font-medium">{vendor.name}</p>
-                          <p className="text-xs text-slate-500">{vendor.totalOrders} orders • ฿{vendor.totalSpent.toLocaleString()}</p>
+                          <p className="text-xs text-slate-500">
+                            {vendor.totalOrders} orders • ฿{vendor.totalSpent.toLocaleString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
@@ -462,7 +553,15 @@ export default function ProcurementAnalytics({
                       <div>
                         <div className="flex items-center justify-between text-sm mb-1">
                           <span className="text-slate-500">On-Time Delivery</span>
-                          <span className={vendor.onTimeRate >= 90 ? 'text-emerald-600' : vendor.onTimeRate >= 70 ? 'text-amber-600' : 'text-rose-600'}>
+                          <span
+                            className={
+                              vendor.onTimeRate >= 90
+                                ? 'text-emerald-600'
+                                : vendor.onTimeRate >= 70
+                                  ? 'text-amber-600'
+                                  : 'text-rose-600'
+                            }
+                          >
                             {vendor.onTimeRate}%
                           </span>
                         </div>
@@ -471,7 +570,15 @@ export default function ProcurementAnalytics({
                       <div>
                         <div className="flex items-center justify-between text-sm mb-1">
                           <span className="text-slate-500">Quality Score</span>
-                          <span className={vendor.qualityRate >= 90 ? 'text-emerald-600' : vendor.qualityRate >= 70 ? 'text-amber-600' : 'text-rose-600'}>
+                          <span
+                            className={
+                              vendor.qualityRate >= 90
+                                ? 'text-emerald-600'
+                                : vendor.qualityRate >= 70
+                                  ? 'text-amber-600'
+                                  : 'text-rose-600'
+                            }
+                          >
                             {vendor.qualityRate}%
                           </span>
                         </div>
@@ -481,7 +588,9 @@ export default function ProcurementAnalytics({
                   </div>
                 ))}
                 {vendorPerformance.length === 0 && (
-                  <p className="text-center text-slate-500 py-8">No vendor performance data available</p>
+                  <p className="text-center text-slate-500 py-8">
+                    No vendor performance data available
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -560,7 +669,10 @@ export default function ProcurementAnalytics({
                             <span className="text-sm font-medium">{approver.name}</span>
                             <span className="text-sm text-slate-500">{approver.count} actions</span>
                           </div>
-                          <Progress value={(approver.count / (approverWorkload[0]?.count || 1)) * 100} className="h-2" />
+                          <Progress
+                            value={(approver.count / (approverWorkload[0]?.count || 1)) * 100}
+                            className="h-2"
+                          />
                         </div>
                       </div>
                     ))}
@@ -636,7 +748,10 @@ export default function ProcurementAnalytics({
                 <div className="flex justify-center gap-6 mt-4">
                   {costBreakdownData.map((item, idx) => (
                     <div key={idx} className="text-center">
-                      <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: item.color }} />
+                      <div
+                        className="w-3 h-3 rounded-full mx-auto mb-1"
+                        style={{ backgroundColor: item.color }}
+                      />
                       <p className="text-xs text-slate-500">{item.name}</p>
                       <p className="font-bold">฿{item.value.toLocaleString()}</p>
                     </div>
@@ -659,10 +774,15 @@ export default function ProcurementAnalytics({
                         <Package className="w-5 h-5 text-blue-600" />
                         <span className="font-medium">Base Costs</span>
                       </div>
-                      <span className="text-xl font-bold text-blue-600">฿{costBreakdown.subtotal.toLocaleString()}</span>
+                      <span className="text-xl font-bold text-blue-600">
+                        ฿{costBreakdown.subtotal.toLocaleString()}
+                      </span>
                     </div>
                     <p className="text-xs text-blue-600 mt-1 ml-8">
-                      {totalSpent > 0 ? ((costBreakdown.subtotal / totalSpent) * 100).toFixed(1) : 0}% of total
+                      {totalSpent > 0
+                        ? ((costBreakdown.subtotal / totalSpent) * 100).toFixed(1)
+                        : 0}
+                      % of total
                     </p>
                   </div>
                   <div className="p-4 bg-amber-50 rounded-lg">
@@ -671,10 +791,13 @@ export default function ProcurementAnalytics({
                         <Receipt className="w-5 h-5 text-amber-600" />
                         <span className="font-medium">Tax Amount</span>
                       </div>
-                      <span className="text-xl font-bold text-amber-600">฿{costBreakdown.tax.toLocaleString()}</span>
+                      <span className="text-xl font-bold text-amber-600">
+                        ฿{costBreakdown.tax.toLocaleString()}
+                      </span>
                     </div>
                     <p className="text-xs text-amber-600 mt-1 ml-8">
-                      {totalSpent > 0 ? ((costBreakdown.tax / totalSpent) * 100).toFixed(1) : 0}% of total
+                      {totalSpent > 0 ? ((costBreakdown.tax / totalSpent) * 100).toFixed(1) : 0}% of
+                      total
                     </p>
                   </div>
                   <div className="p-4 bg-emerald-50 rounded-lg">
@@ -683,10 +806,15 @@ export default function ProcurementAnalytics({
                         <Truck className="w-5 h-5 text-emerald-600" />
                         <span className="font-medium">Shipping Costs</span>
                       </div>
-                      <span className="text-xl font-bold text-emerald-600">฿{costBreakdown.shipping.toLocaleString()}</span>
+                      <span className="text-xl font-bold text-emerald-600">
+                        ฿{costBreakdown.shipping.toLocaleString()}
+                      </span>
                     </div>
                     <p className="text-xs text-emerald-600 mt-1 ml-8">
-                      {totalSpent > 0 ? ((costBreakdown.shipping / totalSpent) * 100).toFixed(1) : 0}% of total
+                      {totalSpent > 0
+                        ? ((costBreakdown.shipping / totalSpent) * 100).toFixed(1)
+                        : 0}
+                      % of total
                     </p>
                   </div>
                   <div className="p-4 bg-slate-100 rounded-lg border-2 border-slate-200">

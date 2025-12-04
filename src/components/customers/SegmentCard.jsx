@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Users, TrendingUp, Package, DollarSign, ArrowRight } from 'lucide-react';
 
 const segmentConfig = {
@@ -11,7 +11,7 @@ const segmentConfig = {
     color: 'bg-blue-500',
     bgLight: 'bg-blue-50',
     textColor: 'text-blue-700',
-    icon: Users
+    icon: Users,
   },
   online_shopper: {
     label: 'Online Shoppers',
@@ -19,7 +19,7 @@ const segmentConfig = {
     color: 'bg-purple-500',
     bgLight: 'bg-purple-50',
     textColor: 'text-purple-700',
-    icon: Package
+    icon: Package,
   },
   sme_importer: {
     label: 'SME Importers',
@@ -27,8 +27,8 @@ const segmentConfig = {
     color: 'bg-amber-500',
     bgLight: 'bg-amber-50',
     textColor: 'text-amber-700',
-    icon: TrendingUp
-  }
+    icon: TrendingUp,
+  },
 };
 
 export default function SegmentCard({ segment, customers, shipments, onClick, selected }) {
@@ -36,18 +36,18 @@ export default function SegmentCard({ segment, customers, shipments, onClick, se
   if (!config) return null;
 
   const Icon = config.icon;
-  const segmentCustomers = customers.filter(c => c.customer_type === segment);
-  const customerIds = segmentCustomers.map(c => c.id);
-  
-  const segmentShipments = shipments.filter(s => 
-    segmentCustomers.some(c => c.name === s.customer_name || c.phone === s.customer_phone)
+  const segmentCustomers = customers.filter((c) => c.customer_type === segment);
+  const customerIds = segmentCustomers.map((c) => c.id);
+
+  const segmentShipments = shipments.filter((s) =>
+    segmentCustomers.some((c) => c.name === s.customer_name || c.phone === s.customer_phone)
   );
-  
+
   const totalRevenue = segmentShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0);
   const avgOrderValue = segmentShipments.length > 0 ? totalRevenue / segmentShipments.length : 0;
 
   return (
-    <Card 
+    <Card
       className={`border-2 cursor-pointer transition-all hover:shadow-lg ${
         selected ? `border-${config.color.replace('bg-', '')} shadow-lg` : 'border-transparent'
       }`}

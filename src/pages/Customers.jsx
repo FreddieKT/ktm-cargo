@@ -1,25 +1,48 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Plus, Search, Users, Phone, Mail, MapPin, 
-  Package, DollarSign, UserPlus, X, Sparkles, Crown,
-  AlertTriangle, Clock, Star
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Plus,
+  Search,
+  Users,
+  Phone,
+  Mail,
+  MapPin,
+  Package,
+  DollarSign,
+  UserPlus,
+  X,
+  Sparkles,
+  Crown,
+  AlertTriangle,
+  Clock,
+  Star,
 } from 'lucide-react';
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import { sendWelcomeEmailSeries } from '@/components/onboarding/WelcomeEmailService';
 import CustomerOnboarding from '@/components/onboarding/CustomerOnboarding';
-import { segmentCustomers, getSegmentSummary, VALUE_TIERS, BEHAVIORAL_SEGMENTS } from '@/components/customers/CustomerSegmentationEngine';
+import {
+  segmentCustomers,
+  getSegmentSummary,
+  VALUE_TIERS,
+  BEHAVIORAL_SEGMENTS,
+} from '@/components/customers/CustomerSegmentationEngine';
 import CustomerSegmentBadges from '@/components/customers/CustomerSegmentBadges';
 
 export default function Customers() {
@@ -38,12 +61,12 @@ export default function Customers() {
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list('-created_date'),
-    refetchInterval: 5000 // Auto-refresh every 5 seconds
+    refetchInterval: 5000, // Auto-refresh every 5 seconds
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 500)
+    queryFn: () => base44.entities.Shipment.list('-created_date', 500),
   });
 
   // AI-powered customer segmentation
@@ -59,7 +82,7 @@ export default function Customers() {
     mutationFn: async (data) => {
       const customerData = {
         ...data,
-        referral_code: data.referral_code || `REF${Date.now().toString(36).toUpperCase()}`
+        referral_code: data.referral_code || `REF${Date.now().toString(36).toUpperCase()}`,
       };
       const created = await base44.entities.Customer.create(customerData);
       return { ...customerData, ...created };
@@ -68,22 +91,19 @@ export default function Customers() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setNewCustomer(createdCustomer);
-      
+
       // Send welcome email series if email provided and option selected
       if (createdCustomer.email && sendWelcomeEmail) {
-        toast.promise(
-          sendWelcomeEmailSeries(createdCustomer),
-          {
-            loading: 'Sending welcome email...',
-            success: 'Welcome email sent!',
-            error: 'Failed to send welcome email'
-          }
-        );
+        toast.promise(sendWelcomeEmailSeries(createdCustomer), {
+          loading: 'Sending welcome email...',
+          success: 'Welcome email sent!',
+          error: 'Failed to send welcome email',
+        });
       }
-      
+
       // Show onboarding modal for new customers
       setShowOnboarding(true);
-    }
+    },
   });
 
   const updateMutation = useMutation({
@@ -92,7 +112,7 @@ export default function Customers() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
-    }
+    },
   });
 
   const [form, setForm] = useState({
@@ -103,7 +123,7 @@ export default function Customers() {
     address_bangkok: '',
     address_yangon: '',
     notes: '',
-    referred_by: ''
+    referred_by: '',
   });
 
   const handleSubmit = (e) => {
@@ -125,7 +145,7 @@ export default function Customers() {
       address_bangkok: customer.address_bangkok || '',
       address_yangon: customer.address_yangon || '',
       notes: customer.notes || '',
-      referred_by: customer.referred_by || ''
+      referred_by: customer.referred_by || '',
     });
     setShowForm(true);
   };
@@ -139,18 +159,19 @@ export default function Customers() {
       address_bangkok: '',
       address_yangon: '',
       notes: '',
-      referred_by: ''
+      referred_by: '',
     });
     setEditingCustomer(null);
   };
 
-  const filteredCustomers = analyzedCustomers.filter(c => {
+  const filteredCustomers = analyzedCustomers.filter((c) => {
     const matchesType = typeFilter === 'all' || c.customer_type === typeFilter;
-    const matchesSearch = !searchQuery || 
+    const matchesSearch =
+      !searchQuery ||
       c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.phone?.includes(searchQuery) ||
       c.email?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Segment filter
     let matchesSegment = segmentFilter === 'all';
     if (segmentFilter === 'vip') matchesSegment = c.valueTier?.key === 'vip';
@@ -159,20 +180,20 @@ export default function Customers() {
     if (segmentFilter === 'lapsed') matchesSegment = c.behavioralSegment?.key === 'lapsed';
     if (segmentFilter === 'new') matchesSegment = c.behavioralSegment?.key === 'new';
     if (segmentFilter === 'loyal') matchesSegment = c.behavioralSegment?.key === 'loyal';
-    
+
     return matchesType && matchesSearch && matchesSegment;
   });
 
   const typeLabels = {
     individual: 'Individual',
     online_shopper: 'Online Shopper',
-    sme_importer: 'SME Importer'
+    sme_importer: 'SME Importer',
   };
 
   const typeColors = {
     individual: 'bg-blue-100 text-blue-800',
     online_shopper: 'bg-purple-100 text-purple-800',
-    sme_importer: 'bg-amber-100 text-amber-800'
+    sme_importer: 'bg-amber-100 text-amber-800',
   };
 
   return (
@@ -184,8 +205,11 @@ export default function Customers() {
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Customers</h1>
             <p className="text-slate-500 mt-1">{customers.length} total customers</p>
           </div>
-          <Button 
-            onClick={() => { resetForm(); setShowForm(true); }}
+          <Button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
             className="bg-blue-600 hover:bg-blue-700"
           >
             <UserPlus className="w-4 h-4 mr-2" />
@@ -195,7 +219,7 @@ export default function Customers() {
 
         {/* Segment Summary Cards */}
         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
-          <Card 
+          <Card
             className={`border-2 cursor-pointer transition-all hover:shadow-md ${segmentFilter === 'vip' ? 'border-purple-500 bg-purple-50' : 'border-transparent'}`}
             onClick={() => setSegmentFilter(segmentFilter === 'vip' ? 'all' : 'vip')}
           >
@@ -203,11 +227,13 @@ export default function Customers() {
               <Crown className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-slate-500">VIP</p>
-                <p className="font-bold text-sm sm:text-base text-slate-900">{segmentSummary.byValueTier.vip.count}</p>
+                <p className="font-bold text-sm sm:text-base text-slate-900">
+                  {segmentSummary.byValueTier.vip.count}
+                </p>
               </div>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className={`border-2 cursor-pointer transition-all hover:shadow-md ${segmentFilter === 'high' ? 'border-emerald-500 bg-emerald-50' : 'border-transparent'}`}
             onClick={() => setSegmentFilter(segmentFilter === 'high' ? 'all' : 'high')}
           >
@@ -215,11 +241,13 @@ export default function Customers() {
               <Star className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-slate-500">High</p>
-                <p className="font-bold text-sm sm:text-base text-slate-900">{segmentSummary.byValueTier.high.count}</p>
+                <p className="font-bold text-sm sm:text-base text-slate-900">
+                  {segmentSummary.byValueTier.high.count}
+                </p>
               </div>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className={`border-2 cursor-pointer transition-all hover:shadow-md ${segmentFilter === 'loyal' ? 'border-amber-500 bg-amber-50' : 'border-transparent'}`}
             onClick={() => setSegmentFilter(segmentFilter === 'loyal' ? 'all' : 'loyal')}
           >
@@ -227,11 +255,13 @@ export default function Customers() {
               <Crown className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-slate-500">Loyal</p>
-                <p className="font-bold text-sm sm:text-base text-slate-900">{segmentSummary.byBehavior.loyal.count}</p>
+                <p className="font-bold text-sm sm:text-base text-slate-900">
+                  {segmentSummary.byBehavior.loyal.count}
+                </p>
               </div>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className={`border-2 cursor-pointer transition-all hover:shadow-md ${segmentFilter === 'new' ? 'border-sky-500 bg-sky-50' : 'border-transparent'}`}
             onClick={() => setSegmentFilter(segmentFilter === 'new' ? 'all' : 'new')}
           >
@@ -239,11 +269,13 @@ export default function Customers() {
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-sky-600 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-slate-500">New</p>
-                <p className="font-bold text-sm sm:text-base text-slate-900">{segmentSummary.byBehavior.new.count}</p>
+                <p className="font-bold text-sm sm:text-base text-slate-900">
+                  {segmentSummary.byBehavior.new.count}
+                </p>
               </div>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className={`border-2 cursor-pointer transition-all hover:shadow-md ${segmentFilter === 'at_risk' ? 'border-rose-500 bg-rose-50' : 'border-transparent'}`}
             onClick={() => setSegmentFilter(segmentFilter === 'at_risk' ? 'all' : 'at_risk')}
           >
@@ -251,11 +283,13 @@ export default function Customers() {
               <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-rose-600 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-slate-500">Risk</p>
-                <p className="font-bold text-sm sm:text-base text-slate-900">{segmentSummary.byBehavior.at_risk.count}</p>
+                <p className="font-bold text-sm sm:text-base text-slate-900">
+                  {segmentSummary.byBehavior.at_risk.count}
+                </p>
               </div>
             </CardContent>
           </Card>
-          <Card 
+          <Card
             className={`border-2 cursor-pointer transition-all hover:shadow-md ${segmentFilter === 'lapsed' ? 'border-gray-500 bg-gray-50' : 'border-transparent'}`}
             onClick={() => setSegmentFilter(segmentFilter === 'lapsed' ? 'all' : 'lapsed')}
           >
@@ -263,7 +297,9 @@ export default function Customers() {
               <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] sm:text-xs text-slate-500">Lapsed</p>
-                <p className="font-bold text-sm sm:text-base text-slate-900">{segmentSummary.byBehavior.lapsed.count}</p>
+                <p className="font-bold text-sm sm:text-base text-slate-900">
+                  {segmentSummary.byBehavior.lapsed.count}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -305,15 +341,17 @@ export default function Customers() {
         {/* Customers Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array(6).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-48" />
-            ))}
+            {Array(6)
+              .fill(0)
+              .map((_, i) => (
+                <Skeleton key={i} className="h-48" />
+              ))}
           </div>
         ) : filteredCustomers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCustomers.map(customer => (
-              <Card 
-                key={customer.id} 
+            {filteredCustomers.map((customer) => (
+              <Card
+                key={customer.id}
                 className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => handleEdit(customer)}
               >
@@ -355,11 +393,15 @@ export default function Customers() {
                   <div className="flex gap-4 mt-4 pt-3 border-t border-slate-100">
                     <div className="flex items-center gap-1 text-sm">
                       <Package className="w-4 h-4 text-slate-400" />
-                      <span className="text-slate-600">{customer.shipmentCount || 0} shipments</span>
+                      <span className="text-slate-600">
+                        {customer.shipmentCount || 0} shipments
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-sm">
                       <DollarSign className="w-4 h-4 text-slate-400" />
-                      <span className="text-slate-600">฿{(customer.totalSpent || 0).toLocaleString()}</span>
+                      <span className="text-slate-600">
+                        ฿{(customer.totalSpent || 0).toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -372,7 +414,7 @@ export default function Customers() {
               <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-900 mb-2">No customers found</h3>
               <p className="text-slate-500 mb-6">
-                {searchQuery || typeFilter !== 'all' 
+                {searchQuery || typeFilter !== 'all'
                   ? 'Try adjusting your filters'
                   : 'Add your first customer to get started'}
               </p>
@@ -387,7 +429,13 @@ export default function Customers() {
         )}
 
         {/* Customer Form Dialog */}
-        <Dialog open={showForm} onOpenChange={(v) => { setShowForm(v); if (!v) resetForm(); }}>
+        <Dialog
+          open={showForm}
+          onOpenChange={(v) => {
+            setShowForm(v);
+            if (!v) resetForm();
+          }}
+        >
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingCustomer ? 'Edit Customer' : 'Add New Customer'}</DialogTitle>
@@ -423,7 +471,10 @@ export default function Customers() {
                 </div>
                 <div className="col-span-2 space-y-2">
                   <Label>Customer Type</Label>
-                  <Select value={form.customer_type} onValueChange={(v) => setForm({ ...form, customer_type: v })}>
+                  <Select
+                    value={form.customer_type}
+                    onValueChange={(v) => setForm({ ...form, customer_type: v })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -472,13 +523,16 @@ export default function Customers() {
               {/* Welcome Email Option - only for new customers */}
               {!editingCustomer && (
                 <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                  <Checkbox 
-                    id="sendWelcome" 
-                    checked={sendWelcomeEmail} 
+                  <Checkbox
+                    id="sendWelcome"
+                    checked={sendWelcomeEmail}
                     onCheckedChange={setSendWelcomeEmail}
                   />
                   <div className="flex-1">
-                    <label htmlFor="sendWelcome" className="text-sm font-medium text-blue-900 cursor-pointer">
+                    <label
+                      htmlFor="sendWelcome"
+                      className="text-sm font-medium text-blue-900 cursor-pointer"
+                    >
                       Send welcome email series
                     </label>
                     <p className="text-xs text-blue-600">
@@ -490,7 +544,15 @@ export default function Customers() {
               )}
 
               <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => { setShowForm(false); resetForm(); }} className="flex-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
                 <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
@@ -504,7 +566,7 @@ export default function Customers() {
         {/* Onboarding Modal for New Customers */}
         <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
           <DialogContent className="max-w-2xl p-0 border-0 bg-transparent">
-            <CustomerOnboarding 
+            <CustomerOnboarding
               customer={newCustomer}
               onComplete={() => {
                 setShowOnboarding(false);

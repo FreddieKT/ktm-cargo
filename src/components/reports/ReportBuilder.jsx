@@ -1,56 +1,132 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, FileSpreadsheet, Filter, SortAsc, SortDesc, Mail, Calendar } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Plus,
+  Trash2,
+  FileSpreadsheet,
+  Filter,
+  SortAsc,
+  SortDesc,
+  Mail,
+  Calendar,
+} from 'lucide-react';
 
 const REPORT_TYPES = {
   shipments: {
     label: 'Shipments',
-    columns: ['tracking_number', 'customer_name', 'service_type', 'weight_kg', 'total_amount', 'profit', 'status', 'payment_status', 'created_date'],
-    filters: ['status', 'service_type', 'payment_status', 'date_range']
+    columns: [
+      'tracking_number',
+      'customer_name',
+      'service_type',
+      'weight_kg',
+      'total_amount',
+      'profit',
+      'status',
+      'payment_status',
+      'created_date',
+    ],
+    filters: ['status', 'service_type', 'payment_status', 'date_range'],
   },
   customers: {
     label: 'Customers',
-    columns: ['name', 'phone', 'email', 'customer_type', 'total_shipments', 'total_spent', 'created_date'],
-    filters: ['customer_type', 'value_tier', 'date_range']
+    columns: [
+      'name',
+      'phone',
+      'email',
+      'customer_type',
+      'total_shipments',
+      'total_spent',
+      'created_date',
+    ],
+    filters: ['customer_type', 'value_tier', 'date_range'],
   },
   revenue: {
     label: 'Revenue',
-    columns: ['date', 'shipment_revenue', 'shopping_revenue', 'total_revenue', 'expenses', 'profit'],
-    filters: ['date_range', 'service_type']
+    columns: [
+      'date',
+      'shipment_revenue',
+      'shopping_revenue',
+      'total_revenue',
+      'expenses',
+      'profit',
+    ],
+    filters: ['date_range', 'service_type'],
   },
   campaigns: {
     label: 'Campaigns',
-    columns: ['name', 'campaign_type', 'target_segment', 'target_count', 'sent_count', 'conversion_count', 'status'],
-    filters: ['status', 'campaign_type', 'date_range']
+    columns: [
+      'name',
+      'campaign_type',
+      'target_segment',
+      'target_count',
+      'sent_count',
+      'conversion_count',
+      'status',
+    ],
+    filters: ['status', 'campaign_type', 'date_range'],
   },
   expenses: {
     label: 'Expenses',
     columns: ['title', 'category', 'amount', 'date', 'notes'],
-    filters: ['category', 'date_range']
+    filters: ['category', 'date_range'],
   },
   pricing: {
     label: 'Pricing',
-    columns: ['service_type', 'display_name', 'cost_per_kg', 'price_per_kg', 'min_weight', 'max_weight', 'is_active'],
-    filters: ['is_active']
-  }
+    columns: [
+      'service_type',
+      'display_name',
+      'cost_per_kg',
+      'price_per_kg',
+      'min_weight',
+      'max_weight',
+      'is_active',
+    ],
+    filters: ['is_active'],
+  },
 };
 
 const FILTER_OPTIONS = {
   status: ['pending', 'confirmed', 'picked_up', 'in_transit', 'customs', 'delivered', 'cancelled'],
-  service_type: ['cargo_small', 'cargo_medium', 'cargo_large', 'shopping_small', 'shopping_fashion', 'shopping_bulk', 'express', 'standard'],
+  service_type: [
+    'cargo_small',
+    'cargo_medium',
+    'cargo_large',
+    'shopping_small',
+    'shopping_fashion',
+    'shopping_bulk',
+    'express',
+    'standard',
+  ],
   payment_status: ['unpaid', 'partial', 'paid'],
   customer_type: ['individual', 'online_shopper', 'sme_importer'],
   value_tier: ['vip', 'high', 'medium', 'low'],
   campaign_type: ['discount', 'promotion', 'referral', 'announcement', 'loyalty'],
-  category: ['registration', 'legal', 'marketing', 'operations', 'staff', 'rent', 'technology', 'cargo_cost', 'supplies', 'other']
+  category: [
+    'registration',
+    'legal',
+    'marketing',
+    'operations',
+    'staff',
+    'rent',
+    'technology',
+    'cargo_cost',
+    'supplies',
+    'other',
+  ],
 };
 
 export default function ReportBuilder({ report, onSubmit, onCancel }) {
@@ -63,7 +139,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
     format: 'csv',
     sort_by: 'created_date',
     sort_order: 'desc',
-    is_active: true
+    is_active: true,
   });
   const [selectedColumns, setSelectedColumns] = useState([]);
   const [filters, setFilters] = useState([]);
@@ -79,13 +155,21 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
         format: report.format || 'csv',
         sort_by: report.sort_by || 'created_date',
         sort_order: report.sort_order || 'desc',
-        is_active: report.is_active !== false
+        is_active: report.is_active !== false,
       });
       if (report.columns) {
-        try { setSelectedColumns(JSON.parse(report.columns)); } catch(e) { setSelectedColumns([]); }
+        try {
+          setSelectedColumns(JSON.parse(report.columns));
+        } catch (e) {
+          setSelectedColumns([]);
+        }
       }
       if (report.filters) {
-        try { setFilters(JSON.parse(report.filters)); } catch(e) { setFilters([]); }
+        try {
+          setFilters(JSON.parse(report.filters));
+        } catch (e) {
+          setFilters([]);
+        }
       }
     } else {
       setSelectedColumns(REPORT_TYPES.shipments.columns.slice(0, 5));
@@ -100,7 +184,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
 
   const toggleColumn = (col) => {
     if (selectedColumns.includes(col)) {
-      setSelectedColumns(selectedColumns.filter(c => c !== col));
+      setSelectedColumns(selectedColumns.filter((c) => c !== col));
     } else {
       setSelectedColumns([...selectedColumns, col]);
     }
@@ -128,7 +212,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
     onSubmit({
       ...form,
       columns: JSON.stringify(selectedColumns),
-      filters: JSON.stringify(filters)
+      filters: JSON.stringify(filters),
     });
   };
 
@@ -158,10 +242,14 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
             <div className="space-y-2">
               <Label>Report Type</Label>
               <Select value={form.report_type} onValueChange={handleReportTypeChange}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(REPORT_TYPES).map(([key, val]) => (
-                    <SelectItem key={key} value={key}>{val.label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {val.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -174,7 +262,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
               <SortAsc className="w-4 h-4" /> Select Columns
             </Label>
             <div className="flex flex-wrap gap-2">
-              {reportConfig.columns.map(col => (
+              {reportConfig.columns.map((col) => (
                 <Badge
                   key={col}
                   variant={selectedColumns.includes(col) ? 'default' : 'outline'}
@@ -198,23 +286,37 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
               </Button>
             </div>
             {filters.length === 0 ? (
-              <p className="text-sm text-slate-500">No filters applied. All data will be included.</p>
+              <p className="text-sm text-slate-500">
+                No filters applied. All data will be included.
+              </p>
             ) : (
               <div className="space-y-2">
                 {filters.map((filter, index) => (
                   <div key={index} className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
-                    <Select value={filter.field} onValueChange={(v) => updateFilter(index, { field: v, value: '' })}>
-                      <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                    <Select
+                      value={filter.field}
+                      onValueChange={(v) => updateFilter(index, { field: v, value: '' })}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {reportConfig.filters.map(f => (
-                          <SelectItem key={f} value={f}>{f.replace(/_/g, ' ')}</SelectItem>
+                        {reportConfig.filters.map((f) => (
+                          <SelectItem key={f} value={f}>
+                            {f.replace(/_/g, ' ')}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    
+
                     {filter.field === 'date_range' ? (
-                      <Select value={filter.value} onValueChange={(v) => updateFilter(index, { value: v })}>
-                        <SelectTrigger className="w-40"><SelectValue placeholder="Select range" /></SelectTrigger>
+                      <Select
+                        value={filter.value}
+                        onValueChange={(v) => updateFilter(index, { value: v })}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Select range" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="7d">Last 7 days</SelectItem>
                           <SelectItem value="30d">Last 30 days</SelectItem>
@@ -224,11 +326,18 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                         </SelectContent>
                       </Select>
                     ) : FILTER_OPTIONS[filter.field] ? (
-                      <Select value={filter.value} onValueChange={(v) => updateFilter(index, { value: v })}>
-                        <SelectTrigger className="w-40"><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <Select
+                        value={filter.value}
+                        onValueChange={(v) => updateFilter(index, { value: v })}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
                         <SelectContent>
-                          {FILTER_OPTIONS[filter.field].map(opt => (
-                            <SelectItem key={opt} value={opt}>{opt.replace(/_/g, ' ')}</SelectItem>
+                          {FILTER_OPTIONS[filter.field].map((opt) => (
+                            <SelectItem key={opt} value={opt}>
+                              {opt.replace(/_/g, ' ')}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -240,8 +349,14 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                         placeholder="Value"
                       />
                     )}
-                    
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removeFilter(index)} className="text-rose-600">
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFilter(index)}
+                      className="text-rose-600"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -255,18 +370,27 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
             <div className="space-y-2">
               <Label>Sort By</Label>
               <Select value={form.sort_by} onValueChange={(v) => setForm({ ...form, sort_by: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {reportConfig.columns.map(col => (
-                    <SelectItem key={col} value={col}>{col.replace(/_/g, ' ')}</SelectItem>
+                  {reportConfig.columns.map((col) => (
+                    <SelectItem key={col} value={col}>
+                      {col.replace(/_/g, ' ')}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Order</Label>
-              <Select value={form.sort_order} onValueChange={(v) => setForm({ ...form, sort_order: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.sort_order}
+                onValueChange={(v) => setForm({ ...form, sort_order: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="asc">Ascending</SelectItem>
                   <SelectItem value="desc">Descending</SelectItem>
@@ -281,8 +405,13 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
               <Mail className="w-4 h-4" /> Email Schedule (Optional)
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Select value={form.schedule} onValueChange={(v) => setForm({ ...form, schedule: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.schedule}
+                onValueChange={(v) => setForm({ ...form, schedule: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No Schedule</SelectItem>
                   <SelectItem value="daily">Daily</SelectItem>
@@ -290,10 +419,15 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                   <SelectItem value="monthly">Monthly</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               {form.schedule === 'weekly' && (
-                <Select value={String(form.schedule_day)} onValueChange={(v) => setForm({ ...form, schedule_day: parseInt(v) })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={String(form.schedule_day)}
+                  onValueChange={(v) => setForm({ ...form, schedule_day: parseInt(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">Monday</SelectItem>
                     <SelectItem value="2">Tuesday</SelectItem>
@@ -305,27 +439,36 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                   </SelectContent>
                 </Select>
               )}
-              
+
               {form.schedule === 'monthly' && (
-                <Select value={String(form.schedule_day)} onValueChange={(v) => setForm({ ...form, schedule_day: parseInt(v) })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={String(form.schedule_day)}
+                  onValueChange={(v) => setForm({ ...form, schedule_day: parseInt(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 28 }, (_, i) => (
-                      <SelectItem key={i+1} value={String(i+1)}>Day {i+1}</SelectItem>
+                      <SelectItem key={i + 1} value={String(i + 1)}>
+                        Day {i + 1}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
-              
+
               <Select value={form.format} onValueChange={(v) => setForm({ ...form, format: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="csv">CSV</SelectItem>
                   <SelectItem value="pdf">PDF</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             {form.schedule !== 'none' && (
               <div className="space-y-2">
                 <Label>Recipients (comma-separated emails)</Label>

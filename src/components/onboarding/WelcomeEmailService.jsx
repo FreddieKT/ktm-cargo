@@ -2,7 +2,7 @@ import { base44 } from '@/api/base44Client';
 
 const emailTemplates = {
   welcome: {
-    subject: "Welcome to BKK-YGN Cargo & Shopping Services! 🎉",
+    subject: 'Welcome to BKK-YGN Cargo & Shopping Services! 🎉',
     getBody: (customer) => `
 Dear ${customer.name},
 
@@ -32,11 +32,11 @@ Ready to ship? Contact us or visit our app to get started.
 
 Best regards,
 The BKK-YGN Cargo Team
-    `
+    `,
   },
 
   calculator_guide: {
-    subject: "📊 Get Instant Shipping Quotes - Calculator Guide",
+    subject: '📊 Get Instant Shipping Quotes - Calculator Guide',
     getBody: (customer) => `
 Hi ${customer.name},
 
@@ -71,11 +71,11 @@ Questions? Reply to this email anytime.
 
 Best,
 BKK-YGN Cargo Team
-    `
+    `,
   },
 
   benefits_rewards: {
-    subject: "🎁 Unlock Exclusive Benefits as You Ship More!",
+    subject: '🎁 Unlock Exclusive Benefits as You Ship More!',
     getBody: (customer) => `
 Hello ${customer.name},
 
@@ -113,11 +113,11 @@ Start shipping today to climb the rewards ladder!
 
 Best regards,
 BKK-YGN Cargo Team
-    `
+    `,
   },
 
   getting_started: {
-    subject: "✅ Your Complete Guide to Getting Started",
+    subject: '✅ Your Complete Guide to Getting Started',
     getBody: (customer) => `
 Hi ${customer.name},
 
@@ -158,8 +158,8 @@ We're here to help! Reply to this email with any questions.
 
 Happy shipping! 🚀
 BKK-YGN Cargo Team
-    `
-  }
+    `,
+  },
 };
 
 export async function sendWelcomeEmailSeries(customer) {
@@ -167,19 +167,19 @@ export async function sendWelcomeEmailSeries(customer) {
     { template: 'welcome', delay: 0 },
     { template: 'calculator_guide', delay: 1 }, // Day 1
     { template: 'benefits_rewards', delay: 3 }, // Day 3
-    { template: 'getting_started', delay: 5 }   // Day 5
+    { template: 'getting_started', delay: 5 }, // Day 5
   ];
 
   // Send first email immediately
   const welcomeTemplate = emailTemplates.welcome;
-  
+
   try {
     await base44.integrations.Core.SendEmail({
       to: customer.email,
       subject: welcomeTemplate.subject,
-      body: welcomeTemplate.getBody(customer)
+      body: welcomeTemplate.getBody(customer),
     });
-    
+
     console.log(`Welcome email sent to ${customer.email}`);
     return true;
   } catch (error) {
@@ -196,7 +196,7 @@ export async function sendOnboardingEmail(customer, templateKey) {
     await base44.integrations.Core.SendEmail({
       to: customer.email,
       subject: template.subject,
-      body: template.getBody(customer)
+      body: template.getBody(customer),
     });
     return true;
   } catch (error) {

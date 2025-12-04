@@ -1,6 +1,9 @@
 import { base44 } from '@/api/base44Client';
 import { format, addDays } from 'date-fns';
-import { triggerInvoiceGeneratedAlert, triggerVendorPayoutAlert } from '@/components/notifications/NotificationService';
+import {
+  triggerInvoiceGeneratedAlert,
+  triggerVendorPayoutAlert,
+} from '@/components/notifications/NotificationService';
 
 /**
  * Generates a unique invoice number
@@ -27,10 +30,10 @@ function generatePayoutNumber() {
  */
 export async function generateCustomerInvoice(shipment, customer) {
   // Check if invoice already exists for this shipment
-  const existingInvoices = await base44.entities.CustomerInvoice.filter({ 
-    shipment_id: shipment.id 
+  const existingInvoices = await base44.entities.CustomerInvoice.filter({
+    shipment_id: shipment.id,
   });
-  
+
   if (existingInvoices.length > 0) {
     console.log('Invoice already exists for shipment:', shipment.id);
     return existingInvoices[0];
@@ -67,7 +70,7 @@ export async function generateCustomerInvoice(shipment, customer) {
     payment_method: shipment.payment_method || 'promptpay',
     payment_date: format(new Date(), 'yyyy-MM-dd'),
     status: 'issued',
-    notes: shipment.items_description || ''
+    notes: shipment.items_description || '',
   });
 
   // Trigger notification for invoice generation
@@ -81,10 +84,10 @@ export async function generateCustomerInvoice(shipment, customer) {
  */
 export async function generateVendorPayout(shipment, invoice, vendorOrder, vendor) {
   // Check if payout already exists for this shipment
-  const existingPayouts = await base44.entities.VendorPayout.filter({ 
-    shipment_id: shipment.id 
+  const existingPayouts = await base44.entities.VendorPayout.filter({
+    shipment_id: shipment.id,
   });
-  
+
   if (existingPayouts.length > 0) {
     console.log('Payout already exists for shipment:', shipment.id);
     return existingPayouts[0];
@@ -116,7 +119,7 @@ export async function generateVendorPayout(shipment, invoice, vendorOrder, vendo
     due_date: format(addDays(new Date(), 15), 'yyyy-MM-dd'),
     status: 'pending',
     payment_method: 'bank_transfer',
-    notes: `Payout for shipment ${shipment.tracking_number || shipment.id}`
+    notes: `Payout for shipment ${shipment.tracking_number || shipment.id}`,
   });
 
   // Trigger notification for vendor payout
@@ -135,18 +138,19 @@ export async function processShipmentForInvoicing(shipment, customers, vendorOrd
   }
 
   // Find customer
-  const customer = customers?.find(c => 
-    c.id === shipment.customer_id || 
-    c.name === shipment.customer_name || 
-    c.phone === shipment.customer_phone
+  const customer = customers?.find(
+    (c) =>
+      c.id === shipment.customer_id ||
+      c.name === shipment.customer_name ||
+      c.phone === shipment.customer_phone
   );
 
   // Generate customer invoice
   const invoice = await generateCustomerInvoice(shipment, customer);
 
   // Find related vendor order and vendor
-  const vendorOrder = vendorOrders?.find(vo => vo.shipment_id === shipment.id);
-  const vendor = vendorOrder ? vendors?.find(v => v.id === vendorOrder.vendor_id) : null;
+  const vendorOrder = vendorOrders?.find((vo) => vo.shipment_id === shipment.id);
+  const vendor = vendorOrder ? vendors?.find((v) => v.id === vendorOrder.vendor_id) : null;
 
   // Generate vendor payout
   const payout = await generateVendorPayout(shipment, invoice, vendorOrder, vendor);

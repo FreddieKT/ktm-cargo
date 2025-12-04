@@ -16,10 +16,10 @@ function generateShoppingInvoiceNumber() {
  */
 export async function generateShoppingOrderInvoice(order, customer) {
   // Check if invoice already exists
-  const existingInvoices = await base44.entities.CustomerInvoice.filter({ 
-    order_id: order.id 
+  const existingInvoices = await base44.entities.CustomerInvoice.filter({
+    order_id: order.id,
   });
-  
+
   if (existingInvoices.length > 0) {
     console.log('Invoice already exists for order:', order.id);
     return { invoice: existingInvoices[0], isNew: false };
@@ -53,7 +53,7 @@ export async function generateShoppingOrderInvoice(order, customer) {
     payment_method: 'promptpay',
     status: order.payment_status === 'paid' ? 'paid' : 'issued',
     payment_date: order.payment_status === 'paid' ? format(new Date(), 'yyyy-MM-dd') : null,
-    notes: `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || order.product_links || ''}`
+    notes: `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || order.product_links || ''}`,
   });
 
   // Create notification
@@ -63,7 +63,7 @@ export async function generateShoppingOrderInvoice(order, customer) {
     message: `Invoice for shopping order ${order.order_number} has been generated. Amount: ฿${totalAmount.toLocaleString()}`,
     reference_type: 'invoice',
     reference_id: invoice.id,
-    status: 'unread'
+    status: 'unread',
   });
 
   return { invoice, isNew: true };
@@ -79,18 +79,19 @@ export async function processShoppingOrderInvoicing(order, customers) {
   }
 
   // Find customer
-  const customer = customers?.find(c => 
-    c.id === order.customer_id || 
-    c.name === order.customer_name || 
-    c.phone === order.customer_phone
+  const customer = customers?.find(
+    (c) =>
+      c.id === order.customer_id ||
+      c.name === order.customer_name ||
+      c.phone === order.customer_phone
   );
 
   const result = await generateShoppingOrderInvoice(order, customer);
-  
-  return { 
-    invoice: result.invoice, 
+
+  return {
+    invoice: result.invoice,
     skipped: false,
-    isNew: result.isNew 
+    isNew: result.isNew,
   };
 }
 
@@ -102,7 +103,7 @@ export async function batchProcessShoppingInvoices(orders, customers) {
     processed: 0,
     skipped: 0,
     errors: 0,
-    invoices: []
+    invoices: [],
   };
 
   for (const order of orders) {
@@ -132,17 +133,17 @@ export function calculateShoppingOrderProfit(order) {
   const revenue = parseFloat(order.total_amount) || 0;
   const vendorCost = parseFloat(order.vendor_cost) || 0;
   const productCost = parseFloat(order.actual_product_cost || order.estimated_product_cost) || 0;
-  
+
   // Profit = Total Amount - Vendor Cost - Product Cost
   // (Commission and shipping are part of total_amount, vendor_cost is what we pay to carrier)
   const grossProfit = revenue - vendorCost - productCost;
   const margin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
-  
+
   return {
     revenue,
     vendorCost,
     productCost,
     grossProfit,
-    margin: margin.toFixed(1)
+    margin: margin.toFixed(1),
   };
 }

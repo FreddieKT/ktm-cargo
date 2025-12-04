@@ -1,24 +1,51 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Package, Truck, Zap, ShoppingBag, MapPin, Scale,
-  Shield, Box, CheckCircle, Loader2, Calculator
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Package,
+  Truck,
+  Zap,
+  ShoppingBag,
+  MapPin,
+  Scale,
+  Shield,
+  Box,
+  CheckCircle,
+  Loader2,
+  Calculator,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { addDays, format } from 'date-fns';
 
 const SERVICE_TYPES = [
   { value: 'cargo_small', label: 'Cargo (1-5kg)', price: 120, icon: Package, delivery: '3-5 days' },
-  { value: 'cargo_medium', label: 'Cargo (6-15kg)', price: 95, icon: Package, delivery: '3-5 days' },
-  { value: 'cargo_large', label: 'Cargo (16-30kg)', price: 70, icon: Package, delivery: '3-5 days' },
+  {
+    value: 'cargo_medium',
+    label: 'Cargo (6-15kg)',
+    price: 95,
+    icon: Package,
+    delivery: '3-5 days',
+  },
+  {
+    value: 'cargo_large',
+    label: 'Cargo (16-30kg)',
+    price: 70,
+    icon: Package,
+    delivery: '3-5 days',
+  },
   { value: 'express', label: 'Express Delivery', price: 150, icon: Zap, delivery: '1-2 days' },
   { value: 'standard', label: 'Standard', price: 95, icon: Truck, delivery: '3-5 days' },
 ];
@@ -34,10 +61,10 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
     delivery_address: customer?.address_yangon || '',
     insurance_opted: false,
     packaging_fee: 0,
-    notes: ''
+    notes: '',
   });
 
-  const selectedService = SERVICE_TYPES.find(s => s.value === form.service_type);
+  const selectedService = SERVICE_TYPES.find((s) => s.value === form.service_type);
   const weight = parseFloat(form.weight_kg) || 0;
   const shippingCost = (selectedService?.price || 0) * weight;
   const insuranceFee = form.insurance_opted ? shippingCost * 0.03 : 0;
@@ -48,7 +75,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
     mutationFn: async (data) => {
       const trackingNumber = 'TRK' + Date.now().toString(36).toUpperCase();
       const estimatedDelivery = addDays(new Date(), selectedService?.value === 'express' ? 2 : 5);
-      
+
       const shipment = await base44.entities.Shipment.create({
         ...data,
         customer_id: customer?.id || '',
@@ -58,11 +85,11 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
         price_per_kg: selectedService?.price,
         cost_basis: selectedService?.price * 0.7,
         total_amount: totalAmount,
-        profit: totalAmount - (selectedService?.price * 0.7 * weight),
+        profit: totalAmount - selectedService?.price * 0.7 * weight,
         insurance_amount: insuranceFee,
         status: 'pending',
         payment_status: 'unpaid',
-        estimated_delivery: estimatedDelivery.toISOString().split('T')[0]
+        estimated_delivery: estimatedDelivery.toISOString().split('T')[0],
       });
 
       // Update customer stats if customer exists
@@ -70,7 +97,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
         try {
           await base44.entities.Customer.update(customer.id, {
             total_shipments: (customer.total_shipments || 0) + 1,
-            total_spent: (customer.total_spent || 0) + totalAmount
+            total_spent: (customer.total_spent || 0) + totalAmount,
           });
         } catch (e) {
           console.error('Failed to update customer stats', e);
@@ -86,7 +113,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
     },
     onError: () => {
       toast.error('Failed to create order');
-    }
+    },
   });
 
   const handleSubmit = () => {
@@ -98,21 +125,25 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
   };
 
   const updateForm = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Progress */}
       <div className="flex items-center justify-center gap-4 mb-8">
-        {[1, 2, 3].map(s => (
+        {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-              step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
-            }`}>
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
+                step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
+              }`}
+            >
               {step > s ? <CheckCircle className="w-5 h-5" /> : s}
             </div>
-            <span className={`hidden md:block text-sm ${step >= s ? 'text-blue-600 font-medium' : 'text-slate-400'}`}>
+            <span
+              className={`hidden md:block text-sm ${step >= s ? 'text-blue-600 font-medium' : 'text-slate-400'}`}
+            >
               {s === 1 ? 'Service' : s === 2 ? 'Details' : 'Confirm'}
             </span>
             {s < 3 && <div className={`w-12 h-0.5 ${step > s ? 'bg-blue-600' : 'bg-slate-200'}`} />}
@@ -129,7 +160,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {SERVICE_TYPES.map(service => {
+              {SERVICE_TYPES.map((service) => {
                 const Icon = service.icon;
                 const isSelected = form.service_type === service.value;
                 return (
@@ -137,11 +168,15 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                     key={service.value}
                     onClick={() => updateForm('service_type', service.value)}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      isSelected ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-200 hover:border-blue-200'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                      <div
+                        className={`p-2 rounded-lg ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}
+                      >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
@@ -195,7 +230,10 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   <Box className="w-4 h-4 text-slate-400" />
                   Packaging
                 </Label>
-                <Select value={form.packaging_fee.toString()} onValueChange={(v) => updateForm('packaging_fee', parseInt(v))}>
+                <Select
+                  value={form.packaging_fee.toString()}
+                  onValueChange={(v) => updateForm('packaging_fee', parseInt(v))}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -254,7 +292,10 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   <p className="text-sm text-slate-500">3% of shipping cost</p>
                 </div>
               </div>
-              <Switch checked={form.insurance_opted} onCheckedChange={(v) => updateForm('insurance_opted', v)} />
+              <Switch
+                checked={form.insurance_opted}
+                onCheckedChange={(v) => updateForm('insurance_opted', v)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -268,7 +309,9 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
             </div>
 
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
+              <Button variant="outline" onClick={() => setStep(1)}>
+                Back
+              </Button>
               <Button onClick={() => setStep(3)} className="bg-blue-600 hover:bg-blue-700">
                 Review Order
               </Button>
@@ -293,7 +336,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   <p className="text-sm text-slate-500">Estimated: {selectedService?.delivery}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t">
                 <div>
                   <p className="text-slate-500">Weight</p>
@@ -308,7 +351,9 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Shipping ({weight} kg × ฿{selectedService?.price})</span>
+                <span className="text-slate-500">
+                  Shipping ({weight} kg × ฿{selectedService?.price})
+                </span>
                 <span>฿{shippingCost.toLocaleString()}</span>
               </div>
               {form.insurance_opted && (
@@ -335,9 +380,11 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
             </div>
 
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
-              <Button 
-                onClick={handleSubmit} 
+              <Button variant="outline" onClick={() => setStep(2)}>
+                Back
+              </Button>
+              <Button
+                onClick={handleSubmit}
                 disabled={createMutation.isPending}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >

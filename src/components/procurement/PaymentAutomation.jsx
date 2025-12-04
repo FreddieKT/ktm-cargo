@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  DollarSign, Clock, CheckCircle, AlertTriangle, 
-  CreditCard, Calendar, Loader2, ArrowRight
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DollarSign,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  CreditCard,
+  Calendar,
+  Loader2,
+  ArrowRight,
 } from 'lucide-react';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -18,28 +30,28 @@ const PAYMENT_TERMS_DAYS = {
   immediate: 0,
   net_15: 15,
   net_30: 30,
-  net_60: 60
+  net_60: 60,
 };
 
-export default function PaymentAutomation({ 
-  goodsReceipts = [], 
-  vendorPayments = [], 
+export default function PaymentAutomation({
+  goodsReceipts = [],
+  vendorPayments = [],
   vendors = [],
   onCreatePayment,
-  onProcessPayment 
+  onProcessPayment,
 }) {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedReceipts, setSelectedReceipts] = useState([]);
   const [processingPayment, setProcessingPayment] = useState(null);
   const [paymentDetails, setPaymentDetails] = useState({
     payment_method: 'bank_transfer',
-    reference_number: ''
+    reference_number: '',
   });
 
   // Calculate pending payments from goods receipts
-  const pendingReceipts = goodsReceipts.filter(gr => {
-    const existingPayment = vendorPayments.find(p => 
-      p.order_ids?.includes(gr.id) || p.order_ids?.includes(gr.po_id)
+  const pendingReceipts = goodsReceipts.filter((gr) => {
+    const existingPayment = vendorPayments.find(
+      (p) => p.order_ids?.includes(gr.id) || p.order_ids?.includes(gr.po_id)
     );
     return !existingPayment || existingPayment.status !== 'paid';
   });
@@ -51,7 +63,7 @@ export default function PaymentAutomation({
         vendor_id: gr.vendor_id,
         vendor_name: gr.vendor_name,
         receipts: [],
-        total: 0
+        total: 0,
       };
     }
     acc[gr.vendor_id].receipts.push(gr);
@@ -61,7 +73,7 @@ export default function PaymentAutomation({
 
   // Calculate due dates based on vendor payment terms
   const calculateDueDate = (receipt) => {
-    const vendor = vendors.find(v => v.id === receipt.vendor_id);
+    const vendor = vendors.find((v) => v.id === receipt.vendor_id);
     const terms = vendor?.payment_terms || 'net_30';
     const days = PAYMENT_TERMS_DAYS[terms] || 30;
     return addDays(new Date(receipt.received_date), days);
@@ -71,17 +83,21 @@ export default function PaymentAutomation({
   const getPaymentUrgency = (receipt) => {
     const dueDate = calculateDueDate(receipt);
     const daysUntilDue = differenceInDays(dueDate, new Date());
-    
-    if (daysUntilDue < 0) return { status: 'overdue', color: 'bg-rose-100 text-rose-800', days: Math.abs(daysUntilDue) };
-    if (daysUntilDue <= 3) return { status: 'due_soon', color: 'bg-amber-100 text-amber-800', days: daysUntilDue };
+
+    if (daysUntilDue < 0)
+      return {
+        status: 'overdue',
+        color: 'bg-rose-100 text-rose-800',
+        days: Math.abs(daysUntilDue),
+      };
+    if (daysUntilDue <= 3)
+      return { status: 'due_soon', color: 'bg-amber-100 text-amber-800', days: daysUntilDue };
     return { status: 'upcoming', color: 'bg-slate-100 text-slate-800', days: daysUntilDue };
   };
 
   const handleSelectReceipt = (receiptId) => {
-    setSelectedReceipts(prev => 
-      prev.includes(receiptId) 
-        ? prev.filter(id => id !== receiptId)
-        : [...prev, receiptId]
+    setSelectedReceipts((prev) =>
+      prev.includes(receiptId) ? prev.filter((id) => id !== receiptId) : [...prev, receiptId]
     );
   };
 
@@ -95,8 +111,8 @@ export default function PaymentAutomation({
 
   const handleConfirmPayment = async () => {
     setProcessingPayment('batch');
-    
-    const selectedReceiptData = pendingReceipts.filter(r => selectedReceipts.includes(r.id));
+
+    const selectedReceiptData = pendingReceipts.filter((r) => selectedReceipts.includes(r.id));
     const totalAmount = selectedReceiptData.reduce((sum, r) => sum + (r.total_value || 0), 0);
     const vendorId = selectedReceiptData[0]?.vendor_id;
     const vendorName = selectedReceiptData[0]?.vendor_name;
@@ -106,12 +122,12 @@ export default function PaymentAutomation({
       vendor_name: vendorName,
       order_ids: selectedReceipts.join(','),
       total_amount: totalAmount,
-      payment_terms: vendors.find(v => v.id === vendorId)?.payment_terms || 'net_30',
+      payment_terms: vendors.find((v) => v.id === vendorId)?.payment_terms || 'net_30',
       due_date: format(calculateDueDate(selectedReceiptData[0]), 'yyyy-MM-dd'),
       status: 'paid',
       payment_method: paymentDetails.payment_method,
       payment_date: new Date().toISOString().split('T')[0],
-      reference_number: paymentDetails.reference_number
+      reference_number: paymentDetails.reference_number,
     });
 
     setProcessingPayment(null);
@@ -120,8 +136,12 @@ export default function PaymentAutomation({
     toast.success('Payment processed successfully');
   };
 
-  const overdueCount = pendingReceipts.filter(r => getPaymentUrgency(r).status === 'overdue').length;
-  const dueSoonCount = pendingReceipts.filter(r => getPaymentUrgency(r).status === 'due_soon').length;
+  const overdueCount = pendingReceipts.filter(
+    (r) => getPaymentUrgency(r).status === 'overdue'
+  ).length;
+  const dueSoonCount = pendingReceipts.filter(
+    (r) => getPaymentUrgency(r).status === 'due_soon'
+  ).length;
   const totalPending = pendingReceipts.reduce((sum, r) => sum + (r.total_value || 0), 0);
 
   return (
@@ -182,7 +202,10 @@ export default function PaymentAutomation({
             <CardDescription>Goods received pending payment</CardDescription>
           </div>
           {selectedReceipts.length > 0 && (
-            <Button onClick={handleCreateBatchPayment} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button
+              onClick={handleCreateBatchPayment}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
               <CreditCard className="w-4 h-4 mr-2" />
               Pay Selected ({selectedReceipts.length})
             </Button>
@@ -191,15 +214,17 @@ export default function PaymentAutomation({
         <CardContent>
           {pendingReceipts.length > 0 ? (
             <div className="space-y-3">
-              {pendingReceipts.map(receipt => {
+              {pendingReceipts.map((receipt) => {
                 const urgency = getPaymentUrgency(receipt);
                 const dueDate = calculateDueDate(receipt);
-                
+
                 return (
-                  <div 
-                    key={receipt.id} 
+                  <div
+                    key={receipt.id}
                     className={`flex items-center justify-between p-4 rounded-lg border ${
-                      selectedReceipts.includes(receipt.id) ? 'border-blue-300 bg-blue-50' : 'border-slate-200 bg-slate-50'
+                      selectedReceipts.includes(receipt.id)
+                        ? 'border-blue-300 bg-blue-50'
+                        : 'border-slate-200 bg-slate-50'
                     } hover:border-blue-200 transition-colors`}
                   >
                     <div className="flex items-center gap-4">
@@ -211,12 +236,11 @@ export default function PaymentAutomation({
                         <div className="flex items-center gap-2">
                           <p className="font-medium">{receipt.vendor_name}</p>
                           <Badge className={urgency.color}>
-                            {urgency.status === 'overdue' 
+                            {urgency.status === 'overdue'
                               ? `${urgency.days} days overdue`
                               : urgency.status === 'due_soon'
-                              ? `Due in ${urgency.days} days`
-                              : `${urgency.days} days left`
-                            }
+                                ? `Due in ${urgency.days} days`
+                                : `${urgency.days} days left`}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
@@ -224,13 +248,19 @@ export default function PaymentAutomation({
                           <span>•</span>
                           <span>PO: {receipt.po_number}</span>
                           <span>•</span>
-                          <span>Received: {format(new Date(receipt.received_date), 'MMM d, yyyy')}</span>
+                          <span>
+                            Received: {format(new Date(receipt.received_date), 'MMM d, yyyy')}
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-slate-900">฿{receipt.total_value?.toLocaleString()}</p>
-                      <p className="text-xs text-slate-500">Due: {format(dueDate, 'MMM d, yyyy')}</p>
+                      <p className="text-lg font-bold text-slate-900">
+                        ฿{receipt.total_value?.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Due: {format(dueDate, 'MMM d, yyyy')}
+                      </p>
                     </div>
                   </div>
                 );
@@ -260,8 +290,9 @@ export default function PaymentAutomation({
               <div className="flex justify-between text-lg font-bold">
                 <span>Total Amount:</span>
                 <span className="text-emerald-600">
-                  ฿{pendingReceipts
-                    .filter(r => selectedReceipts.includes(r.id))
+                  ฿
+                  {pendingReceipts
+                    .filter((r) => selectedReceipts.includes(r.id))
                     .reduce((sum, r) => sum + (r.total_value || 0), 0)
                     .toLocaleString()}
                 </span>
@@ -270,11 +301,13 @@ export default function PaymentAutomation({
 
             <div className="space-y-2">
               <Label>Payment Method</Label>
-              <Select 
-                value={paymentDetails.payment_method} 
+              <Select
+                value={paymentDetails.payment_method}
                 onValueChange={(v) => setPaymentDetails({ ...paymentDetails, payment_method: v })}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                   <SelectItem value="cash">Cash</SelectItem>
@@ -288,17 +321,23 @@ export default function PaymentAutomation({
               <Label>Reference Number</Label>
               <Input
                 value={paymentDetails.reference_number}
-                onChange={(e) => setPaymentDetails({ ...paymentDetails, reference_number: e.target.value })}
+                onChange={(e) =>
+                  setPaymentDetails({ ...paymentDetails, reference_number: e.target.value })
+                }
                 placeholder="Transaction/Check number"
               />
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowPaymentDialog(false)} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => setShowPaymentDialog(false)}
+                className="flex-1"
+              >
                 Cancel
               </Button>
-              <Button 
-                onClick={handleConfirmPayment} 
+              <Button
+                onClick={handleConfirmPayment}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                 disabled={processingPayment === 'batch'}
               >

@@ -1,25 +1,72 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  DollarSign, Package, TrendingUp, TrendingDown, Scale, 
-  Users, Truck, AlertTriangle, CheckCircle, BarChart3,
-  PieChart, ArrowUpRight, ArrowDownRight, Filter, Download
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DollarSign,
+  Package,
+  TrendingUp,
+  TrendingDown,
+  Scale,
+  Users,
+  Truck,
+  AlertTriangle,
+  CheckCircle,
+  BarChart3,
+  PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  Filter,
+  Download,
 } from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, 
-  BarChart, Bar, Legend, ComposedChart, Line 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend,
+  ComposedChart,
+  Line,
 } from 'recharts';
-import { format, parseISO, isWithinInterval, startOfMonth, endOfMonth, subMonths, eachMonthOfInterval } from 'date-fns';
+import {
+  format,
+  parseISO,
+  isWithinInterval,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  eachMonthOfInterval,
+} from 'date-fns';
 
-const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#ef4444', '#84cc16'];
+const COLORS = [
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#f59e0b',
+  '#10b981',
+  '#06b6d4',
+  '#ef4444',
+  '#84cc16',
+];
 
 export default function ProcurementProfitabilityDashboard({
   purchaseOrders = [],
@@ -27,7 +74,7 @@ export default function ProcurementProfitabilityDashboard({
   shoppingOrders = [],
   vendors = [],
   customers = [],
-  dateRange
+  dateRange,
 }) {
   const [vendorFilter, setVendorFilter] = useState('all');
   const [customerFilter, setCustomerFilter] = useState('all');
@@ -36,7 +83,7 @@ export default function ProcurementProfitabilityDashboard({
 
   // Filter data by date range
   const filteredPOs = useMemo(() => {
-    return purchaseOrders.filter(po => {
+    return purchaseOrders.filter((po) => {
       if (!po.created_date) return true;
       const date = parseISO(po.created_date);
       if (dateRange?.from && dateRange?.to) {
@@ -49,7 +96,7 @@ export default function ProcurementProfitabilityDashboard({
   }, [purchaseOrders, dateRange, vendorFilter, statusFilter]);
 
   const filteredShipments = useMemo(() => {
-    return shipments.filter(s => {
+    return shipments.filter((s) => {
       if (!s.created_date) return true;
       const date = parseISO(s.created_date);
       if (dateRange?.from && dateRange?.to) {
@@ -63,7 +110,7 @@ export default function ProcurementProfitabilityDashboard({
   }, [shipments, dateRange, vendorFilter, customerFilter, statusFilter]);
 
   const filteredShoppingOrders = useMemo(() => {
-    return shoppingOrders.filter(o => {
+    return shoppingOrders.filter((o) => {
       if (!o.created_date) return true;
       const date = parseISO(o.created_date);
       if (dateRange?.from && dateRange?.to) {
@@ -79,15 +126,30 @@ export default function ProcurementProfitabilityDashboard({
   // Procurement Metrics
   const procurementMetrics = useMemo(() => {
     const totalPOSpend = filteredPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0);
-    const totalWeightPurchased = filteredPOs.reduce((sum, po) => sum + (po.total_weight_kg || 0), 0);
-    const totalWeightAllocated = filteredPOs.reduce((sum, po) => sum + (po.allocated_weight_kg || 0), 0);
-    const totalWeightRemaining = filteredPOs.reduce((sum, po) => sum + (po.remaining_weight_kg || 0), 0);
-    const avgCostPerKg = filteredPOs.length > 0 
-      ? filteredPOs.reduce((sum, po) => sum + (po.cost_per_kg || 0), 0) / filteredPOs.length 
-      : 0;
-    const pendingPOs = filteredPOs.filter(po => ['draft', 'pending_approval'].includes(po.status)).length;
-    const approvedPOs = filteredPOs.filter(po => ['approved', 'sent', 'received'].includes(po.status)).length;
-    const allocationRate = totalWeightPurchased > 0 ? (totalWeightAllocated / totalWeightPurchased) * 100 : 0;
+    const totalWeightPurchased = filteredPOs.reduce(
+      (sum, po) => sum + (po.total_weight_kg || 0),
+      0
+    );
+    const totalWeightAllocated = filteredPOs.reduce(
+      (sum, po) => sum + (po.allocated_weight_kg || 0),
+      0
+    );
+    const totalWeightRemaining = filteredPOs.reduce(
+      (sum, po) => sum + (po.remaining_weight_kg || 0),
+      0
+    );
+    const avgCostPerKg =
+      filteredPOs.length > 0
+        ? filteredPOs.reduce((sum, po) => sum + (po.cost_per_kg || 0), 0) / filteredPOs.length
+        : 0;
+    const pendingPOs = filteredPOs.filter((po) =>
+      ['draft', 'pending_approval'].includes(po.status)
+    ).length;
+    const approvedPOs = filteredPOs.filter((po) =>
+      ['approved', 'sent', 'received'].includes(po.status)
+    ).length;
+    const allocationRate =
+      totalWeightPurchased > 0 ? (totalWeightAllocated / totalWeightPurchased) * 100 : 0;
 
     return {
       totalPOSpend,
@@ -98,7 +160,7 @@ export default function ProcurementProfitabilityDashboard({
       pendingPOs,
       approvedPOs,
       allocationRate,
-      totalPOs: filteredPOs.length
+      totalPOs: filteredPOs.length,
     };
   }, [filteredPOs]);
 
@@ -106,19 +168,31 @@ export default function ProcurementProfitabilityDashboard({
   const profitabilityMetrics = useMemo(() => {
     // Shipment profitability
     const shipmentRevenue = filteredShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0);
-    const shipmentVendorCost = filteredShipments.reduce((sum, s) => sum + (s.vendor_total_cost || 0), 0);
+    const shipmentVendorCost = filteredShipments.reduce(
+      (sum, s) => sum + (s.vendor_total_cost || 0),
+      0
+    );
     const shipmentProfit = filteredShipments.reduce((sum, s) => sum + (s.profit || 0), 0);
-    
+
     // Shopping order profitability
-    const shoppingRevenue = filteredShoppingOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-    const shoppingVendorCost = filteredShoppingOrders.reduce((sum, o) => sum + (o.vendor_cost || 0), 0);
-    const shoppingCommission = filteredShoppingOrders.reduce((sum, o) => sum + (o.commission_amount || 0), 0);
-    
+    const shoppingRevenue = filteredShoppingOrders.reduce(
+      (sum, o) => sum + (o.total_amount || 0),
+      0
+    );
+    const shoppingVendorCost = filteredShoppingOrders.reduce(
+      (sum, o) => sum + (o.vendor_cost || 0),
+      0
+    );
+    const shoppingCommission = filteredShoppingOrders.reduce(
+      (sum, o) => sum + (o.commission_amount || 0),
+      0
+    );
+
     const totalRevenue = shipmentRevenue + shoppingRevenue;
     const totalVendorCost = shipmentVendorCost + shoppingVendorCost;
     const totalProfit = shipmentProfit + shoppingCommission;
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
-    
+
     // Per order averages
     const totalOrders = filteredShipments.length + filteredShoppingOrders.length;
     const avgRevenuePerOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
@@ -139,15 +213,15 @@ export default function ProcurementProfitabilityDashboard({
       totalOrders,
       avgRevenuePerOrder,
       avgProfitPerOrder,
-      avgCostPerOrder
+      avgCostPerOrder,
     };
   }, [filteredShipments, filteredShoppingOrders]);
 
   // Vendor Performance
   const vendorPerformance = useMemo(() => {
     const vendorStats = {};
-    
-    filteredPOs.forEach(po => {
+
+    filteredPOs.forEach((po) => {
       if (!po.vendor_id) return;
       if (!vendorStats[po.vendor_id]) {
         vendorStats[po.vendor_id] = {
@@ -156,26 +230,26 @@ export default function ProcurementProfitabilityDashboard({
           totalSpend: 0,
           totalWeight: 0,
           poCount: 0,
-          avgCostPerKg: 0
+          avgCostPerKg: 0,
         };
       }
       vendorStats[po.vendor_id].totalSpend += po.total_amount || 0;
       vendorStats[po.vendor_id].totalWeight += po.total_weight_kg || 0;
       vendorStats[po.vendor_id].poCount += 1;
     });
-    
+
     // Calculate avg cost per kg
-    Object.values(vendorStats).forEach(v => {
+    Object.values(vendorStats).forEach((v) => {
       v.avgCostPerKg = v.totalWeight > 0 ? v.totalSpend / v.totalWeight : 0;
     });
-    
+
     return Object.values(vendorStats).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [filteredPOs]);
 
   // Order Profitability Details
   const orderProfitability = useMemo(() => {
     const orders = [
-      ...filteredShipments.map(s => ({
+      ...filteredShipments.map((s) => ({
         id: s.id,
         orderNumber: s.tracking_number,
         type: 'Shipment',
@@ -186,9 +260,9 @@ export default function ProcurementProfitabilityDashboard({
         profit: s.profit || 0,
         weight: s.weight_kg || 0,
         status: s.status,
-        date: s.created_date
+        date: s.created_date,
       })),
-      ...filteredShoppingOrders.map(o => ({
+      ...filteredShoppingOrders.map((o) => ({
         id: o.id,
         orderNumber: o.order_number,
         type: 'Shopping',
@@ -199,10 +273,10 @@ export default function ProcurementProfitabilityDashboard({
         profit: o.commission_amount || 0,
         weight: o.actual_weight || o.estimated_weight || 0,
         status: o.status,
-        date: o.created_date
-      }))
+        date: o.created_date,
+      })),
     ];
-    
+
     return orders.sort((a, b) => b.profit - a.profit);
   }, [filteredShipments, filteredShoppingOrders]);
 
@@ -210,41 +284,43 @@ export default function ProcurementProfitabilityDashboard({
   const monthlyTrends = useMemo(() => {
     const months = eachMonthOfInterval({
       start: subMonths(new Date(), 5),
-      end: new Date()
+      end: new Date(),
     });
-    
-    return months.map(month => {
+
+    return months.map((month) => {
       const monthStart = startOfMonth(month);
       const monthEnd = endOfMonth(month);
-      
-      const monthPOs = purchaseOrders.filter(po => {
+
+      const monthPOs = purchaseOrders.filter((po) => {
         if (!po.created_date) return false;
         return isWithinInterval(parseISO(po.created_date), { start: monthStart, end: monthEnd });
       });
-      
-      const monthShipments = shipments.filter(s => {
+
+      const monthShipments = shipments.filter((s) => {
         if (!s.created_date) return false;
         return isWithinInterval(parseISO(s.created_date), { start: monthStart, end: monthEnd });
       });
-      
-      const monthShopping = shoppingOrders.filter(o => {
+
+      const monthShopping = shoppingOrders.filter((o) => {
         if (!o.created_date) return false;
         return isWithinInterval(parseISO(o.created_date), { start: monthStart, end: monthEnd });
       });
-      
+
       const poSpend = monthPOs.reduce((sum, po) => sum + (po.total_amount || 0), 0);
-      const revenue = monthShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) +
-                      monthShopping.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-      const profit = monthShipments.reduce((sum, s) => sum + (s.profit || 0), 0) +
-                     monthShopping.reduce((sum, o) => sum + (o.commission_amount || 0), 0);
-      
+      const revenue =
+        monthShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) +
+        monthShopping.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+      const profit =
+        monthShipments.reduce((sum, s) => sum + (s.profit || 0), 0) +
+        monthShopping.reduce((sum, o) => sum + (o.commission_amount || 0), 0);
+
       return {
         month: format(month, 'MMM'),
         fullMonth: format(month, 'MMMM yyyy'),
         poSpend,
         revenue,
         profit,
-        margin: revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0
+        margin: revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0,
       };
     });
   }, [purchaseOrders, shipments, shoppingOrders]);
@@ -252,12 +328,12 @@ export default function ProcurementProfitabilityDashboard({
   // Weight Allocation by PO
   const weightAllocationData = useMemo(() => {
     return filteredPOs
-      .filter(po => po.total_weight_kg > 0)
-      .map(po => ({
+      .filter((po) => po.total_weight_kg > 0)
+      .map((po) => ({
         name: po.po_number || po.id.substring(0, 8),
         allocated: po.allocated_weight_kg || 0,
         remaining: po.remaining_weight_kg || 0,
-        total: po.total_weight_kg || 0
+        total: po.total_weight_kg || 0,
       }))
       .slice(0, 10);
   }, [filteredPOs]);
@@ -265,22 +341,26 @@ export default function ProcurementProfitabilityDashboard({
   // Export handler
   const handleExport = (type) => {
     let csv, filename;
-    
+
     if (type === 'procurement') {
       csv = ['PO Number,Vendor,Total Amount,Weight (kg),Cost/kg,Status,Date'];
-      filteredPOs.forEach(po => {
-        csv.push(`${po.po_number},${po.vendor_name || ''},${po.total_amount || 0},${po.total_weight_kg || 0},${po.cost_per_kg || 0},${po.status},${po.created_date || ''}`);
+      filteredPOs.forEach((po) => {
+        csv.push(
+          `${po.po_number},${po.vendor_name || ''},${po.total_amount || 0},${po.total_weight_kg || 0},${po.cost_per_kg || 0},${po.status},${po.created_date || ''}`
+        );
       });
       filename = 'procurement_report.csv';
     } else if (type === 'profitability') {
       csv = ['Order Number,Type,Customer,Vendor,Revenue,Vendor Cost,Profit,Margin %,Date'];
-      orderProfitability.forEach(o => {
+      orderProfitability.forEach((o) => {
         const margin = o.revenue > 0 ? ((o.profit / o.revenue) * 100).toFixed(1) : 0;
-        csv.push(`${o.orderNumber},${o.type},${o.customer},${o.vendor},${o.revenue},${o.vendorCost},${o.profit},${margin}%,${o.date || ''}`);
+        csv.push(
+          `${o.orderNumber},${o.type},${o.customer},${o.vendor},${o.revenue},${o.vendorCost},${o.profit},${margin}%,${o.date || ''}`
+        );
       });
       filename = 'profitability_report.csv';
     }
-    
+
     const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -304,8 +384,10 @@ export default function ProcurementProfitabilityDashboard({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Vendors</SelectItem>
-                {vendors.map(v => (
-                  <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                {vendors.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -315,8 +397,10 @@ export default function ProcurementProfitabilityDashboard({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Customers</SelectItem>
-                {customers.slice(0, 50).map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                {customers.slice(0, 50).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -363,7 +447,9 @@ export default function ProcurementProfitabilityDashboard({
                   <Package className="w-4 h-4 text-blue-600" />
                   <span className="text-xs text-blue-600 font-medium">PO Spend</span>
                 </div>
-                <p className="text-xl font-bold text-blue-900">฿{procurementMetrics.totalPOSpend.toLocaleString()}</p>
+                <p className="text-xl font-bold text-blue-900">
+                  ฿{procurementMetrics.totalPOSpend.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100">
@@ -372,7 +458,9 @@ export default function ProcurementProfitabilityDashboard({
                   <DollarSign className="w-4 h-4 text-emerald-600" />
                   <span className="text-xs text-emerald-600 font-medium">Revenue</span>
                 </div>
-                <p className="text-xl font-bold text-emerald-900">฿{profitabilityMetrics.totalRevenue.toLocaleString()}</p>
+                <p className="text-xl font-bold text-emerald-900">
+                  ฿{profitabilityMetrics.totalRevenue.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100">
@@ -381,7 +469,9 @@ export default function ProcurementProfitabilityDashboard({
                   <TrendingUp className="w-4 h-4 text-purple-600" />
                   <span className="text-xs text-purple-600 font-medium">Profit</span>
                 </div>
-                <p className="text-xl font-bold text-purple-900">฿{profitabilityMetrics.totalProfit.toLocaleString()}</p>
+                <p className="text-xl font-bold text-purple-900">
+                  ฿{profitabilityMetrics.totalProfit.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-amber-100">
@@ -390,7 +480,9 @@ export default function ProcurementProfitabilityDashboard({
                   <BarChart3 className="w-4 h-4 text-amber-600" />
                   <span className="text-xs text-amber-600 font-medium">Margin</span>
                 </div>
-                <p className="text-xl font-bold text-amber-900">{profitabilityMetrics.profitMargin.toFixed(1)}%</p>
+                <p className="text-xl font-bold text-amber-900">
+                  {profitabilityMetrics.profitMargin.toFixed(1)}%
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-gradient-to-br from-cyan-50 to-cyan-100">
@@ -399,7 +491,9 @@ export default function ProcurementProfitabilityDashboard({
                   <Scale className="w-4 h-4 text-cyan-600" />
                   <span className="text-xs text-cyan-600 font-medium">Weight (kg)</span>
                 </div>
-                <p className="text-xl font-bold text-cyan-900">{procurementMetrics.totalWeightPurchased.toLocaleString()}</p>
+                <p className="text-xl font-bold text-cyan-900">
+                  {procurementMetrics.totalWeightPurchased.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-gradient-to-br from-rose-50 to-rose-100">
@@ -408,7 +502,9 @@ export default function ProcurementProfitabilityDashboard({
                   <Truck className="w-4 h-4 text-rose-600" />
                   <span className="text-xs text-rose-600 font-medium">Vendor Cost</span>
                 </div>
-                <p className="text-xl font-bold text-rose-900">฿{profitabilityMetrics.totalVendorCost.toLocaleString()}</p>
+                <p className="text-xl font-bold text-rose-900">
+                  ฿{profitabilityMetrics.totalVendorCost.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -428,11 +524,34 @@ export default function ProcurementProfitabilityDashboard({
                       <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                       <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
                       <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
-                      <Tooltip formatter={(value, name) => name === 'margin' ? `${value}%` : `฿${value?.toLocaleString()}`} />
+                      <Tooltip
+                        formatter={(value, name) =>
+                          name === 'margin' ? `${value}%` : `฿${value?.toLocaleString()}`
+                        }
+                      />
                       <Legend />
-                      <Bar yAxisId="left" dataKey="revenue" name="Revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                      <Bar yAxisId="left" dataKey="poSpend" name="PO Spend" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                      <Line yAxisId="left" type="monotone" dataKey="profit" name="Profit" stroke="#10b981" strokeWidth={2} />
+                      <Bar
+                        yAxisId="left"
+                        dataKey="revenue"
+                        name="Revenue"
+                        fill="#3b82f6"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        yAxisId="left"
+                        dataKey="poSpend"
+                        name="PO Spend"
+                        fill="#f59e0b"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="profit"
+                        name="Profit"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                      />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -476,23 +595,30 @@ export default function ProcurementProfitabilityDashboard({
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-slate-600">Total Allocation Progress</span>
                   <span className="font-medium">
-                    {procurementMetrics.totalWeightAllocated.toLocaleString()} / {procurementMetrics.totalWeightPurchased.toLocaleString()} kg
-                    ({procurementMetrics.allocationRate.toFixed(1)}%)
+                    {procurementMetrics.totalWeightAllocated.toLocaleString()} /{' '}
+                    {procurementMetrics.totalWeightPurchased.toLocaleString()} kg (
+                    {procurementMetrics.allocationRate.toFixed(1)}%)
                   </span>
                 </div>
                 <Progress value={procurementMetrics.allocationRate} className="h-4" />
                 <div className="grid grid-cols-3 gap-4 mt-4">
                   <div className="p-3 bg-blue-50 rounded-lg text-center">
                     <p className="text-xs text-blue-600 mb-1">Purchased</p>
-                    <p className="text-lg font-bold text-blue-900">{procurementMetrics.totalWeightPurchased.toLocaleString()} kg</p>
+                    <p className="text-lg font-bold text-blue-900">
+                      {procurementMetrics.totalWeightPurchased.toLocaleString()} kg
+                    </p>
                   </div>
                   <div className="p-3 bg-emerald-50 rounded-lg text-center">
                     <p className="text-xs text-emerald-600 mb-1">Allocated</p>
-                    <p className="text-lg font-bold text-emerald-900">{procurementMetrics.totalWeightAllocated.toLocaleString()} kg</p>
+                    <p className="text-lg font-bold text-emerald-900">
+                      {procurementMetrics.totalWeightAllocated.toLocaleString()} kg
+                    </p>
                   </div>
                   <div className="p-3 bg-amber-50 rounded-lg text-center">
                     <p className="text-xs text-amber-600 mb-1">Available</p>
-                    <p className="text-lg font-bold text-amber-900">{procurementMetrics.totalWeightRemaining.toLocaleString()} kg</p>
+                    <p className="text-lg font-bold text-amber-900">
+                      {procurementMetrics.totalWeightRemaining.toLocaleString()} kg
+                    </p>
                   </div>
                 </div>
               </div>
@@ -513,19 +639,25 @@ export default function ProcurementProfitabilityDashboard({
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4">
                 <p className="text-sm text-slate-500">Total Spend</p>
-                <p className="text-2xl font-bold text-blue-600">฿{procurementMetrics.totalPOSpend.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  ฿{procurementMetrics.totalPOSpend.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4">
                 <p className="text-sm text-slate-500">Avg Cost/kg</p>
-                <p className="text-2xl font-bold text-amber-600">฿{procurementMetrics.avgCostPerKg.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-amber-600">
+                  ฿{procurementMetrics.avgCostPerKg.toFixed(2)}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4">
                 <p className="text-sm text-slate-500">Allocation Rate</p>
-                <p className="text-2xl font-bold text-emerald-600">{procurementMetrics.allocationRate.toFixed(1)}%</p>
+                <p className="text-2xl font-bold text-emerald-600">
+                  {procurementMetrics.allocationRate.toFixed(1)}%
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -550,24 +682,36 @@ export default function ProcurementProfitabilityDashboard({
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPOs.slice(0, 20).map(po => (
+                    {filteredPOs.slice(0, 20).map((po) => (
                       <tr key={po.id} className="border-t hover:bg-slate-50">
                         <td className="p-3 font-medium">{po.po_number || po.id.substring(0, 8)}</td>
                         <td className="p-3">{po.vendor_name || '-'}</td>
-                        <td className="p-3 text-right">฿{(po.total_amount || 0).toLocaleString()}</td>
+                        <td className="p-3 text-right">
+                          ฿{(po.total_amount || 0).toLocaleString()}
+                        </td>
                         <td className="p-3 text-right">{po.total_weight_kg || 0} kg</td>
                         <td className="p-3 text-right">฿{po.cost_per_kg || 0}</td>
                         <td className="p-3 text-right">
-                          <span className={po.allocated_weight_kg >= po.total_weight_kg ? 'text-emerald-600' : 'text-amber-600'}>
+                          <span
+                            className={
+                              po.allocated_weight_kg >= po.total_weight_kg
+                                ? 'text-emerald-600'
+                                : 'text-amber-600'
+                            }
+                          >
                             {po.allocated_weight_kg || 0} / {po.total_weight_kg || 0} kg
                           </span>
                         </td>
                         <td className="p-3 text-center">
-                          <Badge className={
-                            po.status === 'approved' || po.status === 'received' ? 'bg-emerald-100 text-emerald-800' :
-                            po.status === 'pending_approval' ? 'bg-amber-100 text-amber-800' :
-                            'bg-slate-100 text-slate-800'
-                          }>
+                          <Badge
+                            className={
+                              po.status === 'approved' || po.status === 'received'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : po.status === 'pending_approval'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-slate-100 text-slate-800'
+                            }
+                          >
                             {po.status}
                           </Badge>
                         </td>
@@ -587,25 +731,33 @@ export default function ProcurementProfitabilityDashboard({
             <Card className="border-0 shadow-sm bg-emerald-50">
               <CardContent className="p-4">
                 <p className="text-sm text-emerald-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-emerald-900">฿{profitabilityMetrics.totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-emerald-900">
+                  ฿{profitabilityMetrics.totalRevenue.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-rose-50">
               <CardContent className="p-4">
                 <p className="text-sm text-rose-600">Vendor Costs</p>
-                <p className="text-2xl font-bold text-rose-900">฿{profitabilityMetrics.totalVendorCost.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-rose-900">
+                  ฿{profitabilityMetrics.totalVendorCost.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-purple-50">
               <CardContent className="p-4">
                 <p className="text-sm text-purple-600">Net Profit</p>
-                <p className="text-2xl font-bold text-purple-900">฿{profitabilityMetrics.totalProfit.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-purple-900">
+                  ฿{profitabilityMetrics.totalProfit.toLocaleString()}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm bg-blue-50">
               <CardContent className="p-4">
                 <p className="text-sm text-blue-600">Profit Margin</p>
-                <p className="text-2xl font-bold text-blue-900">{profitabilityMetrics.profitMargin.toFixed(1)}%</p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {profitabilityMetrics.profitMargin.toFixed(1)}%
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -615,19 +767,34 @@ export default function ProcurementProfitabilityDashboard({
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-slate-500">Avg Revenue/Order</p>
-                <p className="text-xl font-bold text-slate-900">฿{profitabilityMetrics.avgRevenuePerOrder.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                <p className="text-xl font-bold text-slate-900">
+                  ฿
+                  {profitabilityMetrics.avgRevenuePerOrder.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-slate-500">Avg Cost/Order</p>
-                <p className="text-xl font-bold text-rose-600">฿{profitabilityMetrics.avgCostPerOrder.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                <p className="text-xl font-bold text-rose-600">
+                  ฿
+                  {profitabilityMetrics.avgCostPerOrder.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-slate-500">Avg Profit/Order</p>
-                <p className="text-xl font-bold text-emerald-600">฿{profitabilityMetrics.avgProfitPerOrder.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  ฿
+                  {profitabilityMetrics.avgProfitPerOrder.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -653,23 +820,41 @@ export default function ProcurementProfitabilityDashboard({
                     </tr>
                   </thead>
                   <tbody>
-                    {orderProfitability.slice(0, 15).map(order => {
+                    {orderProfitability.slice(0, 15).map((order) => {
                       const margin = order.revenue > 0 ? (order.profit / order.revenue) * 100 : 0;
                       return (
                         <tr key={order.id} className="border-t hover:bg-slate-50">
                           <td className="p-3 font-medium">{order.orderNumber}</td>
                           <td className="p-3">
-                            <Badge className={order.type === 'Shipment' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}>
+                            <Badge
+                              className={
+                                order.type === 'Shipment'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-purple-100 text-purple-800'
+                              }
+                            >
                               {order.type}
                             </Badge>
                           </td>
                           <td className="p-3">{order.customer || '-'}</td>
                           <td className="p-3">{order.vendor}</td>
                           <td className="p-3 text-right">฿{order.revenue.toLocaleString()}</td>
-                          <td className="p-3 text-right text-rose-600">฿{order.vendorCost.toLocaleString()}</td>
-                          <td className="p-3 text-right font-medium text-emerald-600">฿{order.profit.toLocaleString()}</td>
+                          <td className="p-3 text-right text-rose-600">
+                            ฿{order.vendorCost.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-right font-medium text-emerald-600">
+                            ฿{order.profit.toLocaleString()}
+                          </td>
                           <td className="p-3 text-right">
-                            <span className={margin >= 20 ? 'text-emerald-600' : margin >= 10 ? 'text-amber-600' : 'text-rose-600'}>
+                            <span
+                              className={
+                                margin >= 20
+                                  ? 'text-emerald-600'
+                                  : margin >= 10
+                                    ? 'text-amber-600'
+                                    : 'text-rose-600'
+                              }
+                            >
                               {margin.toFixed(1)}%
                             </span>
                           </td>
@@ -735,7 +920,9 @@ export default function ProcurementProfitabilityDashboard({
                     {vendorPerformance.map((vendor, i) => (
                       <tr key={vendor.id} className="border-t hover:bg-slate-50">
                         <td className="p-3 font-medium">{vendor.name}</td>
-                        <td className="p-3 text-right font-semibold text-blue-600">฿{vendor.totalSpend.toLocaleString()}</td>
+                        <td className="p-3 text-right font-semibold text-blue-600">
+                          ฿{vendor.totalSpend.toLocaleString()}
+                        </td>
                         <td className="p-3 text-right">{vendor.totalWeight.toLocaleString()} kg</td>
                         <td className="p-3 text-right">฿{vendor.avgCostPerKg.toFixed(2)}</td>
                         <td className="p-3 text-right">{vendor.poCount}</td>

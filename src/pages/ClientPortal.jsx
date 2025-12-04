@@ -2,16 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { supabase } from '@/api/supabaseClient';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Package, Truck, FileText, CreditCard, MessageSquare,
-  Bell, User, LogOut, Plane, Search, Plus, Clock,
-  CheckCircle, AlertTriangle, MapPin, Calendar, Download,
-  Eye, Send, Upload, History, Star, HelpCircle, Mail, Lock, Phone
+  Package,
+  Truck,
+  FileText,
+  CreditCard,
+  MessageSquare,
+  Bell,
+  User,
+  LogOut,
+  Plane,
+  Search,
+  Plus,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  MapPin,
+  Calendar,
+  Download,
+  Eye,
+  Send,
+  Upload,
+  History,
+  Star,
+  HelpCircle,
+  Mail,
+  Lock,
+  Phone,
 } from 'lucide-react';
 import CustomerPortalDashboard from '@/components/portal/CustomerPortalDashboard';
 import CustomerShipmentTracker from '@/components/portal/CustomerShipmentTracker';
@@ -48,7 +70,7 @@ export default function ClientPortal() {
     queryFn: async () => {
       const list = await base44.entities.CompanySettings.list();
       return list[0] || null;
-    }
+    },
   });
 
   const companyName = companySettings?.company_name || 'BKK-YGN Cargo';
@@ -58,7 +80,9 @@ export default function ClientPortal() {
     loadUserAndDeterminePortal();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         loadUserAndDeterminePortal();
       } else if (event === 'SIGNED_OUT') {
@@ -115,7 +139,9 @@ export default function ClientPortal() {
 
       // Check by phone as fallback for customers
       if (currentUser.phone) {
-        const customersByPhone = await base44.entities.Customer.filter({ phone: currentUser.phone });
+        const customersByPhone = await base44.entities.Customer.filter({
+          phone: currentUser.phone,
+        });
         if (customersByPhone.length > 0) {
           setPortalType('customer');
           setClientData(customersByPhone[0]);
@@ -141,7 +167,7 @@ export default function ClientPortal() {
           name: currentUser.full_name || currentUser.email?.split('@')[0] || 'New Customer',
           email: currentUser.email,
           phone: currentUser.phone || '',
-          customer_type: 'individual'
+          customer_type: 'individual',
         });
         setClientData(newCustomer);
       } catch (createErr) {
@@ -231,15 +257,18 @@ export default function ClientPortal() {
                 Manage your shipments <br /> with ease.
               </h1>
               <p className="text-blue-200 text-lg max-w-md">
-                Track parcels, manage orders, and view invoices all in one place.
-                Join thousands of businesses trusting KTM Cargo.
+                Track parcels, manage orders, and view invoices all in one place. Join thousands of
+                businesses trusting KTM Cargo.
               </p>
             </div>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-4">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-xs">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-xs"
+                    >
                       <User className="w-4 h-4 text-slate-400" />
                     </div>
                   ))}
@@ -299,7 +328,11 @@ export default function ClientPortal() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isAuthLoading}>
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={isAuthLoading}
+                  >
                     {isAuthLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </form>
@@ -366,7 +399,11 @@ export default function ClientPortal() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isAuthLoading}>
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={isAuthLoading}
+                  >
                     {isAuthLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </form>
@@ -468,7 +505,11 @@ export default function ClientPortal() {
               <CustomerShipmentTracker customer={clientData} />
             </TabsContent>
             <TabsContent value="new-order">
-              <CustomerNewOrder customer={clientData} user={user} onOrderCreated={() => setActiveTab('track')} />
+              <CustomerNewOrder
+                customer={clientData}
+                user={user}
+                onOrderCreated={() => setActiveTab('track')}
+              />
             </TabsContent>
             <TabsContent value="history">
               <CustomerOrderHistory customer={clientData} />

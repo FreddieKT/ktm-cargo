@@ -1,18 +1,36 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
-  Search, FileText, Package, ShoppingBag, Calendar as CalendarIcon,
-  DollarSign, User, Printer, Download, Eye, CheckCircle, Clock, XCircle, Send
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Search,
+  FileText,
+  Package,
+  ShoppingBag,
+  Calendar as CalendarIcon,
+  DollarSign,
+  User,
+  Printer,
+  Download,
+  Eye,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Send,
 } from 'lucide-react';
 import { format, parseISO, isWithinInterval, subDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -24,12 +42,16 @@ const STATUS_CONFIG = {
   issued: { label: 'Issued', color: 'bg-blue-100 text-blue-800', icon: FileText },
   sent: { label: 'Sent', color: 'bg-purple-100 text-purple-800', icon: Send },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
-  void: { label: 'Void', color: 'bg-rose-100 text-rose-800', icon: XCircle }
+  void: { label: 'Void', color: 'bg-rose-100 text-rose-800', icon: XCircle },
 };
 
 const TYPE_CONFIG = {
   shipment: { label: 'Shipment', color: 'bg-blue-100 text-blue-800', icon: Package },
-  shopping_order: { label: 'Shopping Order', color: 'bg-purple-100 text-purple-800', icon: ShoppingBag }
+  shopping_order: {
+    label: 'Shopping Order',
+    color: 'bg-purple-100 text-purple-800',
+    icon: ShoppingBag,
+  },
 };
 
 export default function Invoices() {
@@ -38,14 +60,14 @@ export default function Invoices() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState({
     from: subDays(new Date(), 365),
-    to: new Date()
+    to: new Date(),
   });
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['customer-invoices'],
-    queryFn: () => base44.entities.CustomerInvoice.list('-created_date', 500)
+    queryFn: () => base44.entities.CustomerInvoice.list('-created_at', 500),
   });
 
   const { data: companySettings } = useQuery({
@@ -53,17 +75,17 @@ export default function Invoices() {
     queryFn: async () => {
       const list = await base44.entities.CompanySettings.list();
       return list[0] || null;
-    }
+    },
   });
 
   // Stats
   const stats = useMemo(() => {
     const total = invoices.length;
-    const shipmentInvoices = invoices.filter(i => i.invoice_type !== 'shopping_order').length;
-    const shoppingInvoices = invoices.filter(i => i.invoice_type === 'shopping_order').length;
-    const paidInvoices = invoices.filter(i => i.status === 'paid').length;
+    const shipmentInvoices = invoices.filter((i) => i.invoice_type !== 'shopping_order').length;
+    const shoppingInvoices = invoices.filter((i) => i.invoice_type === 'shopping_order').length;
+    const paidInvoices = invoices.filter((i) => i.status === 'paid').length;
     const pendingAmount = invoices
-      .filter(i => i.status !== 'paid' && i.status !== 'void')
+      .filter((i) => i.status !== 'paid' && i.status !== 'void')
       .reduce((sum, i) => sum + (i.total_amount || 0), 0);
     const totalAmount = invoices.reduce((sum, i) => sum + (i.total_amount || 0), 0);
 
@@ -72,11 +94,12 @@ export default function Invoices() {
 
   // Filtered invoices
   const filteredInvoices = useMemo(() => {
-    return invoices.filter(invoice => {
+    return invoices.filter((invoice) => {
       // Type filter
       if (typeFilter !== 'all') {
         if (typeFilter === 'shipment' && invoice.invoice_type === 'shopping_order') return false;
-        if (typeFilter === 'shopping_order' && invoice.invoice_type !== 'shopping_order') return false;
+        if (typeFilter === 'shopping_order' && invoice.invoice_type !== 'shopping_order')
+          return false;
       }
 
       // Status filter
@@ -86,7 +109,8 @@ export default function Invoices() {
       if (invoice.invoice_date && dateRange.from && dateRange.to) {
         try {
           const invoiceDate = parseISO(invoice.invoice_date);
-          if (!isWithinInterval(invoiceDate, { start: dateRange.from, end: dateRange.to })) return false;
+          if (!isWithinInterval(invoiceDate, { start: dateRange.from, end: dateRange.to }))
+            return false;
         } catch {
           // Skip date filtering if date is invalid
         }
@@ -115,7 +139,7 @@ export default function Invoices() {
   const handlePrintInvoice = (invoice) => {
     printDocument(InvoiceTemplate, {
       data: { invoice, customer: { name: invoice.customer_name } }, // Passing minimal customer data as we don't have full object here
-      settings: companySettings
+      settings: companySettings,
     });
   };
 
@@ -126,7 +150,9 @@ export default function Invoices() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Invoices</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage customer invoices for shipments and shopping orders</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Manage customer invoices for shipments and shopping orders
+            </p>
           </div>
         </div>
 
@@ -154,7 +180,9 @@ export default function Invoices() {
                 </div>
                 <div>
                   <p className="text-[10px] sm:text-xs text-emerald-600 font-medium">Paid</p>
-                  <p className="text-xl sm:text-2xl font-bold text-emerald-900">{stats.paidInvoices}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-emerald-900">
+                    {stats.paidInvoices}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -168,7 +196,9 @@ export default function Invoices() {
                 </div>
                 <div>
                   <p className="text-[10px] sm:text-xs text-amber-600 font-medium">Pending</p>
-                  <p className="text-lg sm:text-2xl font-bold text-amber-900">฿{stats.pendingAmount.toLocaleString()}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-amber-900">
+                    ฿{stats.pendingAmount.toLocaleString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -182,7 +212,9 @@ export default function Invoices() {
                 </div>
                 <div>
                   <p className="text-[10px] sm:text-xs text-purple-600 font-medium">Total</p>
-                  <p className="text-lg sm:text-2xl font-bold text-purple-900">฿{stats.totalAmount.toLocaleString()}</p>
+                  <p className="text-lg sm:text-2xl font-bold text-purple-900">
+                    ฿{stats.totalAmount.toLocaleString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -221,16 +253,23 @@ export default function Invoices() {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {config.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    className="gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
+                  >
                     <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">{format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}</span>
+                    <span className="hidden sm:inline">
+                      {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
+                    </span>
                     <span className="sm:hidden">Date Range</span>
                   </Button>
                 </PopoverTrigger>
@@ -256,13 +295,15 @@ export default function Invoices() {
         {/* Invoice List */}
         {isLoading ? (
           <div className="space-y-4">
-            {Array(5).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-24" />
-            ))}
+            {Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <Skeleton key={i} className="h-24" />
+              ))}
           </div>
         ) : filteredInvoices.length > 0 ? (
           <div className="space-y-3">
-            {filteredInvoices.map(invoice => {
+            {filteredInvoices.map((invoice) => {
               const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.issued;
               const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;
               const StatusIcon = statusConfig.icon;
@@ -300,9 +341,13 @@ export default function Invoices() {
 
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <p className="text-lg font-bold text-slate-900">฿{(invoice.total_amount || 0).toLocaleString()}</p>
+                          <p className="text-lg font-bold text-slate-900">
+                            ฿{(invoice.total_amount || 0).toLocaleString()}
+                          </p>
                           <p className="text-xs text-slate-500">
-                            {invoice.invoice_date ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy') : '-'}
+                            {invoice.invoice_date
+                              ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy')
+                              : '-'}
                           </p>
                         </div>
                         <Badge className={statusConfig.color}>
@@ -313,14 +358,20 @@ export default function Invoices() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={(e) => { e.stopPropagation(); handleViewDetails(invoice); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewDetails(invoice);
+                            }}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={(e) => { e.stopPropagation(); handlePrintInvoice(invoice); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePrintInvoice(invoice);
+                            }}
                           >
                             <Printer className="w-4 h-4" />
                           </Button>
@@ -410,11 +461,15 @@ function InvoiceDetailsView({ invoice, companySettings, onPrint }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <p className="text-xs text-slate-500">Invoice Date</p>
-          <p className="font-medium">{invoice.invoice_date ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy') : '-'}</p>
+          <p className="font-medium">
+            {invoice.invoice_date ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy') : '-'}
+          </p>
         </div>
         <div>
           <p className="text-xs text-slate-500">Due Date</p>
-          <p className="font-medium">{invoice.due_date ? format(parseISO(invoice.due_date), 'MMM d, yyyy') : '-'}</p>
+          <p className="font-medium">
+            {invoice.due_date ? format(parseISO(invoice.due_date), 'MMM d, yyyy') : '-'}
+          </p>
         </div>
         {invoice.tracking_number && (
           <div>
@@ -465,8 +520,11 @@ function InvoiceDetailsView({ invoice, companySettings, onPrint }) {
             {invoice.shipping_amount > 0 && (
               <tr className="border-t">
                 <td className="p-3">
-                  Shipping {invoice.weight_kg > 0 && invoice.price_per_kg > 0 && (
-                    <span className="text-slate-500">({invoice.weight_kg} kg × ฿{invoice.price_per_kg})</span>
+                  Shipping{' '}
+                  {invoice.weight_kg > 0 && invoice.price_per_kg > 0 && (
+                    <span className="text-slate-500">
+                      ({invoice.weight_kg} kg × ฿{invoice.price_per_kg})
+                    </span>
                   )}
                 </td>
                 <td className="p-3 text-right">฿{invoice.shipping_amount.toLocaleString()}</td>
@@ -505,10 +563,14 @@ function InvoiceDetailsView({ invoice, companySettings, onPrint }) {
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex items-center gap-2 text-emerald-700">
             <CheckCircle className="w-5 h-5" />
-            <span className="font-medium">Paid on {format(parseISO(invoice.payment_date), 'MMM d, yyyy')}</span>
+            <span className="font-medium">
+              Paid on {format(parseISO(invoice.payment_date), 'MMM d, yyyy')}
+            </span>
           </div>
           {invoice.payment_method && (
-            <p className="text-sm text-emerald-600 mt-1">Payment Method: {invoice.payment_method}</p>
+            <p className="text-sm text-emerald-600 mt-1">
+              Payment Method: {invoice.payment_method}
+            </p>
           )}
         </div>
       )}

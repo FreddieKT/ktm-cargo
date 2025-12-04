@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Building2, User, Phone, Mail, MapPin, FileText, 
-  CheckCircle, Circle, ArrowRight, ArrowLeft, Upload
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  Building2,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  FileText,
+  CheckCircle,
+  Circle,
+  ArrowRight,
+  ArrowLeft,
+  Upload,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -36,17 +51,17 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
     contract_start: new Date().toISOString().split('T')[0],
     contract_end: '',
     notes: '',
-    status: 'pending'
+    status: 'pending',
   });
 
   const updateField = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
     const vendor = await base44.entities.Vendor.create({
       ...formData,
-      onboarding_source: 'manual'
+      onboarding_source: 'manual',
     });
     AuditActions.vendorCreated(vendor);
     toast.success('Vendor onboarded successfully!');
@@ -55,11 +70,16 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return formData.name && formData.vendor_type;
-      case 2: return formData.contact_name && formData.phone;
-      case 3: return formData.services;
-      case 4: return formData.payment_terms;
-      default: return true;
+      case 1:
+        return formData.name && formData.vendor_type;
+      case 2:
+        return formData.contact_name && formData.phone;
+      case 3:
+        return formData.services;
+      case 4:
+        return formData.payment_terms;
+      default:
+        return true;
     }
   };
 
@@ -71,25 +91,37 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
           Vendor Onboarding
         </CardTitle>
         <CardDescription>Add a new vendor to your procurement network</CardDescription>
-        
+
         {/* Progress Steps */}
         <div className="flex items-center justify-between mt-6">
           {STEPS.map((step, idx) => (
             <React.Fragment key={step.id}>
               <div className="flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  currentStep > step.id ? 'bg-emerald-500 text-white' :
-                  currentStep === step.id ? 'bg-blue-600 text-white' :
-                  'bg-slate-200 text-slate-500'
-                }`}>
-                  {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                    currentStep > step.id
+                      ? 'bg-emerald-500 text-white'
+                      : currentStep === step.id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-200 text-slate-500'
+                  }`}
+                >
+                  {currentStep > step.id ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    <step.icon className="w-5 h-5" />
+                  )}
                 </div>
-                <span className={`text-xs mt-1 ${currentStep >= step.id ? 'text-slate-900' : 'text-slate-400'}`}>
+                <span
+                  className={`text-xs mt-1 ${currentStep >= step.id ? 'text-slate-900' : 'text-slate-400'}`}
+                >
                   {step.title}
                 </span>
               </div>
               {idx < STEPS.length - 1 && (
-                <div className={`flex-1 h-1 mx-2 rounded ${currentStep > step.id ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+                <div
+                  className={`flex-1 h-1 mx-2 rounded ${currentStep > step.id ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                />
               )}
             </React.Fragment>
           ))}
@@ -110,8 +142,13 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
             </div>
             <div className="space-y-2">
               <Label>Vendor Type *</Label>
-              <Select value={formData.vendor_type} onValueChange={(v) => updateField('vendor_type', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={formData.vendor_type}
+                onValueChange={(v) => updateField('vendor_type', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cargo_carrier">Cargo Carrier</SelectItem>
                   <SelectItem value="supplier">Supplier</SelectItem>
@@ -195,8 +232,13 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Payment Terms</Label>
-              <Select value={formData.payment_terms} onValueChange={(v) => updateField('payment_terms', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={formData.payment_terms}
+                onValueChange={(v) => updateField('payment_terms', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="immediate">Immediate (COD)</SelectItem>
                   <SelectItem value="net_15">Net 15 Days</SelectItem>
@@ -231,7 +273,9 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
                 <span className="text-slate-500">Company:</span>
                 <span className="font-medium">{formData.name}</span>
                 <span className="text-slate-500">Type:</span>
-                <span className="font-medium capitalize">{formData.vendor_type.replace('_', ' ')}</span>
+                <span className="font-medium capitalize">
+                  {formData.vendor_type.replace('_', ' ')}
+                </span>
                 <span className="text-slate-500">Contact:</span>
                 <span className="font-medium">{formData.contact_name}</span>
                 <span className="text-slate-500">Payment:</span>
@@ -245,15 +289,15 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
         <div className="flex justify-between mt-8 pt-4 border-t">
           <Button
             variant="outline"
-            onClick={() => currentStep === 1 ? onCancel?.() : setCurrentStep(s => s - 1)}
+            onClick={() => (currentStep === 1 ? onCancel?.() : setCurrentStep((s) => s - 1))}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             {currentStep === 1 ? 'Cancel' : 'Back'}
           </Button>
-          
+
           {currentStep < 4 ? (
             <Button
-              onClick={() => setCurrentStep(s => s + 1)}
+              onClick={() => setCurrentStep((s) => s + 1)}
               disabled={!canProceed()}
               className="bg-blue-600 hover:bg-blue-700"
             >

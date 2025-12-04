@@ -1,17 +1,42 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
-  Building2, FileText, Package, DollarSign, BarChart3,
-  Plus, Search, CheckCircle, Clock, AlertTriangle,
-  PackageCheck, Pencil, Trash2, Eye, Send, Shield, History, Receipt, Mail
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Building2,
+  FileText,
+  Package,
+  DollarSign,
+  BarChart3,
+  Plus,
+  Search,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  PackageCheck,
+  Pencil,
+  Trash2,
+  Eye,
+  Send,
+  Shield,
+  History,
+  Receipt,
+  Mail,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -28,17 +53,30 @@ import PendingApprovalsPanel from '@/components/procurement/PendingApprovalsPane
 import ApprovalHistoryPanel from '@/components/procurement/ApprovalHistoryPanel';
 import InvoiceList from '@/components/procurement/InvoiceList';
 import WeightAllocationManager from '@/components/procurement/WeightAllocationManager';
-import { submitPOForApproval, approvePO, rejectPO, getPendingApprovals, getApprovalHistory } from '@/components/procurement/ApprovalWorkflowService';
-import { generateInvoiceFromReceipt, markInvoicePaid } from '@/components/procurement/InvoiceService';
+import {
+  submitPOForApproval,
+  approvePO,
+  rejectPO,
+  getPendingApprovals,
+  getApprovalHistory,
+} from '@/components/procurement/ApprovalWorkflowService';
+import {
+  generateInvoiceFromReceipt,
+  markInvoicePaid,
+} from '@/components/procurement/InvoiceService';
 
 const PO_STATUS_CONFIG = {
   draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800', icon: FileText },
-  pending_approval: { label: 'Pending Approval', color: 'bg-amber-100 text-amber-800', icon: Clock },
+  pending_approval: {
+    label: 'Pending Approval',
+    color: 'bg-amber-100 text-amber-800',
+    icon: Clock,
+  },
   approved: { label: 'Approved', color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
   sent: { label: 'Sent', color: 'bg-purple-100 text-purple-800', icon: Send },
   partial_received: { label: 'Partial', color: 'bg-orange-100 text-orange-800', icon: Package },
   received: { label: 'Received', color: 'bg-emerald-100 text-emerald-800', icon: PackageCheck },
-  cancelled: { label: 'Cancelled', color: 'bg-rose-100 text-rose-800', icon: AlertTriangle }
+  cancelled: { label: 'Cancelled', color: 'bg-rose-100 text-rose-800', icon: AlertTriangle },
 };
 
 export default function Procurement() {
@@ -58,57 +96,57 @@ export default function Procurement() {
   // Data fetching
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list()
+    queryFn: () => base44.entities.Vendor.list(),
   });
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list('-created_at')
+    queryFn: () => base44.entities.PurchaseOrder.list('-created_date'),
   });
 
   const { data: goodsReceipts = [] } = useQuery({
     queryKey: ['goods-receipts'],
-    queryFn: () => base44.entities.GoodsReceipt.list('-created_at')
+    queryFn: () => base44.entities.GoodsReceipt.list('-created_at'),
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['vendor-contracts'],
-    queryFn: () => base44.entities.VendorContract.list()
+    queryFn: () => base44.entities.VendorContract.list(),
   });
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
-    queryFn: () => base44.entities.VendorPayment.list('-created_at')
+    queryFn: () => base44.entities.VendorPayment.list('-created_date'),
   });
 
   const { data: approvalRules = [] } = useQuery({
     queryKey: ['approval-rules'],
-    queryFn: () => base44.entities.ApprovalRule.list()
+    queryFn: () => base44.entities.ApprovalRule.list(),
   });
 
   const { data: approvalHistory = [] } = useQuery({
     queryKey: ['approval-history'],
-    queryFn: () => base44.entities.ApprovalHistory.list('-created_at')
+    queryFn: () => base44.entities.ApprovalHistory.list('-created_at'),
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list('-created_at')
+    queryFn: () => base44.entities.Invoice.list('-created_at'),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_at')
+    queryFn: () => base44.entities.Shipment.list('-created_date'),
   });
 
   const { data: shoppingOrders = [] } = useQuery({
     queryKey: ['shopping-orders'],
-    queryFn: () => base44.entities.ShoppingOrder.list('-created_at')
+    queryFn: () => base44.entities.ShoppingOrder.list('-created_date'),
   });
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
   });
 
   const [selectedPOHistory, setSelectedPOHistory] = useState(null);
@@ -133,7 +171,7 @@ export default function Procurement() {
       } else {
         toast.success('Purchase order created');
       }
-    }
+    },
   });
 
   const updatePOMutation = useMutation({
@@ -143,7 +181,7 @@ export default function Procurement() {
       setShowPOForm(false);
       setEditingPO(null);
       toast.success('Purchase order updated');
-    }
+    },
   });
 
   const deletePOMutation = useMutation({
@@ -151,7 +189,7 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       toast.success('Purchase order deleted');
-    }
+    },
   });
 
   const createReceiptMutation = useMutation({
@@ -160,11 +198,11 @@ export default function Procurement() {
       // Update PO status
       const allReceived = true;
       await base44.entities.PurchaseOrder.update(data.po_id, {
-        status: allReceived ? 'received' : 'partial_received'
+        status: allReceived ? 'received' : 'partial_received',
       });
       // Auto-generate invoice
-      const po = purchaseOrders.find(p => p.id === data.po_id);
-      const vendor = vendors.find(v => v.id === data.vendor_id);
+      const po = purchaseOrders.find((p) => p.id === data.po_id);
+      const vendor = vendors.find((v) => v.id === data.vendor_id);
       if (po) {
         const invoiceResult = await generateInvoiceFromReceipt(po, receipt, vendor);
         return { receipt, invoiceResult };
@@ -183,7 +221,7 @@ export default function Procurement() {
       } else {
         toast.success('Goods receipt recorded');
       }
-    }
+    },
   });
 
   const createContractMutation = useMutation({
@@ -191,7 +229,7 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract created');
-    }
+    },
   });
 
   const updateContractMutation = useMutation({
@@ -199,7 +237,7 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract updated');
-    }
+    },
   });
 
   const deleteContractMutation = useMutation({
@@ -207,7 +245,7 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract deleted');
-    }
+    },
   });
 
   const createPaymentMutation = useMutation({
@@ -215,23 +253,23 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-payments'] });
       queryClient.invalidateQueries({ queryKey: ['goods-receipts'] });
-    }
+    },
   });
 
   // Approval Rules Mutations
   const createRuleMutation = useMutation({
     mutationFn: (data) => base44.entities.ApprovalRule.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
   });
 
   const updateRuleMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ApprovalRule.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
   });
 
   const deleteRuleMutation = useMutation({
     mutationFn: (id) => base44.entities.ApprovalRule.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
   });
 
   const markInvoicePaidMutation = useMutation({
@@ -239,40 +277,39 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success('Invoice marked as paid');
-    }
+    },
   });
 
   const updateShipmentMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Shipment.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
-    }
+    },
   });
 
   const updateShoppingOrderMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ShoppingOrder.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
-    }
+    },
   });
 
   // Get all pending approval POs
-  const allPendingPOs = purchaseOrders.filter(po => po.status === 'pending_approval');
+  const allPendingPOs = purchaseOrders.filter((po) => po.status === 'pending_approval');
 
   // Get pending approvals specifically assigned to current user
-  const pendingForMe = purchaseOrders.filter(po => {
+  const pendingForMe = purchaseOrders.filter((po) => {
     if (po.status !== 'pending_approval') return false;
-    const poHistory = approvalHistory.filter(h => h.po_id === po.id);
+    const poHistory = approvalHistory.filter((h) => h.po_id === po.id);
     const latestSubmission = poHistory
-      .filter(h => ['submitted', 'escalated'].includes(h.action))
+      .filter((h) => ['submitted', 'escalated'].includes(h.action))
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
     return latestSubmission?.approver_email === currentUser?.email;
   });
 
   // For admins, show all pending if none specifically assigned to them
-  const pendingToShow = currentUser?.role === 'admin' && pendingForMe.length === 0
-    ? allPendingPOs
-    : pendingForMe;
+  const pendingToShow =
+    currentUser?.role === 'admin' && pendingForMe.length === 0 ? allPendingPOs : pendingForMe;
 
   const handleApprovePOWorkflow = async (po, comments) => {
     await approvePO(po, currentUser?.email, currentUser?.full_name, comments);
@@ -322,16 +359,19 @@ export default function Procurement() {
   };
 
   // Filter POs
-  const filteredPOs = purchaseOrders.filter(po =>
-    !searchQuery ||
-    po.po_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    po.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPOs = purchaseOrders.filter(
+    (po) =>
+      !searchQuery ||
+      po.po_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      po.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Stats
   const totalPOValue = purchaseOrders.reduce((sum, po) => sum + (po.total_amount || 0), 0);
-  const pendingPOs = purchaseOrders.filter(po => ['draft', 'pending_approval', 'approved', 'sent'].includes(po.status)).length;
-  const activeVendors = vendors.filter(v => v.status === 'active').length;
+  const pendingPOs = purchaseOrders.filter((po) =>
+    ['draft', 'pending_approval', 'approved', 'sent'].includes(po.status)
+  ).length;
+  const activeVendors = vendors.filter((v) => v.status === 'active').length;
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
@@ -339,19 +379,38 @@ export default function Procurement() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Procurement Portal</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
+              Procurement Portal
+            </h1>
             <p className="text-sm text-slate-500 mt-1">Manage vendors, orders, and payments</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            <Button variant="outline" onClick={() => setShowInviteForm(true)} size="sm" className="text-xs sm:text-sm">
+            <Button
+              variant="outline"
+              onClick={() => setShowInviteForm(true)}
+              size="sm"
+              className="text-xs sm:text-sm"
+            >
               <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Invite</span> Vendor
             </Button>
-            <Button variant="outline" onClick={() => setShowOnboarding(true)} size="sm" className="text-xs sm:text-sm">
+            <Button
+              variant="outline"
+              onClick={() => setShowOnboarding(true)}
+              size="sm"
+              className="text-xs sm:text-sm"
+            >
               <Building2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Add</span> Vendor
             </Button>
-            <Button onClick={() => { setEditingPO(null); setShowPOForm(true); }} className="bg-blue-600 hover:bg-blue-700" size="sm">
+            <Button
+              onClick={() => {
+                setEditingPO(null);
+                setShowPOForm(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+              size="sm"
+            >
               <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               New PO
             </Button>
@@ -365,8 +424,12 @@ export default function Procurement() {
               <div className="flex items-center gap-2 sm:gap-3">
                 <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                 <div>
-                  <p className="text-[10px] sm:text-xs text-blue-600 uppercase font-medium">Total PO Value</p>
-                  <p className="text-lg sm:text-2xl font-bold text-blue-900">฿{totalPOValue.toLocaleString()}</p>
+                  <p className="text-[10px] sm:text-xs text-blue-600 uppercase font-medium">
+                    Total PO Value
+                  </p>
+                  <p className="text-lg sm:text-2xl font-bold text-blue-900">
+                    ฿{totalPOValue.toLocaleString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -410,22 +473,37 @@ export default function Procurement() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex flex-wrap gap-1 h-auto p-1 bg-white shadow-sm">
             <TabsTrigger value="orders" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <FileText className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Orders</span><span className="sm:hidden">PO</span>
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Orders</span>
+              <span className="sm:hidden">PO</span>
             </TabsTrigger>
             <TabsTrigger value="vendors" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <Building2 className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Vendors</span><span className="sm:hidden">Vnd</span>
+              <Building2 className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Vendors</span>
+              <span className="sm:hidden">Vnd</span>
             </TabsTrigger>
             <TabsTrigger value="contracts" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <FileText className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Contracts</span><span className="sm:hidden">Con</span>
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Contracts</span>
+              <span className="sm:hidden">Con</span>
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Payments</span><span className="sm:hidden">Pay</span>
+              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Payments</span>
+              <span className="sm:hidden">Pay</span>
             </TabsTrigger>
             <TabsTrigger value="invoices" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <Receipt className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Invoices</span><span className="sm:hidden">Inv</span>
+              <Receipt className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Invoices</span>
+              <span className="sm:hidden">Inv</span>
             </TabsTrigger>
-            <TabsTrigger value="approvals" className="gap-1 text-xs sm:text-sm px-2 sm:px-3 relative">
-              <Shield className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Approvals</span><span className="sm:hidden">App</span>
+            <TabsTrigger
+              value="approvals"
+              className="gap-1 text-xs sm:text-sm px-2 sm:px-3 relative"
+            >
+              <Shield className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Approvals</span>
+              <span className="sm:hidden">App</span>
               {pendingToShow.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-rose-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center">
                   {pendingToShow.length}
@@ -433,10 +511,14 @@ export default function Procurement() {
               )}
             </TabsTrigger>
             <TabsTrigger value="allocation" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <Package className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Allocation</span><span className="sm:hidden">Alloc</span>
+              <Package className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Allocation</span>
+              <span className="sm:hidden">Alloc</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-1 text-xs sm:text-sm px-2 sm:px-3">
-              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Analytics</span><span className="sm:hidden">Stats</span>
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />{' '}
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
             </TabsTrigger>
           </TabsList>
 
@@ -469,38 +551,66 @@ export default function Procurement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPOs.map(po => {
+                      {filteredPOs.map((po) => {
                         const statusConfig = PO_STATUS_CONFIG[po.status] || PO_STATUS_CONFIG.draft;
                         return (
                           <tr key={po.id} className="border-b hover:bg-slate-50">
                             <td className="p-4 font-medium">{po.po_number}</td>
                             <td className="p-4">{po.vendor_name}</td>
                             <td className="p-4 text-slate-500">
-                              {po.created_at ? format(new Date(po.created_at), 'MMM d, yyyy') : '-'}
+                              {po.created_date
+                                ? format(new Date(po.created_date), 'MMM d, yyyy')
+                                : '-'}
                             </td>
                             <td className="p-4">
                               <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
                             </td>
-                            <td className="p-4 text-right font-medium">฿{po.total_amount?.toLocaleString()}</td>
+                            <td className="p-4 text-right font-medium">
+                              ฿{po.total_amount?.toLocaleString()}
+                            </td>
                             <td className="p-4">
                               <div className="flex justify-end gap-1">
                                 {po.status === 'draft' && (
-                                  <Button size="sm" variant="ghost" onClick={() => handleSubmitForApproval(po)} title="Submit for Approval">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleSubmitForApproval(po)}
+                                    title="Submit for Approval"
+                                  >
                                     <Send className="w-4 h-4 text-blue-600" />
                                   </Button>
                                 )}
-                                <Button size="sm" variant="ghost" onClick={() => setSelectedPOHistory(po)} title="View History">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setSelectedPOHistory(po)}
+                                  title="View History"
+                                >
                                   <History className="w-4 h-4 text-slate-400" />
                                 </Button>
                                 {['approved', 'sent', 'partial_received'].includes(po.status) && (
-                                  <Button size="sm" variant="ghost" onClick={() => handleReceiveGoods(po)} title="Receive">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleReceiveGoods(po)}
+                                    title="Receive"
+                                  >
                                     <PackageCheck className="w-4 h-4 text-blue-600" />
                                   </Button>
                                 )}
-                                <Button size="sm" variant="ghost" onClick={() => setEditConfirm({ open: true, po })}>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setEditConfirm({ open: true, po })}
+                                >
                                   <Pencil className="w-4 h-4" />
                                 </Button>
-                                <Button size="sm" variant="ghost" className="text-rose-600" onClick={() => setDeleteConfirm({ open: true, po })}>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-rose-600"
+                                  onClick={() => setDeleteConfirm({ open: true, po })}
+                                >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -529,21 +639,35 @@ export default function Procurement() {
                   <CardTitle className="text-lg">Vendor Directory</CardTitle>
                   <CardDescription>All registered vendors</CardDescription>
                 </div>
-                <Button onClick={() => setShowOnboarding(true)} className="bg-blue-600 hover:bg-blue-700">
+                <Button
+                  onClick={() => setShowOnboarding(true)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
                   <Plus className="w-4 h-4 mr-2" /> Add Vendor
                 </Button>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {vendors.map(vendor => (
-                    <Card key={vendor.id} className="border shadow-sm hover:shadow-md transition-shadow">
+                  {vendors.map((vendor) => (
+                    <Card
+                      key={vendor.id}
+                      className="border shadow-sm hover:shadow-md transition-shadow"
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-medium">{vendor.name}</h3>
-                            <p className="text-sm text-slate-500 capitalize">{vendor.vendor_type?.replace('_', ' ')}</p>
+                            <p className="text-sm text-slate-500 capitalize">
+                              {vendor.vendor_type?.replace('_', ' ')}
+                            </p>
                           </div>
-                          <Badge className={vendor.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}>
+                          <Badge
+                            className={
+                              vendor.status === 'active'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-slate-100 text-slate-600'
+                            }
+                          >
                             {vendor.status}
                           </Badge>
                         </div>
@@ -553,7 +677,9 @@ export default function Procurement() {
                         </div>
                         <div className="mt-3 flex items-center justify-between text-sm">
                           <span className="text-slate-500">Orders: {vendor.total_orders || 0}</span>
-                          <span className="font-medium text-blue-600">฿{(vendor.total_spent || 0).toLocaleString()}</span>
+                          <span className="font-medium text-blue-600">
+                            ฿{(vendor.total_spent || 0).toLocaleString()}
+                          </span>
                         </div>
                       </CardContent>
                     </Card>
@@ -625,7 +751,9 @@ export default function Procurement() {
               shipments={shipments}
               shoppingOrders={shoppingOrders}
               onUpdateShipment={(id, data) => updateShipmentMutation.mutateAsync({ id, data })}
-              onUpdateShoppingOrder={(id, data) => updateShoppingOrderMutation.mutateAsync({ id, data })}
+              onUpdateShoppingOrder={(id, data) =>
+                updateShoppingOrderMutation.mutateAsync({ id, data })
+              }
               onUpdatePO={(id, data) => updatePOMutation.mutateAsync({ id, data })}
             />
           </TabsContent>
@@ -660,13 +788,20 @@ export default function Procurement() {
         {/* PO Form Dialog */}
         <Dialog open={showPOForm} onOpenChange={setShowPOForm}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
-            <DialogTitle className="sr-only">{editingPO ? 'Edit Purchase Order' : 'New Purchase Order'}</DialogTitle>
-            <DialogDescription className="sr-only">Form to create or edit a purchase order</DialogDescription>
+            <DialogTitle className="sr-only">
+              {editingPO ? 'Edit Purchase Order' : 'New Purchase Order'}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Form to create or edit a purchase order
+            </DialogDescription>
             <PurchaseOrderForm
               vendors={vendors}
               existingPO={editingPO}
               onSubmit={handlePOSubmit}
-              onCancel={() => { setShowPOForm(false); setEditingPO(null); }}
+              onCancel={() => {
+                setShowPOForm(false);
+                setEditingPO(null);
+              }}
             />
           </DialogContent>
         </Dialog>
@@ -679,7 +814,10 @@ export default function Procurement() {
             <GoodsReceiptForm
               purchaseOrder={selectedPO}
               onSubmit={(data) => createReceiptMutation.mutate(data)}
-              onCancel={() => { setShowReceiveForm(false); setSelectedPO(null); }}
+              onCancel={() => {
+                setShowReceiveForm(false);
+                setSelectedPO(null);
+              }}
             />
           </DialogContent>
         </Dialog>
@@ -688,9 +826,11 @@ export default function Procurement() {
         <Dialog open={!!selectedPOHistory} onOpenChange={() => setSelectedPOHistory(null)}>
           <DialogContent className="max-w-lg">
             <DialogTitle className="sr-only">Approval History</DialogTitle>
-            <DialogDescription className="sr-only">History of approvals for this purchase order</DialogDescription>
+            <DialogDescription className="sr-only">
+              History of approvals for this purchase order
+            </DialogDescription>
             <ApprovalHistoryPanel
-              history={approvalHistory.filter(h => h.po_id === selectedPOHistory?.id)}
+              history={approvalHistory.filter((h) => h.po_id === selectedPOHistory?.id)}
               poNumber={selectedPOHistory?.po_number}
             />
           </DialogContent>
@@ -704,7 +844,10 @@ export default function Procurement() {
         />
 
         {/* Delete PO Confirmation Dialog */}
-        <AlertDialog open={deleteConfirm.open} onOpenChange={(open) => setDeleteConfirm({ open, po: null })}>
+        <AlertDialog
+          open={deleteConfirm.open}
+          onOpenChange={(open) => setDeleteConfirm({ open, po: null })}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-rose-600">
@@ -712,8 +855,9 @@ export default function Procurement() {
                 Delete Purchase Order
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete <span className="font-semibold">{deleteConfirm.po?.po_number}</span>?
-                This action cannot be undone.
+                Are you sure you want to delete{' '}
+                <span className="font-semibold">{deleteConfirm.po?.po_number}</span>? This action
+                cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -732,7 +876,10 @@ export default function Procurement() {
         </AlertDialog>
 
         {/* Edit PO Confirmation Dialog */}
-        <AlertDialog open={editConfirm.open} onOpenChange={(open) => setEditConfirm({ open, po: null })}>
+        <AlertDialog
+          open={editConfirm.open}
+          onOpenChange={(open) => setEditConfirm({ open, po: null })}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
@@ -740,8 +887,10 @@ export default function Procurement() {
                 Edit Purchase Order
               </AlertDialogTitle>
               <AlertDialogDescription>
-                You are about to edit <span className="font-semibold">{editConfirm.po?.po_number}</span> for vendor <span className="font-semibold">{editConfirm.po?.vendor_name}</span>.
-                Do you want to proceed?
+                You are about to edit{' '}
+                <span className="font-semibold">{editConfirm.po?.po_number}</span> for vendor{' '}
+                <span className="font-semibold">{editConfirm.po?.vendor_name}</span>. Do you want to
+                proceed?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

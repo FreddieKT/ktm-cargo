@@ -13,7 +13,7 @@ export async function createNotification({
   referenceType,
   referenceId,
   recipientEmail,
-  sendEmail = false
+  sendEmail = false,
 }) {
   // Create in-app notification
   const notification = await base44.entities.Notification.create({
@@ -25,7 +25,7 @@ export async function createNotification({
     reference_id: referenceId,
     recipient_email: recipientEmail,
     status: 'unread',
-    email_sent: false
+    email_sent: false,
   });
 
   // Send email if requested
@@ -34,7 +34,7 @@ export async function createNotification({
       await base44.integrations.Core.SendEmail({
         to: recipientEmail,
         subject: `[${priority.toUpperCase()}] ${title}`,
-        body: generateEmailBody(type, title, message, priority)
+        body: generateEmailBody(type, title, message, priority),
       });
       await base44.entities.Notification.update(notification.id, { email_sent: true });
     } catch (error) {
@@ -50,7 +50,7 @@ function generateEmailBody(type, title, message, priority) {
     critical: '#dc2626',
     high: '#f59e0b',
     medium: '#3b82f6',
-    low: '#6b7280'
+    low: '#6b7280',
   };
 
   return `
@@ -77,9 +77,8 @@ function generateEmailBody(type, title, message, priority) {
 // Low Stock Alert
 export async function triggerLowStockAlert(item, adminEmail) {
   const priority = item.current_stock <= 0 ? 'critical' : 'high';
-  const title = item.current_stock <= 0 
-    ? `Out of Stock: ${item.name}` 
-    : `Low Stock Alert: ${item.name}`;
+  const title =
+    item.current_stock <= 0 ? `Out of Stock: ${item.name}` : `Low Stock Alert: ${item.name}`;
   const message = `${item.name} (SKU: ${item.sku || 'N/A'}) has ${item.current_stock} ${item.unit} remaining. Reorder point is ${item.reorder_point}. Suggested reorder quantity: ${item.reorder_quantity} ${item.unit}.`;
 
   return createNotification({
@@ -90,7 +89,7 @@ export async function triggerLowStockAlert(item, adminEmail) {
     referenceType: 'inventory',
     referenceId: item.id,
     recipientEmail: adminEmail,
-    sendEmail: true
+    sendEmail: true,
   });
 }
 
@@ -107,7 +106,7 @@ export async function triggerDeliveryFeedbackAlert(shipment, customer) {
     referenceType: 'shipment',
     referenceId: shipment.id,
     recipientEmail: customer.email,
-    sendEmail: false // Handled by FeedbackRequestService
+    sendEmail: false, // Handled by FeedbackRequestService
   });
 }
 
@@ -125,7 +124,7 @@ export async function triggerTaskAssignedAlert(task, assigneeEmail) {
     referenceType: 'task',
     referenceId: task.id,
     recipientEmail: assigneeEmail,
-    sendEmail: true
+    sendEmail: true,
   });
 }
 
@@ -135,13 +134,13 @@ export async function triggerSegmentAlert(segmentType, count, adminEmail) {
     at_risk: {
       title: 'At-Risk Customers Need Attention',
       message: `You have ${count} customers at risk of churning. They haven't ordered in 30+ days. Consider launching a re-engagement campaign.`,
-      priority: 'high'
+      priority: 'high',
     },
     lapsed: {
       title: 'Lapsed Customers Alert',
       message: `${count} customers have lapsed (no orders in 60+ days). Consider a win-back campaign with special offers.`,
-      priority: 'medium'
-    }
+      priority: 'medium',
+    },
   };
 
   const alert = alerts[segmentType];
@@ -154,7 +153,7 @@ export async function triggerSegmentAlert(segmentType, count, adminEmail) {
     priority: alert.priority,
     referenceType: 'customer',
     recipientEmail: adminEmail,
-    sendEmail: true
+    sendEmail: true,
   });
 }
 
@@ -172,15 +171,19 @@ export async function checkInventoryAlerts(items, adminEmail) {
 // Check segment health and trigger alerts
 export async function checkSegmentHealth(segmentSummary, adminEmail) {
   const alerts = [];
-  
+
   if (segmentSummary.byBehavior.at_risk.count >= 3) {
-    alerts.push(await triggerSegmentAlert('at_risk', segmentSummary.byBehavior.at_risk.count, adminEmail));
+    alerts.push(
+      await triggerSegmentAlert('at_risk', segmentSummary.byBehavior.at_risk.count, adminEmail)
+    );
   }
-  
+
   if (segmentSummary.byBehavior.lapsed.count >= 5) {
-    alerts.push(await triggerSegmentAlert('lapsed', segmentSummary.byBehavior.lapsed.count, adminEmail));
+    alerts.push(
+      await triggerSegmentAlert('lapsed', segmentSummary.byBehavior.lapsed.count, adminEmail)
+    );
   }
-  
+
   return alerts;
 }
 
@@ -197,7 +200,7 @@ export async function triggerShipmentCreatedAlert(shipment, recipientEmail) {
     referenceType: 'shipment',
     referenceId: shipment.id,
     recipientEmail,
-    sendEmail: false
+    sendEmail: false,
   });
 }
 
@@ -210,10 +213,11 @@ export async function triggerShipmentStatusAlert(shipment, oldStatus, newStatus,
     in_transit: 'In Transit',
     customs: 'At Customs',
     delivered: 'Delivered',
-    cancelled: 'Cancelled'
+    cancelled: 'Cancelled',
   };
-  
-  const priority = newStatus === 'delivered' ? 'low' : newStatus === 'cancelled' ? 'high' : 'medium';
+
+  const priority =
+    newStatus === 'delivered' ? 'low' : newStatus === 'cancelled' ? 'high' : 'medium';
   const title = `Shipment Status: ${statusLabels[newStatus] || newStatus}`;
   const message = `Shipment ${shipment.tracking_number || 'N/A'} for ${shipment.customer_name} status changed from "${statusLabels[oldStatus] || oldStatus}" to "${statusLabels[newStatus] || newStatus}".`;
 
@@ -225,7 +229,7 @@ export async function triggerShipmentStatusAlert(shipment, oldStatus, newStatus,
     referenceType: 'shipment',
     referenceId: shipment.id,
     recipientEmail,
-    sendEmail: newStatus === 'delivered'
+    sendEmail: newStatus === 'delivered',
   });
 }
 
@@ -242,7 +246,7 @@ export async function triggerPaymentReceivedAlert(shipment, recipientEmail) {
     referenceType: 'payment',
     referenceId: shipment.id,
     recipientEmail,
-    sendEmail: false
+    sendEmail: false,
   });
 }
 
@@ -259,7 +263,7 @@ export async function triggerInvoiceGeneratedAlert(invoice, recipientEmail) {
     referenceType: 'invoice',
     referenceId: invoice.id,
     recipientEmail,
-    sendEmail: false
+    sendEmail: false,
   });
 }
 
@@ -276,6 +280,6 @@ export async function triggerVendorPayoutAlert(payout, recipientEmail) {
     referenceType: 'vendor',
     referenceId: payout.id,
     recipientEmail,
-    sendEmail: false
+    sendEmail: false,
   });
 }

@@ -1,15 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Building2, User, Phone, Mail, MapPin, FileText, 
-  CreditCard, CheckCircle, AlertTriangle, Loader2, Plane
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import {
+  Building2,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  FileText,
+  CreditCard,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
+  Plane,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AuditActions } from '@/components/audit/AuditService';
@@ -18,7 +33,7 @@ const STEPS = [
   { id: 'company', title: 'Company Info', icon: Building2 },
   { id: 'contact', title: 'Contact Details', icon: User },
   { id: 'banking', title: 'Banking Info', icon: CreditCard },
-  { id: 'services', title: 'Services', icon: FileText }
+  { id: 'services', title: 'Services', icon: FileText },
 ];
 
 export default function VendorRegistration() {
@@ -43,7 +58,7 @@ export default function VendorRegistration() {
     bank_account_name: '',
     services: '',
     payment_terms: 'net_30',
-    notes: ''
+    notes: '',
   });
 
   useEffect(() => {
@@ -62,7 +77,7 @@ export default function VendorRegistration() {
 
     try {
       const invitations = await base44.entities.VendorInvitation.filter({ token });
-      
+
       if (invitations.length === 0) {
         setError('Invitation not found');
         setLoading(false);
@@ -84,10 +99,10 @@ export default function VendorRegistration() {
       }
 
       setInvitation(inv);
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
         name: inv.company_name || '',
-        email: inv.email || ''
+        email: inv.email || '',
       }));
     } catch (e) {
       setError('Failed to load invitation');
@@ -106,11 +121,13 @@ export default function VendorRegistration() {
       if (!form.contact_name.trim()) newErrors.contact_name = 'Contact name is required';
       if (!form.phone.trim()) newErrors.phone = 'Phone is required';
       if (!form.email.trim()) newErrors.email = 'Email is required';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Invalid email format';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+        newErrors.email = 'Invalid email format';
     } else if (step === 2) {
       if (!form.tax_id.trim()) newErrors.tax_id = 'Tax ID is required';
       if (!form.bank_name.trim()) newErrors.bank_name = 'Bank name is required';
-      if (!form.bank_account_number.trim()) newErrors.bank_account_number = 'Account number is required';
+      if (!form.bank_account_number.trim())
+        newErrors.bank_account_number = 'Account number is required';
       if (!form.bank_account_name.trim()) newErrors.bank_account_name = 'Account name is required';
     }
 
@@ -120,12 +137,12 @@ export default function VendorRegistration() {
 
   const handleNext = () => {
     if (validateStep()) {
-      setStep(s => s + 1);
+      setStep((s) => s + 1);
     }
   };
 
   const handleBack = () => {
-    setStep(s => s - 1);
+    setStep((s) => s - 1);
   };
 
   const handleSubmit = async () => {
@@ -138,13 +155,13 @@ export default function VendorRegistration() {
         ...form,
         status: 'pending',
         onboarding_source: 'invitation',
-        invitation_id: invitation.id
+        invitation_id: invitation.id,
       });
 
       // Update invitation
       await base44.entities.VendorInvitation.update(invitation.id, {
         status: 'completed',
-        completed_vendor_id: vendor.id
+        completed_vendor_id: vendor.id,
       });
 
       // Log audit
@@ -165,7 +182,7 @@ export default function VendorRegistration() {
               <li><strong>Type:</strong> ${form.vendor_type}</li>
             </ul>
             <p>Please review and activate the vendor in the procurement portal.</p>
-          `
+          `,
         });
       } catch (e) {
         console.error('Failed to notify admin', e);
@@ -182,9 +199,9 @@ export default function VendorRegistration() {
   };
 
   const updateForm = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: null }));
+      setErrors((prev) => ({ ...prev, [field]: null }));
     }
   };
 
@@ -218,7 +235,8 @@ export default function VendorRegistration() {
             <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-slate-900 mb-2">Registration Complete!</h2>
             <p className="text-slate-500 mb-4">
-              Thank you for registering. Your application is pending review and you will be notified once approved.
+              Thank you for registering. Your application is pending review and you will be notified
+              once approved.
             </p>
             <Badge className="bg-amber-100 text-amber-800">Pending Approval</Badge>
           </CardContent>
@@ -248,18 +266,31 @@ export default function VendorRegistration() {
             return (
               <div key={s.id} className="flex items-center">
                 <div className={`flex items-center gap-2 ${idx > 0 ? 'ml-4' : ''}`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    isComplete ? 'bg-emerald-500 text-white' : 
-                    isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-                  }`}>
-                    {isComplete ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isComplete
+                        ? 'bg-emerald-500 text-white'
+                        : isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-200 text-slate-400'
+                    }`}
+                  >
+                    {isComplete ? (
+                      <CheckCircle className="w-5 h-5" />
+                    ) : (
+                      <Icon className="w-5 h-5" />
+                    )}
                   </div>
-                  <span className={`hidden md:block text-sm font-medium ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>
+                  <span
+                    className={`hidden md:block text-sm font-medium ${isActive ? 'text-blue-600' : 'text-slate-400'}`}
+                  >
                     {s.title}
                   </span>
                 </div>
                 {idx < STEPS.length - 1 && (
-                  <div className={`w-12 h-1 mx-2 rounded ${isComplete ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+                  <div
+                    className={`w-12 h-1 mx-2 rounded ${isComplete ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                  />
                 )}
               </div>
             );
@@ -293,7 +324,10 @@ export default function VendorRegistration() {
                 </div>
                 <div className="space-y-2">
                   <Label>Vendor Type *</Label>
-                  <Select value={form.vendor_type} onValueChange={(v) => updateForm('vendor_type', v)}>
+                  <Select
+                    value={form.vendor_type}
+                    onValueChange={(v) => updateForm('vendor_type', v)}
+                  >
                     <SelectTrigger className={errors.vendor_type ? 'border-rose-500' : ''}>
                       <SelectValue />
                     </SelectTrigger>
@@ -329,7 +363,9 @@ export default function VendorRegistration() {
                     placeholder="John Doe"
                     className={errors.contact_name ? 'border-rose-500' : ''}
                   />
-                  {errors.contact_name && <p className="text-xs text-rose-500">{errors.contact_name}</p>}
+                  {errors.contact_name && (
+                    <p className="text-xs text-rose-500">{errors.contact_name}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -389,7 +425,9 @@ export default function VendorRegistration() {
                       placeholder="xxx-x-xxxxx-x"
                       className={errors.bank_account_number ? 'border-rose-500' : ''}
                     />
-                    {errors.bank_account_number && <p className="text-xs text-rose-500">{errors.bank_account_number}</p>}
+                    {errors.bank_account_number && (
+                      <p className="text-xs text-rose-500">{errors.bank_account_number}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Account Name *</Label>
@@ -399,7 +437,9 @@ export default function VendorRegistration() {
                       placeholder="Company Name Co., Ltd."
                       className={errors.bank_account_name ? 'border-rose-500' : ''}
                     />
-                    {errors.bank_account_name && <p className="text-xs text-rose-500">{errors.bank_account_name}</p>}
+                    {errors.bank_account_name && (
+                      <p className="text-xs text-rose-500">{errors.bank_account_name}</p>
+                    )}
                   </div>
                 </div>
               </>
@@ -419,8 +459,13 @@ export default function VendorRegistration() {
                 </div>
                 <div className="space-y-2">
                   <Label>Preferred Payment Terms</Label>
-                  <Select value={form.payment_terms} onValueChange={(v) => updateForm('payment_terms', v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.payment_terms}
+                    onValueChange={(v) => updateForm('payment_terms', v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="immediate">Immediate (COD)</SelectItem>
                       <SelectItem value="net_15">Net 15 Days</SelectItem>
@@ -453,8 +498,8 @@ export default function VendorRegistration() {
                   Next
                 </Button>
               ) : (
-                <Button 
-                  onClick={handleSubmit} 
+                <Button
+                  onClick={handleSubmit}
                   disabled={submitting}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                 >

@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Bell, Save, Loader2, Package, CreditCard, FileText, 
-  Truck, ClipboardList, Users, AlertTriangle, DollarSign, PlusCircle
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import {
+  Bell,
+  Save,
+  Loader2,
+  Package,
+  CreditCard,
+  FileText,
+  Truck,
+  ClipboardList,
+  Users,
+  AlertTriangle,
+  DollarSign,
+  PlusCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -18,62 +28,62 @@ const NOTIFICATION_TYPES = [
     label: 'New Shipment Created',
     description: 'When a new shipment is created in the system',
     icon: PlusCircle,
-    color: 'text-emerald-600'
+    color: 'text-emerald-600',
   },
   {
     key: 'shipment_status',
     label: 'Shipment Status Updates',
     description: 'When shipment status changes (picked up, in transit, delivered)',
     icon: Truck,
-    color: 'text-blue-600'
+    color: 'text-blue-600',
   },
   {
     key: 'payment_received',
     label: 'Payment Received',
     description: 'When a payment is received for a shipment',
     icon: CreditCard,
-    color: 'text-green-600'
+    color: 'text-green-600',
   },
   {
     key: 'invoice_generated',
     label: 'Invoice Generated',
     description: 'When an invoice is automatically generated',
     icon: FileText,
-    color: 'text-indigo-600'
+    color: 'text-indigo-600',
   },
   {
     key: 'low_stock',
     label: 'Low Stock Alerts',
     description: 'When inventory items fall below reorder point',
     icon: AlertTriangle,
-    color: 'text-amber-600'
+    color: 'text-amber-600',
   },
   {
     key: 'task_assigned',
     label: 'Task Assignments',
     description: 'When a task is assigned to you',
     icon: ClipboardList,
-    color: 'text-purple-600'
+    color: 'text-purple-600',
   },
   {
     key: 'vendor_payment',
     label: 'Vendor Payouts',
     description: 'When vendor payout records are created',
     icon: DollarSign,
-    color: 'text-orange-600'
+    color: 'text-orange-600',
   },
   {
     key: 'segment_alert',
     label: 'Customer Segment Alerts',
     description: 'Alerts about at-risk or lapsed customers',
     icon: Users,
-    color: 'text-rose-600'
-  }
+    color: 'text-rose-600',
+  },
 ];
 
 export default function NotificationPreferences({ user }) {
   const queryClient = useQueryClient();
-  
+
   const defaultPrefs = NOTIFICATION_TYPES.reduce((acc, type) => {
     acc[type.key] = { inApp: true, email: false };
     return acc;
@@ -99,13 +109,13 @@ export default function NotificationPreferences({ user }) {
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast.success('Notification preferences saved');
     },
-    onError: () => toast.error('Failed to save preferences')
+    onError: () => toast.error('Failed to save preferences'),
   });
 
   const handleToggle = (key, channel) => {
-    setPreferences(prev => ({
+    setPreferences((prev) => ({
       ...prev,
-      [key]: { ...prev[key], [channel]: !prev[key][channel] }
+      [key]: { ...prev[key], [channel]: !prev[key][channel] },
     }));
   };
 
@@ -115,14 +125,14 @@ export default function NotificationPreferences({ user }) {
       notification_settings: {
         ...user?.notification_settings,
         in_app_enabled: globalInApp,
-        email_enabled: globalEmail
-      }
+        email_enabled: globalEmail,
+      },
     });
   };
 
   const enableAll = (channel) => {
     const updated = { ...preferences };
-    NOTIFICATION_TYPES.forEach(type => {
+    NOTIFICATION_TYPES.forEach((type) => {
       updated[type.key] = { ...updated[type.key], [channel]: true };
     });
     setPreferences(updated);
@@ -130,7 +140,7 @@ export default function NotificationPreferences({ user }) {
 
   const disableAll = (channel) => {
     const updated = { ...preferences };
-    NOTIFICATION_TYPES.forEach(type => {
+    NOTIFICATION_TYPES.forEach((type) => {
       updated[type.key] = { ...updated[type.key], [channel]: false };
     });
     setPreferences(updated);
@@ -187,7 +197,7 @@ export default function NotificationPreferences({ user }) {
           {NOTIFICATION_TYPES.map((type, idx) => {
             const Icon = type.icon;
             const prefs = preferences[type.key] || { inApp: true, email: false };
-            
+
             return (
               <div key={type.key}>
                 <div className="flex items-center justify-between py-4">
@@ -203,16 +213,16 @@ export default function NotificationPreferences({ user }) {
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500">In-App</span>
-                      <Switch 
-                        checked={prefs.inApp} 
+                      <Switch
+                        checked={prefs.inApp}
                         onCheckedChange={() => handleToggle(type.key, 'inApp')}
                         disabled={!globalInApp}
                       />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500">Email</span>
-                      <Switch 
-                        checked={prefs.email} 
+                      <Switch
+                        checked={prefs.email}
                         onCheckedChange={() => handleToggle(type.key, 'email')}
                         disabled={!globalEmail}
                       />
@@ -228,8 +238,8 @@ export default function NotificationPreferences({ user }) {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button 
-          onClick={handleSave} 
+        <Button
+          onClick={handleSave}
           disabled={saveMutation.isPending}
           className="bg-blue-600 hover:bg-blue-700"
         >

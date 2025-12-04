@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { User, Phone, Mail, MapPin, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,7 +15,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
     phone: customer?.phone || '',
     email: customer?.email || '',
     address_bangkok: customer?.address_bangkok || '',
-    address_yangon: customer?.address_yangon || ''
+    address_yangon: customer?.address_yangon || '',
   });
 
   const updateMutation = useMutation({
@@ -32,7 +32,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
     },
     onError: () => {
       toast.error('Failed to update profile');
-    }
+    },
   });
 
   const handleSubmit = (e) => {
@@ -126,8 +126,8 @@ export default function CustomerProfile({ customer, onUpdate }) {
               />
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={updateMutation.isPending}
             >

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { PackageCheck, X, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) {
@@ -18,14 +24,18 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
     if (purchaseOrder?.items) {
       try {
         const poItems = JSON.parse(purchaseOrder.items);
-        setItems(poItems.map(item => ({
-          item_name: item.name,
-          ordered_qty: item.quantity,
-          received_qty: item.quantity,
-          condition: 'good',
-          unit_price: item.unit_price
-        })));
-      } catch { setItems([]); }
+        setItems(
+          poItems.map((item) => ({
+            item_name: item.name,
+            ordered_qty: item.quantity,
+            received_qty: item.quantity,
+            condition: 'good',
+            unit_price: item.unit_price,
+          }))
+        );
+      } catch {
+        setItems([]);
+      }
     }
   }, [purchaseOrder]);
 
@@ -35,20 +45,24 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
     setItems(updated);
   };
 
-  const totalValue = items.reduce((sum, item) => 
-    sum + ((item.received_qty || 0) * (item.unit_price || 0)), 0
+  const totalValue = items.reduce(
+    (sum, item) => sum + (item.received_qty || 0) * (item.unit_price || 0),
+    0
   );
 
-  const hasDiscrepancy = items.some(item => 
-    item.received_qty !== item.ordered_qty || item.condition !== 'good'
+  const hasDiscrepancy = items.some(
+    (item) => item.received_qty !== item.ordered_qty || item.condition !== 'good'
   );
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const receiptNumber = `GR-${Date.now().toString(36).toUpperCase()}`;
-    const qualityStatus = items.every(i => i.condition === 'good') ? 'passed' :
-      items.every(i => i.condition === 'rejected') ? 'rejected' : 'partial_reject';
+    const qualityStatus = items.every((i) => i.condition === 'good')
+      ? 'passed'
+      : items.every((i) => i.condition === 'rejected')
+        ? 'rejected'
+        : 'partial_reject';
 
     onSubmit({
       receipt_number: receiptNumber,
@@ -62,7 +76,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
       total_value: totalValue,
       quality_status: qualityStatus,
       notes,
-      discrepancy_notes: hasDiscrepancy ? discrepancyNotes : ''
+      discrepancy_notes: hasDiscrepancy ? discrepancyNotes : '',
     });
   };
 
@@ -111,7 +125,8 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
               </thead>
               <tbody>
                 {items.map((item, idx) => {
-                  const isMatch = item.received_qty === item.ordered_qty && item.condition === 'good';
+                  const isMatch =
+                    item.received_qty === item.ordered_qty && item.condition === 'good';
                   return (
                     <tr key={idx} className="border-t">
                       <td className="p-3 font-medium">{item.item_name}</td>
@@ -122,13 +137,20 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                           min="0"
                           max={item.ordered_qty}
                           value={item.received_qty}
-                          onChange={(e) => updateItem(idx, 'received_qty', parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(idx, 'received_qty', parseInt(e.target.value) || 0)
+                          }
                           className="text-center"
                         />
                       </td>
                       <td className="p-3">
-                        <Select value={item.condition} onValueChange={(v) => updateItem(idx, 'condition', v)}>
-                          <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                        <Select
+                          value={item.condition}
+                          onValueChange={(v) => updateItem(idx, 'condition', v)}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="good">Good</SelectItem>
                             <SelectItem value="damaged">Damaged</SelectItem>
@@ -184,7 +206,9 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
               </span>
             </div>
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
+              </Button>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
                 <PackageCheck className="w-4 h-4 mr-2" />
                 Confirm Receipt

@@ -12,7 +12,7 @@ export async function logAuditEvent({
   entityReference,
   details,
   previousValue,
-  newValue
+  newValue,
 }) {
   let user = null;
   try {
@@ -31,7 +31,7 @@ export async function logAuditEvent({
     user_role: user?.role === 'admin' ? 'Managing Director' : user?.staff_role || 'unknown',
     details: details ? JSON.stringify(details) : '',
     previous_value: previousValue ? JSON.stringify(previousValue) : '',
-    new_value: newValue ? JSON.stringify(newValue) : ''
+    new_value: newValue ? JSON.stringify(newValue) : '',
   };
 
   return await base44.entities.AuditLog.create(auditEntry);
@@ -47,7 +47,7 @@ export const AuditActions = {
       entityType: 'PurchaseOrder',
       entityId: po.id,
       entityReference: po.po_number,
-      details: { vendor: po.vendor_name, amount: po.total_amount }
+      details: { vendor: po.vendor_name, amount: po.total_amount },
     });
   },
 
@@ -57,7 +57,7 @@ export const AuditActions = {
       entityType: 'PurchaseOrder',
       entityId: po.id,
       entityReference: po.po_number,
-      details: { vendor: po.vendor_name, amount: po.total_amount, comments }
+      details: { vendor: po.vendor_name, amount: po.total_amount, comments },
     });
   },
 
@@ -67,7 +67,7 @@ export const AuditActions = {
       entityType: 'PurchaseOrder',
       entityId: po.id,
       entityReference: po.po_number,
-      details: { vendor: po.vendor_name, amount: po.total_amount, comments }
+      details: { vendor: po.vendor_name, amount: po.total_amount, comments },
     });
   },
 
@@ -77,7 +77,7 @@ export const AuditActions = {
       entityType: 'PurchaseOrder',
       entityId: po.id,
       entityReference: po.po_number,
-      details: { vendor: po.vendor_name, amount: po.total_amount, approver }
+      details: { vendor: po.vendor_name, amount: po.total_amount, approver },
     });
   },
 
@@ -88,7 +88,7 @@ export const AuditActions = {
       entityType: 'Invoice',
       entityId: invoice.id,
       entityReference: invoice.invoice_number,
-      details: { vendor: invoice.vendor_name, amount: invoice.total_amount, po: invoice.po_number }
+      details: { vendor: invoice.vendor_name, amount: invoice.total_amount, po: invoice.po_number },
     });
   },
 
@@ -98,7 +98,7 @@ export const AuditActions = {
       entityType: 'Invoice',
       entityId: invoice.id,
       entityReference: invoice.invoice_number,
-      details: { vendor: invoice.vendor_name, amount: invoice.total_amount }
+      details: { vendor: invoice.vendor_name, amount: invoice.total_amount },
     });
   },
 
@@ -109,7 +109,11 @@ export const AuditActions = {
       entityType: 'GoodsReceipt',
       entityId: receipt.id,
       entityReference: receipt.receipt_number,
-      details: { po_number: po?.po_number, vendor: receipt.vendor_name, value: receipt.total_value }
+      details: {
+        po_number: po?.po_number,
+        vendor: receipt.vendor_name,
+        value: receipt.total_value,
+      },
     });
   },
 
@@ -121,7 +125,7 @@ export const AuditActions = {
       entityId: userId,
       entityReference: userName,
       previousValue: { role: previousRole },
-      newValue: { role: newRole }
+      newValue: { role: newRole },
     });
   },
 
@@ -130,7 +134,7 @@ export const AuditActions = {
       action: 'user_invited',
       entityType: 'User',
       entityReference: email,
-      details: { name, role }
+      details: { name, role },
     });
   },
 
@@ -139,7 +143,7 @@ export const AuditActions = {
       action: 'user_deactivated',
       entityType: 'User',
       entityId: userId,
-      entityReference: userName
+      entityReference: userName,
     });
   },
 
@@ -150,7 +154,7 @@ export const AuditActions = {
       entityType: 'ApprovalRule',
       entityId: rule.id,
       entityReference: rule.name,
-      details: { type: rule.rule_type, auto_approve: rule.auto_approve }
+      details: { type: rule.rule_type, auto_approve: rule.auto_approve },
     });
   },
 
@@ -161,7 +165,7 @@ export const AuditActions = {
       entityId: rule.id,
       entityReference: rule.name,
       previousValue: previousRule,
-      newValue: rule
+      newValue: rule,
     });
   },
 
@@ -170,7 +174,7 @@ export const AuditActions = {
       action: 'rule_deleted',
       entityType: 'ApprovalRule',
       entityId: ruleId,
-      entityReference: ruleName
+      entityReference: ruleName,
     });
   },
 
@@ -181,7 +185,7 @@ export const AuditActions = {
       entityType: 'Vendor',
       entityId: vendor.id,
       entityReference: vendor.name,
-      details: { type: vendor.vendor_type }
+      details: { type: vendor.vendor_type },
     });
   },
 
@@ -192,7 +196,7 @@ export const AuditActions = {
       entityType: 'VendorContract',
       entityId: contract.id,
       entityReference: contract.contract_number,
-      details: { vendor: contract.vendor_name, value: contract.total_value }
+      details: { vendor: contract.vendor_name, value: contract.total_value },
     });
   },
 
@@ -203,7 +207,7 @@ export const AuditActions = {
       entityType: 'VendorPayment',
       entityId: payment.id,
       entityReference: payment.reference_number,
-      details: { vendor: payment.vendor_name, amount: payment.total_amount }
+      details: { vendor: payment.vendor_name, amount: payment.total_amount },
     });
-  }
+  },
 };

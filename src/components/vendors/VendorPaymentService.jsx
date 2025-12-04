@@ -6,7 +6,7 @@ const PAYMENT_TERM_DAYS = {
   immediate: 0,
   net_15: 15,
   net_30: 30,
-  net_60: 60
+  net_60: 60,
 };
 
 /**
@@ -15,18 +15,18 @@ const PAYMENT_TERM_DAYS = {
 export async function generatePaymentRequest(vendorOrder, vendor) {
   const daysToAdd = PAYMENT_TERM_DAYS[vendor.payment_terms] || 30;
   const dueDate = format(addDays(new Date(), daysToAdd), 'yyyy-MM-dd');
-  
+
   // Check if payment already exists for this order
   const existingPayments = await base44.entities.VendorPayment.filter({
-    vendor_id: vendor.id
+    vendor_id: vendor.id,
   });
-  
-  const alreadyIncluded = existingPayments.some(p => 
+
+  const alreadyIncluded = existingPayments.some((p) =>
     p.order_ids?.split(',').includes(vendorOrder.id)
   );
-  
+
   if (alreadyIncluded) return null;
-  
+
   // Create new payment request
   const payment = await base44.entities.VendorPayment.create({
     vendor_id: vendor.id,
@@ -35,14 +35,14 @@ export async function generatePaymentRequest(vendorOrder, vendor) {
     total_amount: vendorOrder.amount || 0,
     payment_terms: vendor.payment_terms,
     due_date: dueDate,
-    status: daysToAdd === 0 ? 'scheduled' : 'pending'
+    status: daysToAdd === 0 ? 'scheduled' : 'pending',
   });
-  
+
   // Notify for immediate payments
   if (daysToAdd === 0) {
     await triggerPaymentDueAlert(payment, vendor);
   }
-  
+
   return payment;
 }
 
@@ -50,45 +50,45 @@ export async function generatePaymentRequest(vendorOrder, vendor) {
  * Batch generate payments for all unpaid completed orders
  */
 export async function processUnpaidOrders(vendorOrders, vendors) {
-  const completedOrders = vendorOrders.filter(o => o.status === 'completed');
+  const completedOrders = vendorOrders.filter((o) => o.status === 'completed');
   const existingPayments = await base44.entities.VendorPayment.list();
-  
+
   const processedOrderIds = new Set();
-  existingPayments.forEach(p => {
-    (p.order_ids || '').split(',').forEach(id => processedOrderIds.add(id));
+  existingPayments.forEach((p) => {
+    (p.order_ids || '').split(',').forEach((id) => processedOrderIds.add(id));
   });
-  
-  const unpaidOrders = completedOrders.filter(o => !processedOrderIds.has(o.id));
-  
+
+  const unpaidOrders = completedOrders.filter((o) => !processedOrderIds.has(o.id));
+
   // Group by vendor
   const ordersByVendor = {};
-  unpaidOrders.forEach(o => {
+  unpaidOrders.forEach((o) => {
     if (!ordersByVendor[o.vendor_id]) ordersByVendor[o.vendor_id] = [];
     ordersByVendor[o.vendor_id].push(o);
   });
-  
+
   const payments = [];
   for (const [vendorId, orders] of Object.entries(ordersByVendor)) {
-    const vendor = vendors.find(v => v.id === vendorId);
+    const vendor = vendors.find((v) => v.id === vendorId);
     if (!vendor) continue;
-    
+
     const totalAmount = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
     const daysToAdd = PAYMENT_TERM_DAYS[vendor.payment_terms] || 30;
     const dueDate = format(addDays(new Date(), daysToAdd), 'yyyy-MM-dd');
-    
+
     const payment = await base44.entities.VendorPayment.create({
       vendor_id: vendorId,
       vendor_name: vendor.name,
-      order_ids: orders.map(o => o.id).join(','),
+      order_ids: orders.map((o) => o.id).join(','),
       total_amount: totalAmount,
       payment_terms: vendor.payment_terms,
       due_date: dueDate,
-      status: daysToAdd === 0 ? 'scheduled' : 'pending'
+      status: daysToAdd === 0 ? 'scheduled' : 'pending',
     });
-    
+
     payments.push(payment);
   }
-  
+
   return payments;
 }
 
@@ -99,17 +99,17 @@ export async function checkOverduePayments() {
   const payments = await base44.entities.VendorPayment.filter({ status: 'pending' });
   const today = new Date();
   const overduePayments = [];
-  
+
   for (const payment of payments) {
     if (!payment.due_date) continue;
-    
+
     if (new Date(payment.due_date) < today) {
       await base44.entities.VendorPayment.update(payment.id, { status: 'overdue' });
       await triggerPaymentOverdueAlert(payment);
       overduePayments.push(payment);
     }
   }
-  
+
   return overduePayments;
 }
 
@@ -120,20 +120,18 @@ export async function checkUpcomingPayments() {
   const payments = await base44.entities.VendorPayment.filter({ status: 'pending' });
   const today = new Date();
   const upcoming = [];
-  
+
   for (const payment of payments) {
     if (!payment.due_date) continue;
-    
-    const daysUntilDue = Math.ceil(
-      (new Date(payment.due_date) - today) / (1000 * 60 * 60 * 24)
-    );
-    
+
+    const daysUntilDue = Math.ceil((new Date(payment.due_date) - today) / (1000 * 60 * 60 * 24));
+
     if (daysUntilDue <= 3 && daysUntilDue > 0) {
       await triggerPaymentDueAlert(payment, null, daysUntilDue);
       upcoming.push({ ...payment, daysUntilDue });
     }
   }
-  
+
   return upcoming;
 }
 
@@ -145,7 +143,7 @@ export async function markPaymentPaid(paymentId, paymentMethod, referenceNumber)
     status: 'paid',
     payment_date: format(new Date(), 'yyyy-MM-dd'),
     payment_method: paymentMethod,
-    reference_number: referenceNumber
+    reference_number: referenceNumber,
   });
 }
 
@@ -155,7 +153,7 @@ export async function markPaymentPaid(paymentId, paymentMethod, referenceNumber)
 async function triggerPaymentDueAlert(payment, vendor, daysUntilDue = 0) {
   const adminEmail = await getAdminEmail();
   const urgency = daysUntilDue === 0 ? 'immediate' : `in ${daysUntilDue} days`;
-  
+
   return createNotification({
     type: 'system',
     title: `Payment Due: ${payment.vendor_name}`,
@@ -164,7 +162,7 @@ async function triggerPaymentDueAlert(payment, vendor, daysUntilDue = 0) {
     referenceType: 'vendor',
     referenceId: payment.vendor_id,
     recipientEmail: adminEmail,
-    sendEmail: daysUntilDue <= 1
+    sendEmail: daysUntilDue <= 1,
   });
 }
 
@@ -173,7 +171,7 @@ async function triggerPaymentDueAlert(payment, vendor, daysUntilDue = 0) {
  */
 async function triggerPaymentOverdueAlert(payment) {
   const adminEmail = await getAdminEmail();
-  
+
   return createNotification({
     type: 'system',
     title: `OVERDUE Payment: ${payment.vendor_name}`,
@@ -182,7 +180,7 @@ async function triggerPaymentOverdueAlert(payment) {
     referenceType: 'vendor',
     referenceId: payment.vendor_id,
     recipientEmail: adminEmail,
-    sendEmail: true
+    sendEmail: true,
   });
 }
 

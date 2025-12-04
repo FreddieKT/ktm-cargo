@@ -1,11 +1,17 @@
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Star, Scale, DollarSign, Clock, CheckCircle, 
-  TrendingUp, AlertTriangle, Zap 
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import {
+  Star,
+  Scale,
+  DollarSign,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  AlertTriangle,
+  Zap,
 } from 'lucide-react';
 
 /**
@@ -16,19 +22,20 @@ function calculateVendorScore(vendor, weightKg, isExpress = false) {
   const breakdown = {};
 
   // 1. Pricing Score (40 points max)
-  const applicableRate = isExpress 
-    ? (vendor.cost_per_kg_express || vendor.cost_per_kg || 999)
+  const applicableRate = isExpress
+    ? vendor.cost_per_kg_express || vendor.cost_per_kg || 999
     : weightKg >= (vendor.bulk_threshold_kg || 100)
-      ? (vendor.cost_per_kg_bulk || vendor.cost_per_kg || 999)
-      : (vendor.cost_per_kg || 999);
-  
+      ? vendor.cost_per_kg_bulk || vendor.cost_per_kg || 999
+      : vendor.cost_per_kg || 999;
+
   // Lower price = higher score (assuming market avg is ~80/kg)
   const pricingScore = Math.max(0, 40 - (applicableRate - 50) * 0.5);
   score += pricingScore;
   breakdown.pricing = { score: pricingScore.toFixed(1), rate: applicableRate };
 
   // 2. Capacity Score (20 points max)
-  const capacityAvailable = (vendor.monthly_capacity_kg || 0) - (vendor.current_month_allocated_kg || 0);
+  const capacityAvailable =
+    (vendor.monthly_capacity_kg || 0) - (vendor.current_month_allocated_kg || 0);
   const hasCapacity = vendor.monthly_capacity_kg === 0 || capacityAvailable >= weightKg;
   const capacityScore = hasCapacity ? 20 : 0;
   score += capacityScore;
@@ -37,7 +44,7 @@ function calculateVendorScore(vendor, weightKg, isExpress = false) {
   // 3. Performance Score (25 points max)
   const onTimeRate = vendor.on_time_rate || 100;
   const rating = vendor.rating || 5;
-  const performanceScore = (onTimeRate / 100 * 15) + (rating / 5 * 10);
+  const performanceScore = (onTimeRate / 100) * 15 + (rating / 5) * 10;
   score += performanceScore;
   breakdown.performance = { score: performanceScore.toFixed(1), onTimeRate, rating };
 
@@ -57,24 +64,24 @@ function calculateVendorScore(vendor, weightKg, isExpress = false) {
     breakdown,
     applicableRate,
     hasCapacity,
-    meetsMinOrder: weightKg >= (vendor.min_order_kg || 0)
+    meetsMinOrder: weightKg >= (vendor.min_order_kg || 0),
   };
 }
 
-export default function PreferredVendorSelector({ 
-  vendors = [], 
-  weightKg = 0, 
+export default function PreferredVendorSelector({
+  vendors = [],
+  weightKg = 0,
   isExpress = false,
   onSelect,
-  selectedVendorId 
+  selectedVendorId,
 }) {
   // Filter and score vendors
   const scoredVendors = useMemo(() => {
     return vendors
-      .filter(v => v.status === 'active' && v.vendor_type === 'cargo_carrier')
-      .map(vendor => ({
+      .filter((v) => v.status === 'active' && v.vendor_type === 'cargo_carrier')
+      .map((vendor) => ({
         ...vendor,
-        scoreData: calculateVendorScore(vendor, weightKg, isExpress)
+        scoreData: calculateVendorScore(vendor, weightKg, isExpress),
       }))
       .sort((a, b) => parseFloat(b.scoreData.totalScore) - parseFloat(a.scoreData.totalScore));
   }, [vendors, weightKg, isExpress]);
@@ -87,7 +94,9 @@ export default function PreferredVendorSelector({
         <CardContent className="py-8 text-center">
           <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
           <p className="text-slate-600">No active cargo carriers found</p>
-          <p className="text-sm text-slate-500">Add vendors with cargo carrier type to enable recommendations</p>
+          <p className="text-sm text-slate-500">
+            Add vendors with cargo carrier type to enable recommendations
+          </p>
         </CardContent>
       </Card>
     );
@@ -101,7 +110,8 @@ export default function PreferredVendorSelector({
           Recommended Vendors
         </CardTitle>
         <CardDescription>
-          Based on pricing, capacity, and performance for {weightKg} kg {isExpress ? '(Express)' : ''}
+          Based on pricing, capacity, and performance for {weightKg} kg{' '}
+          {isExpress ? '(Express)' : ''}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -112,22 +122,24 @@ export default function PreferredVendorSelector({
           const canSelect = scoreData.hasCapacity && scoreData.meetsMinOrder;
 
           return (
-            <div 
+            <div
               key={vendor.id}
               className={`p-4 rounded-lg border-2 transition-all ${
-                isSelected 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : isTop 
-                    ? 'border-emerald-300 bg-emerald-50' 
+                isSelected
+                  ? 'border-blue-500 bg-blue-50'
+                  : isTop
+                    ? 'border-emerald-300 bg-emerald-50'
                     : 'border-slate-200 hover:border-slate-300'
               } ${!canSelect ? 'opacity-60' : 'cursor-pointer'}`}
               onClick={() => canSelect && onSelect?.(vendor)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    isTop ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
+                  <span
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      isTop ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'
+                    }`}
+                  >
                     {index + 1}
                   </span>
                   <div>
@@ -198,8 +210,8 @@ export default function PreferredVendorSelector({
 
               {/* Select Button */}
               {canSelect && (
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className={`w-full mt-2 ${isSelected ? 'bg-blue-600' : isTop ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
                   variant={isSelected || isTop ? 'default' : 'outline'}
                   onClick={(e) => {

@@ -1,37 +1,53 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-export default function VendorOrderForm({ vendors, shipments, inventoryItems, onSubmit, onCancel }) {
+export default function VendorOrderForm({
+  vendors,
+  shipments,
+  inventoryItems,
+  onSubmit,
+  onCancel,
+}) {
   const [form, setForm] = useState({
     vendor_id: '',
     order_type: 'shipment',
     reference_id: '',
     amount: 0,
     expected_date: '',
-    notes: ''
+    notes: '',
   });
 
-  const selectedVendor = vendors.find(v => v.id === form.vendor_id);
-  
-  const referenceOptions = form.order_type === 'shipment' 
-    ? shipments.map(s => ({ id: s.id, name: s.tracking_number || `Shipment - ${s.customer_name}` }))
-    : form.order_type === 'restock'
-    ? inventoryItems.map(i => ({ id: i.id, name: i.name }))
-    : [];
+  const selectedVendor = vendors.find((v) => v.id === form.vendor_id);
+
+  const referenceOptions =
+    form.order_type === 'shipment'
+      ? shipments.map((s) => ({
+          id: s.id,
+          name: s.tracking_number || `Shipment - ${s.customer_name}`,
+        }))
+      : form.order_type === 'restock'
+        ? inventoryItems.map((i) => ({ id: i.id, name: i.name }))
+        : [];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const reference = referenceOptions.find(r => r.id === form.reference_id);
+    const reference = referenceOptions.find((r) => r.id === form.reference_id);
     onSubmit({
       ...form,
       vendor_name: selectedVendor?.name,
       reference_name: reference?.name,
-      status: 'pending'
+      status: 'pending',
     });
   };
 
@@ -44,18 +60,29 @@ export default function VendorOrderForm({ vendors, shipments, inventoryItems, on
         <div className="space-y-2">
           <Label>Vendor *</Label>
           <Select value={form.vendor_id} onValueChange={(v) => setForm({ ...form, vendor_id: v })}>
-            <SelectTrigger><SelectValue placeholder="Select vendor" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Select vendor" />
+            </SelectTrigger>
             <SelectContent>
-              {vendors.filter(v => v.status === 'active').map(v => (
-                <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-              ))}
+              {vendors
+                .filter((v) => v.status === 'active')
+                .map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
           <Label>Order Type</Label>
-          <Select value={form.order_type} onValueChange={(v) => setForm({ ...form, order_type: v, reference_id: '' })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+          <Select
+            value={form.order_type}
+            onValueChange={(v) => setForm({ ...form, order_type: v, reference_id: '' })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="shipment">Shipment</SelectItem>
               <SelectItem value="restock">Inventory Restock</SelectItem>
@@ -66,11 +93,18 @@ export default function VendorOrderForm({ vendors, shipments, inventoryItems, on
         {referenceOptions.length > 0 && (
           <div className="space-y-2">
             <Label>Reference</Label>
-            <Select value={form.reference_id} onValueChange={(v) => setForm({ ...form, reference_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Select reference" /></SelectTrigger>
+            <Select
+              value={form.reference_id}
+              onValueChange={(v) => setForm({ ...form, reference_id: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select reference" />
+              </SelectTrigger>
               <SelectContent>
-                {referenceOptions.map(r => (
-                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                {referenceOptions.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -103,8 +137,12 @@ export default function VendorOrderForm({ vendors, shipments, inventoryItems, on
           />
         </div>
         <div className="flex gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">Cancel</Button>
-          <Button type="submit" className="flex-1 bg-blue-600" disabled={!form.vendor_id}>Assign</Button>
+          <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+            Cancel
+          </Button>
+          <Button type="submit" className="flex-1 bg-blue-600" disabled={!form.vendor_id}>
+            Assign
+          </Button>
         </div>
       </form>
     </DialogContent>

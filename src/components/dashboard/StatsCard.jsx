@@ -1,7 +1,14 @@
 import React from 'react';
-import { Card } from "@/components/ui/card";
+import { Card } from '@/components/ui/card';
 
-export default function StatsCard({ title, value, icon: Icon, trend, trendUp, bgColor = "bg-blue-500" }) {
+export default function StatsCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  trendUp,
+  bgColor = 'bg-blue-500',
+}) {
   return (
     <Card className="relative overflow-hidden bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
       <div className="p-6">
@@ -10,7 +17,9 @@ export default function StatsCard({ title, value, icon: Icon, trend, trendUp, bg
             <p className="text-sm font-medium text-slate-500">{title}</p>
             <p className="text-2xl font-bold text-slate-900">{value}</p>
             {trend && (
-              <p className={`text-xs font-medium ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <p
+                className={`text-xs font-medium ${trendUp ? 'text-emerald-600' : 'text-rose-600'}`}
+              >
                 {trendUp ? '↑' : '↓'} {trend}
               </p>
             )}

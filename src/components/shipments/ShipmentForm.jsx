@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Calculator, Package, Truck } from 'lucide-react';
 
 const serviceTypes = [
@@ -20,7 +26,13 @@ const serviceTypes = [
   { value: 'standard', label: 'Standard (3-5 days)', costBasis: 75, price: 95 },
 ];
 
-export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrders = [], vendors = [] }) {
+export default function ShipmentForm({
+  shipment,
+  onSubmit,
+  onCancel,
+  purchaseOrders = [],
+  vendors = [],
+}) {
   const [form, setForm] = useState({
     customer_name: '',
     customer_phone: '',
@@ -38,35 +50,56 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
     vendor_id: '',
     vendor_name: '',
     vendor_cost_per_kg: 0,
-    ...shipment
+    ...shipment,
   });
 
-  const [calculated, setCalculated] = useState({ cost: 0, price: 0, profit: 0, total: 0, vendorCost: 0 });
+  const [calculated, setCalculated] = useState({
+    cost: 0,
+    price: 0,
+    profit: 0,
+    total: 0,
+    vendorCost: 0,
+  });
 
   // Filter POs that are approved/received and have remaining weight
-  const availablePOs = purchaseOrders.filter(po => 
-    ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
-    (po.remaining_weight_kg > 0 || !po.total_weight_kg)
+  const availablePOs = purchaseOrders.filter(
+    (po) =>
+      ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
+      (po.remaining_weight_kg > 0 || !po.total_weight_kg)
   );
 
   useEffect(() => {
-    const service = serviceTypes.find(s => s.value === form.service_type);
+    const service = serviceTypes.find((s) => s.value === form.service_type);
     if (service && form.weight_kg) {
       const weight = parseFloat(form.weight_kg) || 0;
-      
+
       // Use vendor cost from PO if linked, otherwise use default service cost
       const vendorCostPerKg = form.vendor_cost_per_kg || service.costBasis;
       const vendorCost = vendorCostPerKg * weight;
-      
+
       const price = service.price * weight;
       const insurance = form.insurance_opted ? price * 0.03 : 0;
       const packaging = parseFloat(form.packaging_fee) || 0;
       const total = price + insurance + packaging;
       const profit = total - vendorCost - insurance;
-      
-      setCalculated({ cost: vendorCost, price, profit, total, insurance, vendorCost, vendorCostPerKg });
+
+      setCalculated({
+        cost: vendorCost,
+        price,
+        profit,
+        total,
+        insurance,
+        vendorCost,
+        vendorCostPerKg,
+      });
     }
-  }, [form.service_type, form.weight_kg, form.insurance_opted, form.packaging_fee, form.vendor_cost_per_kg]);
+  }, [
+    form.service_type,
+    form.weight_kg,
+    form.insurance_opted,
+    form.packaging_fee,
+    form.vendor_cost_per_kg,
+  ]);
 
   const handlePOChange = (poId) => {
     if (!poId || poId === 'none') {
@@ -76,12 +109,12 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
         vendor_po_number: '',
         vendor_id: '',
         vendor_name: '',
-        vendor_cost_per_kg: 0
+        vendor_cost_per_kg: 0,
       });
       return;
     }
-    
-    const selectedPO = purchaseOrders.find(po => po.id === poId);
+
+    const selectedPO = purchaseOrders.find((po) => po.id === poId);
     if (selectedPO) {
       setForm({
         ...form,
@@ -89,16 +122,16 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
         vendor_po_number: selectedPO.po_number,
         vendor_id: selectedPO.vendor_id,
         vendor_name: selectedPO.vendor_name,
-        vendor_cost_per_kg: selectedPO.cost_per_kg || 0
+        vendor_cost_per_kg: selectedPO.cost_per_kg || 0,
       });
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const service = serviceTypes.find(s => s.value === form.service_type);
+    const service = serviceTypes.find((s) => s.value === form.service_type);
     const weight = parseFloat(form.weight_kg);
-    
+
     onSubmit({
       ...form,
       weight_kg: weight,
@@ -109,7 +142,7 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
       total_amount: calculated.total,
       profit: calculated.profit,
       insurance_amount: calculated.insurance || 0,
-      tracking_number: form.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`
+      tracking_number: form.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`,
     });
   };
 
@@ -154,10 +187,10 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No PO Linked (use default pricing)</SelectItem>
-                  {availablePOs.map(po => (
+                  {availablePOs.map((po) => (
                     <SelectItem key={po.id} value={po.id}>
-                      {po.po_number} - {po.vendor_name} 
-                      {po.cost_per_kg ? ` (฿${po.cost_per_kg}/kg)` : ''} 
+                      {po.po_number} - {po.vendor_name}
+                      {po.cost_per_kg ? ` (฿${po.cost_per_kg}/kg)` : ''}
                       {po.remaining_weight_kg ? ` - ${po.remaining_weight_kg}kg available` : ''}
                     </SelectItem>
                   ))}
@@ -178,12 +211,15 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Service Type *</Label>
-              <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v })}>
+              <Select
+                value={form.service_type}
+                onValueChange={(v) => setForm({ ...form, service_type: v })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceTypes.map(s => (
+                  {serviceTypes.map((s) => (
                     <SelectItem key={s.value} value={s.value}>
                       {s.label} - ฿{s.price}/kg
                     </SelectItem>
@@ -261,7 +297,9 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
                   onCheckedChange={(v) => setForm({ ...form, insurance_opted: v })}
                 />
                 <span className="text-sm text-slate-600">
-                  {form.insurance_opted ? `฿${calculated.insurance?.toFixed(0) || 0}` : 'Not included'}
+                  {form.insurance_opted
+                    ? `฿${calculated.insurance?.toFixed(0) || 0}`
+                    : 'Not included'}
                 </span>
               </div>
             </div>
@@ -286,9 +324,13 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Vendor Cost</p>
-                  <p className="font-semibold text-rose-600">฿{calculated.vendorCost?.toLocaleString()}</p>
+                  <p className="font-semibold text-rose-600">
+                    ฿{calculated.vendorCost?.toLocaleString()}
+                  </p>
                   <p className="text-xs text-slate-400">
-                    {form.vendor_po_id ? `(PO: ฿${form.vendor_cost_per_kg}/kg)` : `(Default: ฿${calculated.vendorCostPerKg}/kg)`}
+                    {form.vendor_po_id
+                      ? `(PO: ฿${form.vendor_cost_per_kg}/kg)`
+                      : `(Default: ฿${calculated.vendorCostPerKg}/kg)`}
                   </p>
                 </div>
                 <div>
@@ -301,11 +343,15 @@ export default function ShipmentForm({ shipment, onSubmit, onCancel, purchaseOrd
                 </div>
                 <div>
                   <p className="text-slate-500">Packaging</p>
-                  <p className="font-semibold">฿{parseFloat(form.packaging_fee || 0).toLocaleString()}</p>
+                  <p className="font-semibold">
+                    ฿{parseFloat(form.packaging_fee || 0).toLocaleString()}
+                  </p>
                 </div>
                 <div>
                   <p className="text-slate-500">Total</p>
-                  <p className="font-bold text-lg text-blue-600">฿{calculated.total?.toLocaleString()}</p>
+                  <p className="font-bold text-lg text-blue-600">
+                    ฿{calculated.total?.toLocaleString()}
+                  </p>
                 </div>
               </div>
               <div className="pt-2 border-t border-slate-200 mt-2 flex items-center justify-between">

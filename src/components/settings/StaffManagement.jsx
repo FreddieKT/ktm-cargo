@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  Users, UserPlus, Mail, Shield, Pencil, Trash2, 
-  CheckCircle, XCircle, Loader2
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Users,
+  UserPlus,
+  Mail,
+  Shield,
+  Pencil,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from '@/components/auth/RolePermissions';
@@ -23,14 +36,14 @@ export default function StaffManagement() {
     email: '',
     full_name: '',
     staff_role: 'marketing_manager',
-    department: ''
+    department: '',
   });
 
   const queryClient = useQueryClient();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['all-users'],
-    queryFn: () => base44.entities.User.list()
+    queryFn: () => base44.entities.User.list(),
   });
 
   const updateUserMutation = useMutation({
@@ -39,7 +52,7 @@ export default function StaffManagement() {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
       setEditingUser(null);
       toast.success('User updated');
-    }
+    },
   });
 
   const handleInvite = async () => {
@@ -59,12 +72,12 @@ export default function StaffManagement() {
           <p>You have been invited to join the BKK-YGN Cargo Portal as a <strong>${ROLE_LABELS[inviteData.staff_role]}</strong>.</p>
           <p>Please contact your administrator to complete your account setup.</p>
           <p>Best regards,<br/>BKK-YGN Cargo Team</p>
-        `
+        `,
       });
 
       // Audit log
       AuditActions.userInvited(inviteData.email, inviteData.full_name, inviteData.staff_role);
-      
+
       toast.success(`Invitation sent to ${inviteData.email}`);
       setShowInviteForm(false);
       setInviteData({ email: '', full_name: '', staff_role: 'marketing_manager', department: '' });
@@ -74,24 +87,24 @@ export default function StaffManagement() {
   };
 
   const handleUpdateRole = (userId, newRole) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     const previousRole = user?.staff_role;
     updateUserMutation.mutate({ id: userId, data: { staff_role: newRole } });
     AuditActions.userRoleChanged(userId, user?.full_name, previousRole, newRole);
   };
 
   const handleToggleActive = (targetUser) => {
-    updateUserMutation.mutate({ 
-      id: targetUser.id, 
-      data: { is_active: !targetUser.is_active } 
+    updateUserMutation.mutate({
+      id: targetUser.id,
+      data: { is_active: !targetUser.is_active },
     });
     if (targetUser.is_active !== false) {
       AuditActions.userDeactivated(targetUser.id, targetUser.full_name);
     }
   };
 
-  const staffUsers = users.filter(u => u.role !== 'admin');
-  const adminUsers = users.filter(u => u.role === 'admin');
+  const staffUsers = users.filter((u) => u.role !== 'admin');
+  const adminUsers = users.filter((u) => u.role === 'admin');
 
   return (
     <div className="space-y-6">
@@ -117,7 +130,9 @@ export default function StaffManagement() {
                 <Users className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{users.filter(u => u.staff_role === 'finance_lead').length}</p>
+                <p className="text-2xl font-bold">
+                  {users.filter((u) => u.staff_role === 'finance_lead').length}
+                </p>
                 <p className="text-xs text-slate-500">Finance</p>
               </div>
             </div>
@@ -130,7 +145,9 @@ export default function StaffManagement() {
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{users.filter(u => u.staff_role === 'marketing_manager').length}</p>
+                <p className="text-2xl font-bold">
+                  {users.filter((u) => u.staff_role === 'marketing_manager').length}
+                </p>
                 <p className="text-xs text-slate-500">Marketing</p>
               </div>
             </div>
@@ -172,16 +189,21 @@ export default function StaffManagement() {
             </div>
           ) : users.length > 0 ? (
             <div className="space-y-3">
-              {users.map(user => {
-                const roleColor = user.role === 'admin' 
-                  ? 'bg-purple-100 text-purple-800' 
-                  : ROLE_COLORS[user.staff_role] || 'bg-slate-100 text-slate-800';
-                const roleLabel = user.role === 'admin' 
-                  ? 'Managing Director' 
-                  : ROLE_LABELS[user.staff_role] || 'Staff';
+              {users.map((user) => {
+                const roleColor =
+                  user.role === 'admin'
+                    ? 'bg-purple-100 text-purple-800'
+                    : ROLE_COLORS[user.staff_role] || 'bg-slate-100 text-slate-800';
+                const roleLabel =
+                  user.role === 'admin'
+                    ? 'Managing Director'
+                    : ROLE_LABELS[user.staff_role] || 'Staff';
 
                 return (
-                  <div key={user.id} className={`flex items-center justify-between p-4 rounded-lg border ${user.is_active === false ? 'bg-slate-50 opacity-60' : 'bg-white'}`}>
+                  <div
+                    key={user.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border ${user.is_active === false ? 'bg-slate-50 opacity-60' : 'bg-white'}`}
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
                         <span className="font-medium text-slate-600">
@@ -202,8 +224,8 @@ export default function StaffManagement() {
                     <div className="flex items-center gap-2">
                       {user.role !== 'admin' && (
                         <>
-                          <Select 
-                            value={user.staff_role || 'marketing_manager'} 
+                          <Select
+                            value={user.staff_role || 'marketing_manager'}
                             onValueChange={(v) => handleUpdateRole(user.id, v)}
                           >
                             <SelectTrigger className="w-40">
@@ -214,8 +236,8 @@ export default function StaffManagement() {
                               <SelectItem value="marketing_manager">Marketing Manager</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => handleToggleActive(user)}
                             title={user.is_active === false ? 'Activate' : 'Deactivate'}
@@ -274,11 +296,13 @@ export default function StaffManagement() {
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select 
-                value={inviteData.staff_role} 
+              <Select
+                value={inviteData.staff_role}
                 onValueChange={(v) => setInviteData({ ...inviteData, staff_role: v })}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="finance_lead">Finance Lead</SelectItem>
                   <SelectItem value="marketing_manager">Marketing Manager</SelectItem>

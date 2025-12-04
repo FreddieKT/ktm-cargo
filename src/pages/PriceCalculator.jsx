@@ -1,32 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import {
-  Calculator, Package, Truck, Plane,
-  ShoppingBag, Clock, Zap, Scale, DollarSign,
-  ArrowRightLeft, TrendingUp, Share2, Copy, Printer,
-  RotateCcw, Bookmark, History, Sparkles, ArrowLeft
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Calculator,
+  Package,
+  Truck,
+  Plane,
+  ShoppingBag,
+  Clock,
+  Zap,
+  Scale,
+  DollarSign,
+  ArrowRightLeft,
+  TrendingUp,
+  Share2,
+  Copy,
+  Printer,
+  RotateCcw,
+  Bookmark,
+  History,
+  Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DEFAULT_SERVICE_TYPES = [
-  { value: 'cargo_small', label: 'Cargo (1-5kg)', costBasis: 90, price: 120, icon: Package, description: 'Small packages' },
-  { value: 'cargo_medium', label: 'Cargo (6-15kg)', costBasis: 75, price: 95, icon: Package, description: 'Medium packages' },
-  { value: 'cargo_large', label: 'Cargo (16-30kg)', costBasis: 55, price: 70, icon: Package, description: 'Large shipments' },
-  { value: 'shopping_small', label: 'Shopping + Small Items', costBasis: 80, price: 110, icon: ShoppingBag, description: 'Personal shopping' },
-  { value: 'shopping_fashion', label: 'Shopping + Fashion', costBasis: 85, price: 115, icon: ShoppingBag, description: 'Fashion & Electronics' },
-  { value: 'shopping_bulk', label: 'Shopping + Bulk', costBasis: 70, price: 90, icon: ShoppingBag, description: 'Bulk orders' },
-  { value: 'express', label: 'Express (1-2 days)', costBasis: 100, price: 150, icon: Zap, description: 'Fastest delivery' },
-  { value: 'standard', label: 'Standard (3-5 days)', costBasis: 75, price: 95, icon: Truck, description: 'Regular service' },
+  {
+    value: 'cargo_small',
+    label: 'Cargo (1-5kg)',
+    costBasis: 90,
+    price: 120,
+    icon: Package,
+    description: 'Small packages',
+  },
+  {
+    value: 'cargo_medium',
+    label: 'Cargo (6-15kg)',
+    costBasis: 75,
+    price: 95,
+    icon: Package,
+    description: 'Medium packages',
+  },
+  {
+    value: 'cargo_large',
+    label: 'Cargo (16-30kg)',
+    costBasis: 55,
+    price: 70,
+    icon: Package,
+    description: 'Large shipments',
+  },
+  {
+    value: 'shopping_small',
+    label: 'Shopping + Small Items',
+    costBasis: 80,
+    price: 110,
+    icon: ShoppingBag,
+    description: 'Personal shopping',
+  },
+  {
+    value: 'shopping_fashion',
+    label: 'Shopping + Fashion',
+    costBasis: 85,
+    price: 115,
+    icon: ShoppingBag,
+    description: 'Fashion & Electronics',
+  },
+  {
+    value: 'shopping_bulk',
+    label: 'Shopping + Bulk',
+    costBasis: 70,
+    price: 90,
+    icon: ShoppingBag,
+    description: 'Bulk orders',
+  },
+  {
+    value: 'express',
+    label: 'Express (1-2 days)',
+    costBasis: 100,
+    price: 150,
+    icon: Zap,
+    description: 'Fastest delivery',
+  },
+  {
+    value: 'standard',
+    label: 'Standard (3-5 days)',
+    costBasis: 75,
+    price: 95,
+    icon: Truck,
+    description: 'Regular service',
+  },
 ];
 
 const ICON_MAP = {
@@ -37,7 +114,7 @@ const ICON_MAP = {
   shopping_fashion: ShoppingBag,
   shopping_bulk: ShoppingBag,
   express: Zap,
-  standard: Truck
+  standard: Truck,
 };
 
 export default function PriceCalculator() {
@@ -58,17 +135,17 @@ export default function PriceCalculator() {
   // Fetch pricing from database if available
   const { data: servicePricing = [] } = useQuery({
     queryKey: ['service-pricing'],
-    queryFn: () => base44.entities.ServicePricing.filter({ is_active: true })
+    queryFn: () => base44.entities.ServicePricing.filter({ is_active: true }),
   });
 
   const { data: surcharges = [] } = useQuery({
     queryKey: ['surcharges'],
-    queryFn: () => base44.entities.Surcharge.filter({ is_active: true })
+    queryFn: () => base44.entities.Surcharge.filter({ is_active: true }),
   });
 
   // Merge database pricing with defaults
-  const serviceTypes = DEFAULT_SERVICE_TYPES.map(defaultService => {
-    const dbPricing = servicePricing.find(p => p.service_type === defaultService.value);
+  const serviceTypes = DEFAULT_SERVICE_TYPES.map((defaultService) => {
+    const dbPricing = servicePricing.find((p) => p.service_type === defaultService.value);
     if (dbPricing) {
       return {
         ...defaultService,
@@ -76,22 +153,27 @@ export default function PriceCalculator() {
         price: dbPricing.price_per_kg || defaultService.price,
         label: dbPricing.display_name || defaultService.label,
         insuranceRate: dbPricing.insurance_rate || 3,
-        packagingFee: dbPricing.packaging_fee || 0
+        packagingFee: dbPricing.packaging_fee || 0,
       };
     }
     return defaultService;
   });
 
   // Calculate volumetric weight
-  const volumetricWeight = dimensions.length && dimensions.width && dimensions.height
-    ? (parseFloat(dimensions.length) * parseFloat(dimensions.width) * parseFloat(dimensions.height)) / 5000
-    : 0;
+  const volumetricWeight =
+    dimensions.length && dimensions.width && dimensions.height
+      ? (parseFloat(dimensions.length) *
+          parseFloat(dimensions.width) *
+          parseFloat(dimensions.height)) /
+        5000
+      : 0;
 
   const actualWeight = parseFloat(weight) || 0;
-  const chargeableWeight = useVolumetric && volumetricWeight > actualWeight ? volumetricWeight : actualWeight;
+  const chargeableWeight =
+    useVolumetric && volumetricWeight > actualWeight ? volumetricWeight : actualWeight;
 
   useEffect(() => {
-    const service = serviceTypes.find(s => s.value === serviceType);
+    const service = serviceTypes.find((s) => s.value === serviceType);
     if (!service) return;
 
     const w = chargeableWeight;
@@ -101,21 +183,26 @@ export default function PriceCalculator() {
     const baseCost = service.costBasis * w;
     const insuranceRate = service.insuranceRate || 3;
     const insuranceFee = includeInsurance ? shippingCost * (insuranceRate / 100) : 0;
-    const packagingFee = includePacking ? (service.packagingFee || (w < 5 ? 50 : w < 15 ? 100 : 200)) : 0;
+    const packagingFee = includePacking
+      ? service.packagingFee || (w < 5 ? 50 : w < 15 ? 100 : 200)
+      : 0;
     const commission = serviceType.startsWith('shopping') ? pCost * (commissionRate / 100) : 0;
 
     // Apply surcharges
     let surchargeTotal = 0;
-    surcharges.forEach(s => {
-      if (s.applies_to === 'all' ||
+    surcharges.forEach((s) => {
+      if (
+        s.applies_to === 'all' ||
         (s.applies_to === 'cargo' && serviceType.startsWith('cargo')) ||
         (s.applies_to === 'shopping' && serviceType.startsWith('shopping')) ||
-        (s.applies_to === 'express' && serviceType === 'express')) {
-        surchargeTotal += s.surcharge_type === 'fixed' ? s.amount : (shippingCost * s.amount / 100);
+        (s.applies_to === 'express' && serviceType === 'express')
+      ) {
+        surchargeTotal += s.surcharge_type === 'fixed' ? s.amount : (shippingCost * s.amount) / 100;
       }
     });
 
-    const totalCustomer = pCost + shippingCost + insuranceFee + packagingFee + commission + surchargeTotal;
+    const totalCustomer =
+      pCost + shippingCost + insuranceFee + packagingFee + commission + surchargeTotal;
     const totalCost = pCost + baseCost + insuranceFee;
     const profit = totalCustomer - totalCost;
     const margin = totalCustomer > 0 ? (profit / totalCustomer) * 100 : 0;
@@ -132,11 +219,22 @@ export default function PriceCalculator() {
       profit,
       margin,
       chargeableWeight: w,
-      deliveryTime: service.value === 'express' ? '1-2 days' : '3-5 days'
+      deliveryTime: service.value === 'express' ? '1-2 days' : '3-5 days',
     });
-  }, [weight, serviceType, includeInsurance, includePacking, productCost, commissionRate, exchangeRate, chargeableWeight, servicePricing, surcharges]);
+  }, [
+    weight,
+    serviceType,
+    includeInsurance,
+    includePacking,
+    productCost,
+    commissionRate,
+    exchangeRate,
+    chargeableWeight,
+    servicePricing,
+    surcharges,
+  ]);
 
-  const selectedService = serviceTypes.find(s => s.value === serviceType);
+  const selectedService = serviceTypes.find((s) => s.value === serviceType);
   const isShopping = serviceType.startsWith('shopping');
 
   const handleReset = () => {
@@ -157,9 +255,9 @@ export default function PriceCalculator() {
       serviceType: selectedService?.label,
       weight: chargeableWeight,
       total: calculation.totalCustomer,
-      totalMMK: calculation.totalMMK
+      totalMMK: calculation.totalMMK,
     };
-    setSavedQuotes(prev => [quote, ...prev].slice(0, 5));
+    setSavedQuotes((prev) => [quote, ...prev].slice(0, 5));
     toast.success('Quote saved!');
   };
 
@@ -192,13 +290,23 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => window.location.href = '/'} className="mr-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => (window.location.href = '/')}
+              className="mr-2"
+            >
               <ArrowLeft className="w-4 h-4 mr-1" /> Back
             </Button>
             <Button variant="outline" size="sm" onClick={handleReset}>
               <RotateCcw className="w-4 h-4 mr-1" /> Reset
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSaveQuote} disabled={!calculation || !weight}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveQuote}
+              disabled={!calculation || !weight}
+            >
               <Bookmark className="w-4 h-4 mr-1" /> Save
             </Button>
             <Button variant="outline" size="sm" onClick={handleCopyQuote} disabled={!calculation}>
@@ -224,21 +332,26 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
               <div className="space-y-3">
                 <Label>Service Type</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {serviceTypes.map(service => {
+                  {serviceTypes.map((service) => {
                     const Icon = service.icon;
                     const isSelected = serviceType === service.value;
                     return (
                       <button
                         key={service.value}
                         onClick={() => setServiceType(service.value)}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${isSelected
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-blue-200'
-                          }`}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-blue-200'
+                        }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Icon className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
-                          <span className={`text-sm font-medium ${isSelected ? 'text-blue-900' : 'text-slate-700'}`}>
+                          <Icon
+                            className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${isSelected ? 'text-blue-900' : 'text-slate-700'}`}
+                          >
                             {service.label}
                           </span>
                         </div>
@@ -325,7 +438,10 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                   />
                   <div className="flex items-center gap-4 mt-2">
                     <Label className="text-sm text-slate-500">Commission:</Label>
-                    <Select value={commissionRate.toString()} onValueChange={(v) => setCommissionRate(parseInt(v))}>
+                    <Select
+                      value={commissionRate.toString()}
+                      onValueChange={(v) => setCommissionRate(parseInt(v))}
+                    >
                       <SelectTrigger className="w-24">
                         <SelectValue />
                       </SelectTrigger>
@@ -416,7 +532,10 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-blue-200">Shipping ({calculation.chargeableWeight?.toFixed(1)} kg × ฿{selectedService?.price})</span>
+                        <span className="text-blue-200">
+                          Shipping ({calculation.chargeableWeight?.toFixed(1)} kg × ฿
+                          {selectedService?.price})
+                        </span>
                         <span>฿{calculation.shippingCost.toLocaleString()}</span>
                       </div>
                       {isShopping && calculation.commission > 0 && (
@@ -448,7 +567,9 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                     <div className="pt-4 border-t border-blue-500">
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-medium">Total (THB)</span>
-                        <span className="text-3xl font-bold">฿{calculation.totalCustomer.toLocaleString()}</span>
+                        <span className="text-3xl font-bold">
+                          ฿{calculation.totalCustomer.toLocaleString()}
+                        </span>
                       </div>
                       {showMMK && (
                         <div className="flex justify-between items-center mt-2 pt-2 border-t border-blue-500/50">
@@ -546,14 +667,19 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {savedQuotes.map(quote => (
-                    <div key={quote.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-sm">
+                  {savedQuotes.map((quote) => (
+                    <div
+                      key={quote.id}
+                      className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-sm"
+                    >
                       <div>
                         <span className="font-medium">{quote.serviceType}</span>
                         <span className="text-slate-400 mx-2">•</span>
                         <span className="text-slate-500">{quote.weight} kg</span>
                       </div>
-                      <span className="font-bold text-blue-600">฿{quote.total.toLocaleString()}</span>
+                      <span className="font-bold text-blue-600">
+                        ฿{quote.total.toLocaleString()}
+                      </span>
                     </div>
                   ))}
                 </CardContent>
@@ -574,7 +700,7 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
           <CardContent>
             {chargeableWeight > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {serviceTypes.map(service => {
+                {serviceTypes.map((service) => {
                   const Icon = ICON_MAP[service.value] || Package;
                   const total = service.price * chargeableWeight;
                   const isSelected = service.value === serviceType;
@@ -582,17 +708,26 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                     <button
                       key={service.value}
                       onClick={() => setServiceType(service.value)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-blue-200'
+                      }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Icon className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
+                        <Icon
+                          className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`}
+                        />
                         <span className="text-xs font-medium text-slate-600">{service.label}</span>
                       </div>
-                      <p className={`text-lg font-bold ${isSelected ? 'text-blue-600' : 'text-slate-900'}`}>
+                      <p
+                        className={`text-lg font-bold ${isSelected ? 'text-blue-600' : 'text-slate-900'}`}
+                      >
                         ฿{total.toLocaleString()}
                       </p>
-                      <p className="text-xs text-slate-500">{service.value === 'express' ? '1-2 days' : '3-5 days'}</p>
+                      <p className="text-xs text-slate-500">
+                        {service.value === 'express' ? '1-2 days' : '3-5 days'}
+                      </p>
                     </button>
                   );
                 })}
@@ -621,8 +756,11 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                   </tr>
                 </thead>
                 <tbody>
-                  {serviceTypes.map(service => {
-                    const margin = ((service.price - service.costBasis) / service.price * 100).toFixed(0);
+                  {serviceTypes.map((service) => {
+                    const margin = (
+                      ((service.price - service.costBasis) / service.price) *
+                      100
+                    ).toFixed(0);
                     return (
                       <tr key={service.value} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4 font-medium">{service.label}</td>

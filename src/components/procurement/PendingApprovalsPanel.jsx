@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  Clock, CheckCircle, XCircle, AlertTriangle, FileText,
-  DollarSign, Building2, Calendar, MessageSquare, Loader2
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  FileText,
+  DollarSign,
+  Building2,
+  Calendar,
+  MessageSquare,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-export default function PendingApprovalsPanel({ 
-  pendingPOs = [], 
+export default function PendingApprovalsPanel({
+  pendingPOs = [],
   currentUserEmail,
-  onApprove, 
+  onApprove,
   onReject,
-  isLoading = false
+  isLoading = false,
 }) {
   const [selectedPO, setSelectedPO] = useState(null);
   const [actionType, setActionType] = useState(null);
@@ -97,7 +111,7 @@ export default function PendingApprovalsPanel({
             </div>
             <div>
               <p className="text-2xl font-bold">
-                {pendingPOs.filter(po => (po.total_amount || 0) > 50000).length}
+                {pendingPOs.filter((po) => (po.total_amount || 0) > 50000).length}
               </p>
               <p className="text-xs text-slate-500">High Value</p>
             </div>
@@ -117,8 +131,11 @@ export default function PendingApprovalsPanel({
         <CardContent>
           {pendingPOs.length > 0 ? (
             <div className="space-y-4">
-              {pendingPOs.map(po => (
-                <div key={po.id} className="p-4 border rounded-lg hover:border-blue-200 transition-colors">
+              {pendingPOs.map((po) => (
+                <div
+                  key={po.id}
+                  className="p-4 border rounded-lg hover:border-blue-200 transition-colors"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
                       <div className="p-2 bg-slate-100 rounded-lg">
@@ -151,17 +168,17 @@ export default function PendingApprovalsPanel({
                         ฿{po.total_amount?.toLocaleString()}
                       </p>
                       <div className="flex gap-2 mt-3">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="text-rose-600 hover:bg-rose-50"
                           onClick={() => openActionDialog(po, 'reject')}
                         >
                           <XCircle className="w-4 h-4 mr-1" />
                           Reject
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700"
                           onClick={() => openActionDialog(po, 'approve')}
                         >
@@ -185,7 +202,13 @@ export default function PendingApprovalsPanel({
       </Card>
 
       {/* Action Dialog */}
-      <Dialog open={!!selectedPO} onOpenChange={() => { setSelectedPO(null); setActionType(null); }}>
+      <Dialog
+        open={!!selectedPO}
+        onOpenChange={() => {
+          setSelectedPO(null);
+          setActionType(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -196,6 +219,11 @@ export default function PendingApprovalsPanel({
               )}
               {actionType === 'approve' ? 'Approve' : 'Reject'} Purchase Order
             </DialogTitle>
+            <DialogDescription>
+              {actionType === 'approve'
+                ? 'Review and approve this purchase order.'
+                : 'Please provide a reason for rejecting this purchase order.'}
+            </DialogDescription>
           </DialogHeader>
           {selectedPO && (
             <div className="space-y-4 mt-4">
@@ -206,7 +234,9 @@ export default function PendingApprovalsPanel({
                   <span className="text-slate-500">Vendor:</span>
                   <span className="font-medium">{selectedPO.vendor_name}</span>
                   <span className="text-slate-500">Amount:</span>
-                  <span className="font-bold text-blue-600">฿{selectedPO.total_amount?.toLocaleString()}</span>
+                  <span className="font-bold text-blue-600">
+                    ฿{selectedPO.total_amount?.toLocaleString()}
+                  </span>
                 </div>
               </div>
 
@@ -218,21 +248,28 @@ export default function PendingApprovalsPanel({
                 <Textarea
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  placeholder={actionType === 'approve' ? 'Optional approval notes...' : 'Please provide reason for rejection...'}
+                  placeholder={
+                    actionType === 'approve'
+                      ? 'Optional approval notes...'
+                      : 'Please provide reason for rejection...'
+                  }
                   rows={3}
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => { setSelectedPO(null); setActionType(null); }} 
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedPO(null);
+                    setActionType(null);
+                  }}
                   className="flex-1"
                   disabled={processing}
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleAction}
                   disabled={processing || (actionType === 'reject' && !comments)}
                   className={`flex-1 ${actionType === 'approve' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}`}

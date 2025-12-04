@@ -6,7 +6,7 @@ const PAYMENT_TERMS_DAYS = {
   immediate: 0,
   net_15: 15,
   net_30: 30,
-  net_60: 60
+  net_60: 60,
 };
 
 /**
@@ -17,7 +17,9 @@ function generateInvoiceNumber() {
   const prefix = 'INV';
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const random = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, '0');
   return `${prefix}-${year}${month}-${random}`;
 }
 
@@ -56,21 +58,21 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
   }
 
   // Build invoice items from received goods
-  const invoiceItems = receivedItems.map(item => {
-    const poItem = poItems.find(p => p.name === item.item_name) || {};
+  const invoiceItems = receivedItems.map((item) => {
+    const poItem = poItems.find((p) => p.name === item.item_name) || {};
     const quantity = item.received_qty || 0;
     const unitPrice = poItem.unit_price || 0;
     return {
       name: item.item_name,
       quantity,
       unit_price: unitPrice,
-      total: quantity * unitPrice
+      total: quantity * unitPrice,
     };
   });
 
   const subtotal = invoiceItems.reduce((sum, item) => sum + item.total, 0);
   const taxRate = 7; // Default VAT
-  const taxAmount = Math.round(subtotal * taxRate / 100);
+  const taxAmount = Math.round((subtotal * taxRate) / 100);
   const shippingCost = purchaseOrder.shipping_cost || 0;
   const totalAmount = subtotal + taxAmount + shippingCost;
 
@@ -95,7 +97,7 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
     total_amount: totalAmount,
     payment_terms: paymentTerms,
     status: 'pending',
-    notes: `Auto-generated from GR: ${goodsReceipt.receipt_number}`
+    notes: `Auto-generated from GR: ${goodsReceipt.receipt_number}`,
   });
 
   // Create notification
@@ -106,7 +108,7 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
     priority: 'medium',
     reference_type: 'task',
     reference_id: invoice.id,
-    status: 'unread'
+    status: 'unread',
   });
 
   // Audit log
@@ -121,9 +123,9 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
 export async function markInvoicePaid(invoiceId) {
   const invoice = await base44.entities.Invoice.update(invoiceId, {
     status: 'paid',
-    payment_date: format(new Date(), 'yyyy-MM-dd')
+    payment_date: format(new Date(), 'yyyy-MM-dd'),
   });
-  
+
   // Audit log
   AuditActions.invoicePaid(invoice);
 }
@@ -134,7 +136,7 @@ export async function markInvoicePaid(invoiceId) {
 export async function checkOverdueInvoices() {
   const pendingInvoices = await base44.entities.Invoice.filter({ status: 'pending' });
   const today = new Date();
-  
+
   for (const invoice of pendingInvoices) {
     if (invoice.due_date && new Date(invoice.due_date) < today) {
       await base44.entities.Invoice.update(invoice.id, { status: 'overdue' });

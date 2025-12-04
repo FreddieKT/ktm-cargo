@@ -1,13 +1,30 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { 
-  FileText, Search, DollarSign, Calendar, Building2,
-  CheckCircle, Clock, AlertTriangle, Eye, CreditCard
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  FileText,
+  Search,
+  DollarSign,
+  Calendar,
+  Building2,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Eye,
+  CreditCard,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 
@@ -16,7 +33,7 @@ const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
   overdue: { label: 'Overdue', color: 'bg-rose-100 text-rose-800', icon: AlertTriangle },
-  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-600', icon: FileText }
+  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-600', icon: FileText },
 };
 
 export default function InvoiceList({ invoices = [], onMarkPaid }) {
@@ -24,16 +41,21 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [payConfirm, setPayConfirm] = useState({ open: false, invoice: null });
 
-  const filteredInvoices = invoices.filter(inv => 
-    inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) ||
-    inv.vendor_name?.toLowerCase().includes(search.toLowerCase()) ||
-    inv.po_number?.toLowerCase().includes(search.toLowerCase())
+  const filteredInvoices = invoices.filter(
+    (inv) =>
+      inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) ||
+      inv.vendor_name?.toLowerCase().includes(search.toLowerCase()) ||
+      inv.po_number?.toLowerCase().includes(search.toLowerCase())
   );
 
   // Summary stats
-  const totalPending = invoices.filter(i => i.status === 'pending').reduce((sum, i) => sum + (i.total_amount || 0), 0);
-  const totalOverdue = invoices.filter(i => i.status === 'overdue').reduce((sum, i) => sum + (i.total_amount || 0), 0);
-  const overdueCount = invoices.filter(i => i.status === 'overdue').length;
+  const totalPending = invoices
+    .filter((i) => i.status === 'pending')
+    .reduce((sum, i) => sum + (i.total_amount || 0), 0);
+  const totalOverdue = invoices
+    .filter((i) => i.status === 'overdue')
+    .reduce((sum, i) => sum + (i.total_amount || 0), 0);
+  const overdueCount = invoices.filter((i) => i.status === 'overdue').length;
 
   return (
     <div className="space-y-6">
@@ -85,7 +107,9 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{invoices.filter(i => i.status === 'paid').length}</p>
+                <p className="text-2xl font-bold">
+                  {invoices.filter((i) => i.status === 'paid').length}
+                </p>
                 <p className="text-xs text-slate-500">Paid</p>
               </div>
             </div>
@@ -115,13 +139,18 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
         <CardContent>
           {filteredInvoices.length > 0 ? (
             <div className="space-y-3">
-              {filteredInvoices.map(invoice => {
+              {filteredInvoices.map((invoice) => {
                 const config = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.pending;
                 const StatusIcon = config.icon;
-                const daysUntilDue = invoice.due_date ? differenceInDays(new Date(invoice.due_date), new Date()) : 0;
-                
+                const daysUntilDue = invoice.due_date
+                  ? differenceInDays(new Date(invoice.due_date), new Date())
+                  : 0;
+
                 return (
-                  <div key={invoice.id} className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-200 transition-colors">
+                  <div
+                    key={invoice.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:border-blue-200 transition-colors"
+                  >
                     <div className="flex items-center gap-4">
                       <div className={`p-2 rounded-lg ${config.color.split(' ')[0]}`}>
                         <StatusIcon className={`w-5 h-5 ${config.color.split(' ')[1]}`} />
@@ -130,9 +159,11 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{invoice.invoice_number}</span>
                           <Badge className={config.color}>{config.label}</Badge>
-                          {invoice.status === 'pending' && daysUntilDue <= 3 && daysUntilDue >= 0 && (
-                            <Badge className="bg-amber-100 text-amber-800">Due Soon</Badge>
-                          )}
+                          {invoice.status === 'pending' &&
+                            daysUntilDue <= 3 &&
+                            daysUntilDue >= 0 && (
+                              <Badge className="bg-amber-100 text-amber-800">Due Soon</Badge>
+                            )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-slate-500 mt-1">
                           <span className="flex items-center gap-1">
@@ -145,22 +176,38 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            Due: {invoice.due_date ? format(new Date(invoice.due_date), 'MMM d, yyyy') : 'N/A'}
+                            Due:{' '}
+                            {invoice.due_date
+                              ? format(new Date(invoice.due_date), 'MMM d, yyyy')
+                              : 'N/A'}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <p className="text-lg font-bold">฿{invoice.total_amount?.toLocaleString()}</p>
-                        <p className="text-xs text-slate-500 capitalize">{invoice.payment_terms?.replace('_', ' ')}</p>
+                        <p className="text-lg font-bold">
+                          ฿{invoice.total_amount?.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-slate-500 capitalize">
+                          {invoice.payment_terms?.replace('_', ' ')}
+                        </p>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => setSelectedInvoice(invoice)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedInvoice(invoice)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                         {['pending', 'overdue'].includes(invoice.status) && (
-                          <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => setPayConfirm({ open: true, invoice })}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-emerald-600"
+                            onClick={() => setPayConfirm({ open: true, invoice })}
+                          >
                             <CreditCard className="w-4 h-4" />
                           </Button>
                         )}
@@ -174,7 +221,9 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <p className="text-slate-500">No invoices yet</p>
-              <p className="text-sm text-slate-400">Invoices are auto-generated when goods are received</p>
+              <p className="text-sm text-slate-400">
+                Invoices are auto-generated when goods are received
+              </p>
             </div>
           )}
         </CardContent>
@@ -190,13 +239,20 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
             </DialogTitle>
           </DialogHeader>
           {selectedInvoice && (
-            <InvoiceDetail invoice={selectedInvoice} onMarkPaid={onMarkPaid} onClose={() => setSelectedInvoice(null)} />
+            <InvoiceDetail
+              invoice={selectedInvoice}
+              onMarkPaid={onMarkPaid}
+              onClose={() => setSelectedInvoice(null)}
+            />
           )}
         </DialogContent>
       </Dialog>
 
       {/* Mark as Paid Confirmation Dialog */}
-      <AlertDialog open={payConfirm.open} onOpenChange={(open) => setPayConfirm({ open, invoice: null })}>
+      <AlertDialog
+        open={payConfirm.open}
+        onOpenChange={(open) => setPayConfirm({ open, invoice: null })}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-emerald-600">
@@ -204,12 +260,17 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
               Mark Invoice as Paid
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to mark invoice <span className="font-semibold">{payConfirm.invoice?.invoice_number}</span> for <span className="font-semibold">฿{payConfirm.invoice?.total_amount?.toLocaleString()}</span> as paid?
+              Are you sure you want to mark invoice{' '}
+              <span className="font-semibold">{payConfirm.invoice?.invoice_number}</span> for{' '}
+              <span className="font-semibold">
+                ฿{payConfirm.invoice?.total_amount?.toLocaleString()}
+              </span>{' '}
+              as paid?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="bg-emerald-600 hover:bg-emerald-700"
               onClick={() => {
                 onMarkPaid?.(payConfirm.invoice?.id);
@@ -255,11 +316,15 @@ function InvoiceDetail({ invoice, onMarkPaid, onClose }) {
         </div>
         <div>
           <p className="text-slate-500">Invoice Date</p>
-          <p className="font-medium">{invoice.invoice_date ? format(new Date(invoice.invoice_date), 'MMM d, yyyy') : 'N/A'}</p>
+          <p className="font-medium">
+            {invoice.invoice_date ? format(new Date(invoice.invoice_date), 'MMM d, yyyy') : 'N/A'}
+          </p>
         </div>
         <div>
           <p className="text-slate-500">Due Date</p>
-          <p className="font-medium">{invoice.due_date ? format(new Date(invoice.due_date), 'MMM d, yyyy') : 'N/A'}</p>
+          <p className="font-medium">
+            {invoice.due_date ? format(new Date(invoice.due_date), 'MMM d, yyyy') : 'N/A'}
+          </p>
         </div>
       </div>
 
@@ -308,9 +373,12 @@ function InvoiceDetail({ invoice, onMarkPaid, onClose }) {
       </div>
 
       {['pending', 'overdue'].includes(invoice.status) && (
-        <Button 
+        <Button
           className="w-full bg-emerald-600 hover:bg-emerald-700"
-          onClick={() => { onMarkPaid?.(invoice.id); onClose?.(); }}
+          onClick={() => {
+            onMarkPaid?.(invoice.id);
+            onClose?.();
+          }}
         >
           <CreditCard className="w-4 h-4 mr-2" />
           Mark as Paid

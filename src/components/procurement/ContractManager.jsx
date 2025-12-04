@@ -1,21 +1,51 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { base44 } from '@/api/base44Client';
-import { 
-  FileText, Plus, Calendar, DollarSign, AlertTriangle, 
-  CheckCircle, Clock, Pencil, Trash2, Upload, Download,
-  FileUp, Eye, Scale, Target, Bell, Search, Filter
+import {
+  FileText,
+  Plus,
+  Calendar,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Pencil,
+  Trash2,
+  Upload,
+  Download,
+  FileUp,
+  Eye,
+  Scale,
+  Target,
+  Bell,
+  Search,
+  Filter,
 } from 'lucide-react';
 import { differenceInDays, format, addDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -25,7 +55,7 @@ const STATUS_CONFIG = {
   active: { label: 'Active', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
   expiring_soon: { label: 'Expiring Soon', color: 'bg-amber-100 text-amber-800', icon: Clock },
   expired: { label: 'Expired', color: 'bg-rose-100 text-rose-800', icon: AlertTriangle },
-  terminated: { label: 'Terminated', color: 'bg-gray-100 text-gray-800', icon: FileText }
+  terminated: { label: 'Terminated', color: 'bg-gray-100 text-gray-800', icon: FileText },
 };
 
 const CONTRACT_TYPES = {
@@ -33,10 +63,16 @@ const CONTRACT_TYPES = {
   supply: { label: 'Supply Contract', description: 'Material/goods supply' },
   framework: { label: 'Framework Agreement', description: 'Long-term partnership' },
   one_time: { label: 'One-Time Contract', description: 'Single project/delivery' },
-  sla: { label: 'SLA Contract', description: 'Service Level Agreement' }
+  sla: { label: 'SLA Contract', description: 'Service Level Agreement' },
 };
 
-export default function ContractManager({ contracts = [], vendors = [], onAdd, onUpdate, onDelete }) {
+export default function ContractManager({
+  contracts = [],
+  vendors = [],
+  onAdd,
+  onUpdate,
+  onDelete,
+}) {
   const [showForm, setShowForm] = useState(false);
   const [editingContract, setEditingContract] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
@@ -65,7 +101,7 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
     penalty_clause: '',
     document_url: '',
     document_name: '',
-    notes: ''
+    notes: '',
   });
 
   const getContractStatus = (contract) => {
@@ -79,8 +115,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
 
   // Categorize contracts
   const categorizedContracts = useMemo(() => {
-    const filtered = contracts.filter(c => {
-      const matchesSearch = !searchQuery || 
+    const filtered = contracts.filter((c) => {
+      const matchesSearch =
+        !searchQuery ||
         c.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.contract_number?.toLowerCase().includes(searchQuery.toLowerCase());
       const status = getContractStatus(c);
@@ -90,10 +127,10 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
 
     return {
       all: filtered,
-      active: filtered.filter(c => getContractStatus(c) === 'active'),
-      expiring: filtered.filter(c => getContractStatus(c) === 'expiring_soon'),
-      expired: filtered.filter(c => getContractStatus(c) === 'expired'),
-      draft: filtered.filter(c => getContractStatus(c) === 'draft')
+      active: filtered.filter((c) => getContractStatus(c) === 'active'),
+      expiring: filtered.filter((c) => getContractStatus(c) === 'expiring_soon'),
+      expired: filtered.filter((c) => getContractStatus(c) === 'expired'),
+      draft: filtered.filter((c) => getContractStatus(c) === 'draft'),
     };
   }, [contracts, searchQuery, statusFilter]);
 
@@ -124,7 +161,7 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
         penalty_clause: '',
         document_url: '',
         document_name: '',
-        notes: ''
+        notes: '',
       });
       setEditingContract(null);
     }
@@ -132,12 +169,12 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
   };
 
   const handleVendorChange = (vendorId) => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    setFormData({ 
-      ...formData, 
-      vendor_id: vendorId, 
+    const vendor = vendors.find((v) => v.id === vendorId);
+    setFormData({
+      ...formData,
+      vendor_id: vendorId,
       vendor_name: vendor?.name || '',
-      agreed_rate_per_kg: vendor?.cost_per_kg || formData.agreed_rate_per_kg
+      agreed_rate_per_kg: vendor?.cost_per_kg || formData.agreed_rate_per_kg,
     });
   };
 
@@ -148,10 +185,10 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ 
-        ...formData, 
+      setFormData({
+        ...formData,
         document_url: file_url,
-        document_name: file.name
+        document_name: file.name,
       });
       toast.success('Document uploaded');
     } catch (error) {
@@ -163,18 +200,19 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const contractNumber = editingContract?.contract_number || `CON-${Date.now().toString(36).toUpperCase()}`;
-    const data = { 
-      ...formData, 
-      contract_number: contractNumber, 
+    const contractNumber =
+      editingContract?.contract_number || `CON-${Date.now().toString(36).toUpperCase()}`;
+    const data = {
+      ...formData,
+      contract_number: contractNumber,
       status: formData.status || 'active',
       agreed_rate_per_kg: parseFloat(formData.agreed_rate_per_kg) || 0,
       volume_commitment_kg: parseFloat(formData.volume_commitment_kg) || 0,
       sla_on_time_target: parseFloat(formData.sla_on_time_target) || 95,
       sla_quality_target: parseFloat(formData.sla_quality_target) || 99,
-      total_value: parseFloat(formData.total_value) || 0
+      total_value: parseFloat(formData.total_value) || 0,
     };
-    
+
     if (editingContract) {
       onUpdate?.(editingContract.id, data);
     } else {
@@ -191,13 +229,15 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
     const StatusIcon = statusConfig.icon;
 
     return (
-      <div 
+      <div
         className="p-4 bg-white border rounded-lg hover:shadow-md transition-all cursor-pointer"
         onClick={() => setSelectedContract(contract)}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${statusConfig.color.replace('text-', 'bg-').split(' ')[0]}`}>
+            <div
+              className={`p-2 rounded-lg ${statusConfig.color.replace('text-', 'bg-').split(' ')[0]}`}
+            >
               <StatusIcon className="w-4 h-4" />
             </div>
             <div>
@@ -211,15 +251,22 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-slate-500">Type</span>
-            <span className="capitalize">{CONTRACT_TYPES[contract.contract_type]?.label || contract.contract_type}</span>
+            <span className="capitalize">
+              {CONTRACT_TYPES[contract.contract_type]?.label || contract.contract_type}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">Value</span>
-            <span className="font-medium text-blue-600">฿{contract.total_value?.toLocaleString()}</span>
+            <span className="font-medium text-blue-600">
+              ฿{contract.total_value?.toLocaleString()}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">Period</span>
-            <span>{format(new Date(contract.start_date), 'MMM d')} - {format(new Date(contract.end_date), 'MMM d, yyyy')}</span>
+            <span>
+              {format(new Date(contract.start_date), 'MMM d')} -{' '}
+              {format(new Date(contract.end_date), 'MMM d, yyyy')}
+            </span>
           </div>
           {contract.agreed_rate_per_kg > 0 && (
             <div className="flex justify-between">
@@ -244,10 +291,26 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
         )}
 
         <div className="flex gap-2 mt-3 pt-3 border-t">
-          <Button size="sm" variant="outline" className="flex-1" onClick={(e) => { e.stopPropagation(); setEditConfirm({ open: true, contract }); }}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditConfirm({ open: true, contract });
+            }}
+          >
             <Pencil className="w-3 h-3 mr-1" /> Edit
           </Button>
-          <Button size="sm" variant="outline" className="text-rose-600 hover:bg-rose-50" onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ open: true, contract }); }}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-rose-600 hover:bg-rose-50"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteConfirm({ open: true, contract });
+            }}
+          >
             <Trash2 className="w-3 h-3" />
           </Button>
         </div>
@@ -287,7 +350,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
               <Clock className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-amber-900">{categorizedContracts.expiring.length}</p>
+              <p className="text-2xl font-bold text-amber-900">
+                {categorizedContracts.expiring.length}
+              </p>
               <p className="text-xs text-amber-700">Expiring Soon</p>
             </div>
           </CardContent>
@@ -309,7 +374,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
               <DollarSign className="w-5 h-5 text-blue-700" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-900">฿{(totalContractValue / 1000).toFixed(0)}K</p>
+              <p className="text-2xl font-bold text-blue-900">
+                ฿{(totalContractValue / 1000).toFixed(0)}K
+              </p>
               <p className="text-xs text-blue-600">Total Value</p>
             </div>
           </CardContent>
@@ -325,10 +392,13 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
               <h3 className="font-medium text-amber-800">Contracts Expiring Soon</h3>
             </div>
             <div className="space-y-2">
-              {categorizedContracts.expiring.map(contract => {
+              {categorizedContracts.expiring.map((contract) => {
                 const daysLeft = differenceInDays(new Date(contract.end_date), new Date());
                 return (
-                  <div key={contract.id} className="flex items-center justify-between p-2 bg-white rounded-lg">
+                  <div
+                    key={contract.id}
+                    className="flex items-center justify-between p-2 bg-white rounded-lg"
+                  >
                     <div>
                       <p className="font-medium">{contract.vendor_name}</p>
                       <p className="text-xs text-slate-500">{contract.contract_number}</p>
@@ -381,7 +451,7 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
       {/* Contracts Grid */}
       {categorizedContracts.all.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categorizedContracts.all.map(contract => (
+          {categorizedContracts.all.map((contract) => (
             <ContractCard key={contract.id} contract={contract} />
           ))}
         </div>
@@ -391,7 +461,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
             <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">No contracts found</h3>
             <p className="text-slate-500 mb-4">
-              {searchQuery || statusFilter !== 'all' ? 'Try adjusting your filters' : 'Start by adding your first vendor contract'}
+              {searchQuery || statusFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'Start by adding your first vendor contract'}
             </p>
             <Button onClick={() => openForm()}>
               <Plus className="w-4 h-4 mr-2" /> Add Contract
@@ -420,10 +492,14 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                 <div className="space-y-2">
                   <Label>Vendor *</Label>
                   <Select value={formData.vendor_id} onValueChange={handleVendorChange}>
-                    <SelectTrigger><SelectValue placeholder="Select vendor" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select vendor" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {vendors.map(v => (
-                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                      {vendors.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -431,11 +507,18 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Contract Type</Label>
-                    <Select value={formData.contract_type} onValueChange={(v) => setFormData({ ...formData, contract_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={formData.contract_type}
+                      onValueChange={(v) => setFormData({ ...formData, contract_type: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {Object.entries(CONTRACT_TYPES).map(([key, { label }]) => (
-                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -452,18 +535,33 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Start Date *</Label>
-                    <Input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} required />
+                    <Input
+                      type="date"
+                      value={formData.start_date}
+                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>End Date *</Label>
-                    <Input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} required />
+                    <Input
+                      type="date"
+                      value={formData.end_date}
+                      onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                      required
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Payment Terms</Label>
-                    <Select value={formData.payment_terms} onValueChange={(v) => setFormData({ ...formData, payment_terms: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={formData.payment_terms}
+                      onValueChange={(v) => setFormData({ ...formData, payment_terms: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="immediate">Immediate</SelectItem>
                         <SelectItem value="net_15">Net 15</SelectItem>
@@ -478,16 +576,26 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                       type="number"
                       min="0"
                       value={formData.renewal_notice_days}
-                      onChange={(e) => setFormData({ ...formData, renewal_notice_days: parseInt(e.target.value) || 30 })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          renewal_notice_days: parseInt(e.target.value) || 30,
+                        })
+                      }
                     />
                   </div>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <div>
                     <Label>Auto-renew Contract</Label>
-                    <p className="text-xs text-slate-500">Automatically renew when contract expires</p>
+                    <p className="text-xs text-slate-500">
+                      Automatically renew when contract expires
+                    </p>
                   </div>
-                  <Switch checked={formData.auto_renew} onCheckedChange={(v) => setFormData({ ...formData, auto_renew: v })} />
+                  <Switch
+                    checked={formData.auto_renew}
+                    onCheckedChange={(v) => setFormData({ ...formData, auto_renew: v })}
+                  />
                 </div>
               </TabsContent>
 
@@ -506,7 +614,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                         min="0"
                         step="0.01"
                         value={formData.agreed_rate_per_kg}
-                        onChange={(e) => setFormData({ ...formData, agreed_rate_per_kg: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, agreed_rate_per_kg: e.target.value })
+                        }
                         placeholder="Contracted rate"
                       />
                     </div>
@@ -516,7 +626,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                         type="number"
                         min="0"
                         value={formData.volume_commitment_kg}
-                        onChange={(e) => setFormData({ ...formData, volume_commitment_kg: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, volume_commitment_kg: e.target.value })
+                        }
                         placeholder="Monthly commitment"
                       />
                     </div>
@@ -526,7 +638,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                   <Label>Pricing Terms & Conditions</Label>
                   <Textarea
                     value={formData.pricing_agreement}
-                    onChange={(e) => setFormData({ ...formData, pricing_agreement: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, pricing_agreement: e.target.value })
+                    }
                     placeholder="Describe pricing tiers, discounts, special rates..."
                     rows={4}
                   />
@@ -548,7 +662,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                         min="0"
                         max="100"
                         value={formData.sla_on_time_target}
-                        onChange={(e) => setFormData({ ...formData, sla_on_time_target: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, sla_on_time_target: e.target.value })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
@@ -558,7 +674,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                         min="0"
                         max="100"
                         value={formData.sla_quality_target}
-                        onChange={(e) => setFormData({ ...formData, sla_quality_target: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, sla_quality_target: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -601,12 +719,14 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                             <Download className="w-4 h-4 mr-1" /> Download
                           </a>
                         </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
                           className="text-rose-600"
-                          onClick={() => setFormData({ ...formData, document_url: '', document_name: '' })}
+                          onClick={() =>
+                            setFormData({ ...formData, document_url: '', document_name: '' })
+                          }
                         >
                           <Trash2 className="w-4 h-4 mr-1" /> Remove
                         </Button>
@@ -649,7 +769,14 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
             </Tabs>
 
             <div className="flex gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="flex-1">Cancel</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowForm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
               <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
                 {editingContract ? 'Update' : 'Create'} Contract
               </Button>
@@ -674,7 +801,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xl font-semibold">{selectedContract.vendor_name}</h3>
-                    <p className="text-slate-500 capitalize">{CONTRACT_TYPES[selectedContract.contract_type]?.label}</p>
+                    <p className="text-slate-500 capitalize">
+                      {CONTRACT_TYPES[selectedContract.contract_type]?.label}
+                    </p>
                   </div>
                   <Badge className={STATUS_CONFIG[getContractStatus(selectedContract)].color}>
                     {STATUS_CONFIG[getContractStatus(selectedContract)].label}
@@ -685,19 +814,31 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg">
                   <div>
                     <p className="text-xs text-slate-500">Contract Value</p>
-                    <p className="font-bold text-lg">฿{selectedContract.total_value?.toLocaleString()}</p>
+                    <p className="font-bold text-lg">
+                      ฿{selectedContract.total_value?.toLocaleString()}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Agreed Rate</p>
-                    <p className="font-bold text-lg">{selectedContract.agreed_rate_per_kg > 0 ? `฿${selectedContract.agreed_rate_per_kg}/kg` : '-'}</p>
+                    <p className="font-bold text-lg">
+                      {selectedContract.agreed_rate_per_kg > 0
+                        ? `฿${selectedContract.agreed_rate_per_kg}/kg`
+                        : '-'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Volume Commitment</p>
-                    <p className="font-bold text-lg">{selectedContract.volume_commitment_kg > 0 ? `${selectedContract.volume_commitment_kg} kg/mo` : '-'}</p>
+                    <p className="font-bold text-lg">
+                      {selectedContract.volume_commitment_kg > 0
+                        ? `${selectedContract.volume_commitment_kg} kg/mo`
+                        : '-'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Payment Terms</p>
-                    <p className="font-bold text-lg capitalize">{selectedContract.payment_terms?.replace('_', ' ')}</p>
+                    <p className="font-bold text-lg capitalize">
+                      {selectedContract.payment_terms?.replace('_', ' ')}
+                    </p>
                   </div>
                 </div>
 
@@ -708,17 +849,26 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                     <div className="flex justify-between">
                       <span className="text-sm text-slate-600">Contract Period</span>
                       <span className="font-medium">
-                        {format(new Date(selectedContract.start_date), 'MMM d, yyyy')} - {format(new Date(selectedContract.end_date), 'MMM d, yyyy')}
+                        {format(new Date(selectedContract.start_date), 'MMM d, yyyy')} -{' '}
+                        {format(new Date(selectedContract.end_date), 'MMM d, yyyy')}
                       </span>
                     </div>
                     <div className="flex justify-between mt-1">
                       <span className="text-sm text-slate-600">Days Remaining</span>
-                      <span className={`font-medium ${differenceInDays(new Date(selectedContract.end_date), new Date()) < 30 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                        {Math.max(0, differenceInDays(new Date(selectedContract.end_date), new Date()))} days
+                      <span
+                        className={`font-medium ${differenceInDays(new Date(selectedContract.end_date), new Date()) < 30 ? 'text-amber-600' : 'text-emerald-600'}`}
+                      >
+                        {Math.max(
+                          0,
+                          differenceInDays(new Date(selectedContract.end_date), new Date())
+                        )}{' '}
+                        days
                       </span>
                     </div>
                     {selectedContract.auto_renew && (
-                      <Badge className="mt-2 bg-emerald-100 text-emerald-800">Auto-renewal enabled</Badge>
+                      <Badge className="mt-2 bg-emerald-100 text-emerald-800">
+                        Auto-renewal enabled
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -734,12 +884,16 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                       <div>
                         <p className="text-sm text-slate-600 mb-1">On-Time Delivery</p>
                         <Progress value={selectedContract.sla_on_time_target} className="h-2" />
-                        <p className="text-right text-sm font-medium mt-1">{selectedContract.sla_on_time_target}%</p>
+                        <p className="text-right text-sm font-medium mt-1">
+                          {selectedContract.sla_on_time_target}%
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-slate-600 mb-1">Quality Target</p>
                         <Progress value={selectedContract.sla_quality_target} className="h-2" />
-                        <p className="text-right text-sm font-medium mt-1">{selectedContract.sla_quality_target}%</p>
+                        <p className="text-right text-sm font-medium mt-1">
+                          {selectedContract.sla_quality_target}%
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -749,7 +903,9 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                 {selectedContract.terms_conditions && (
                   <div>
                     <h4 className="font-medium mb-2">Terms & Conditions</h4>
-                    <p className="text-sm text-slate-600 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg">{selectedContract.terms_conditions}</p>
+                    <p className="text-sm text-slate-600 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg">
+                      {selectedContract.terms_conditions}
+                    </p>
                   </div>
                 )}
 
@@ -759,13 +915,19 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
                     <div className="flex items-center gap-3">
                       <FileText className="w-8 h-8 text-blue-500" />
                       <div>
-                        <p className="font-medium">{selectedContract.document_name || 'Contract Document'}</p>
+                        <p className="font-medium">
+                          {selectedContract.document_name || 'Contract Document'}
+                        </p>
                         <p className="text-xs text-slate-500">Uploaded document</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" asChild>
-                        <a href={selectedContract.document_url} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={selectedContract.document_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <Eye className="w-4 h-4 mr-1" /> View
                         </a>
                       </Button>
@@ -780,8 +942,20 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-4 border-t">
-                  <Button variant="outline" onClick={() => setSelectedContract(null)} className="flex-1">Close</Button>
-                  <Button onClick={() => { openForm(selectedContract); setSelectedContract(null); }} className="flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedContract(null)}
+                    className="flex-1"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      openForm(selectedContract);
+                      setSelectedContract(null);
+                    }}
+                    className="flex-1"
+                  >
                     <Pencil className="w-4 h-4 mr-2" /> Edit Contract
                   </Button>
                 </div>
@@ -792,7 +966,10 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteConfirm.open} onOpenChange={(open) => setDeleteConfirm({ open, contract: null })}>
+      <AlertDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, contract: null })}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-rose-600">
@@ -800,12 +977,15 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
               Delete Contract
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete contract <span className="font-semibold">{deleteConfirm.contract?.contract_number}</span> for <span className="font-semibold">{deleteConfirm.contract?.vendor_name}</span>? This action cannot be undone.
+              Are you sure you want to delete contract{' '}
+              <span className="font-semibold">{deleteConfirm.contract?.contract_number}</span> for{' '}
+              <span className="font-semibold">{deleteConfirm.contract?.vendor_name}</span>? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="bg-rose-600 hover:bg-rose-700"
               onClick={() => {
                 onDelete?.(deleteConfirm.contract?.id);
@@ -819,7 +999,10 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
       </AlertDialog>
 
       {/* Edit Confirmation Dialog */}
-      <AlertDialog open={editConfirm.open} onOpenChange={(open) => setEditConfirm({ open, contract: null })}>
+      <AlertDialog
+        open={editConfirm.open}
+        onOpenChange={(open) => setEditConfirm({ open, contract: null })}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
@@ -827,12 +1010,15 @@ export default function ContractManager({ contracts = [], vendors = [], onAdd, o
               Edit Contract
             </AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to edit contract <span className="font-semibold">{editConfirm.contract?.contract_number}</span> for <span className="font-semibold">{editConfirm.contract?.vendor_name}</span>. Do you want to proceed?
+              You are about to edit contract{' '}
+              <span className="font-semibold">{editConfirm.contract?.contract_number}</span> for{' '}
+              <span className="font-semibold">{editConfirm.contract?.vendor_name}</span>. Do you
+              want to proceed?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
                 openForm(editConfirm.contract);

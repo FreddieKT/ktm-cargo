@@ -1,11 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, FileText, X, Star, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,7 +30,11 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
 
   const [items, setItems] = useState(() => {
     if (existingPO?.items) {
-      try { return JSON.parse(existingPO.items); } catch { return []; }
+      try {
+        return JSON.parse(existingPO.items);
+      } catch {
+        return [];
+      }
     }
     return [{ name: '', quantity: 1, unit_price: 0, total: 0 }];
   });
@@ -32,8 +42,8 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
   // Get recommended vendors (cargo carriers sorted by score)
   const recommendedVendors = useMemo(() => {
     return vendors
-      .filter(v => v.status === 'active' && v.vendor_type === 'cargo_carrier')
-      .map(v => {
+      .filter((v) => v.status === 'active' && v.vendor_type === 'cargo_carrier')
+      .map((v) => {
         // Simple scoring based on: preferred status, pricing, on-time rate
         let score = 0;
         if (v.is_preferred) score += 30;
@@ -49,7 +59,8 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
     const updated = [...items];
     updated[index][field] = value;
     if (field === 'quantity' || field === 'unit_price') {
-      updated[index].total = (parseFloat(updated[index].quantity) || 0) * (parseFloat(updated[index].unit_price) || 0);
+      updated[index].total =
+        (parseFloat(updated[index].quantity) || 0) * (parseFloat(updated[index].unit_price) || 0);
     }
     setItems(updated);
   };
@@ -65,29 +76,30 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.total || 0), 0);
-  const total = subtotal + (parseFloat(formData.tax_amount) || 0) + (parseFloat(formData.shipping_cost) || 0);
+  const total =
+    subtotal + (parseFloat(formData.tax_amount) || 0) + (parseFloat(formData.shipping_cost) || 0);
 
   const handleVendorChange = (vendorId) => {
-    const vendor = vendors.find(v => v.id === vendorId);
+    const vendor = vendors.find((v) => v.id === vendorId);
     // Auto-fill cost per kg from vendor if available
     const suggestedCostPerKg = vendor?.cost_per_kg || formData.cost_per_kg;
     setFormData({
       ...formData,
       vendor_id: vendorId,
       vendor_name: vendor?.name || '',
-      cost_per_kg: suggestedCostPerKg
+      cost_per_kg: suggestedCostPerKg,
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.vendor_id || items.every(i => !i.name)) {
+    if (!formData.vendor_id || items.every((i) => !i.name)) {
       toast.error('Please select a vendor and add at least one item');
       return;
     }
 
     const poNumber = existingPO?.po_number || `PO-${Date.now().toString(36).toUpperCase()}`;
-    
+
     onSubmit({
       ...formData,
       po_number: poNumber,
@@ -98,7 +110,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
       cost_per_kg: parseFloat(formData.cost_per_kg) || 0,
       remaining_weight_kg: parseFloat(formData.total_weight_kg) || 0,
       allocated_weight_kg: existingPO?.allocated_weight_kg || 0,
-      status: existingPO?.status || 'draft'
+      status: existingPO?.status || 'draft',
     });
   };
 
@@ -119,31 +131,19 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
           {/* Header Info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-                  <Label>Vendor *</Label>
-                  <Select value={formData.vendor_id} onValueChange={handleVendorChange}>
-                    <SelectTrigger><SelectValue placeholder="Select vendor" /></SelectTrigger>
-                    <SelectContent>
-                      {recommendedVendors.length > 0 && (
-                        <>
-                          <div className="px-2 py-1.5 text-xs font-medium text-slate-500 bg-slate-50">
-                            <Zap className="w-3 h-3 inline mr-1" />Recommended Carriers
-                          </div>
-                          {recommendedVendors.slice(0, 3).map(v => (
-                            <SelectItem key={v.id} value={v.id}>
-                              <div className="flex items-center gap-2">
-                                {v.is_preferred && <Star className="w-3 h-3 text-amber-500" />}
-                                <span>{v.name}</span>
-                                {v.cost_per_kg > 0 && (
-                                  <span className="text-xs text-slate-400">฿{v.cost_per_kg}/kg</span>
-                                )}
-                                <span className="text-xs text-emerald-600">({v.score} pts)</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                          <div className="px-2 py-1.5 text-xs font-medium text-slate-500 bg-slate-50">All Vendors</div>
-                        </>
-                      )}
-                      {vendors.filter(v => !recommendedVendors.slice(0,3).find(r => r.id === v.id)).map(v => (
+              <Label>Vendor *</Label>
+              <Select value={formData.vendor_id} onValueChange={handleVendorChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select vendor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {recommendedVendors.length > 0 && (
+                    <>
+                      <div className="px-2 py-1.5 text-xs font-medium text-slate-500 bg-slate-50">
+                        <Zap className="w-3 h-3 inline mr-1" />
+                        Recommended Carriers
+                      </div>
+                      {recommendedVendors.slice(0, 3).map((v) => (
                         <SelectItem key={v.id} value={v.id}>
                           <div className="flex items-center gap-2">
                             {v.is_preferred && <Star className="w-3 h-3 text-amber-500" />}
@@ -151,23 +151,43 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                             {v.cost_per_kg > 0 && (
                               <span className="text-xs text-slate-400">฿{v.cost_per_kg}/kg</span>
                             )}
+                            <span className="text-xs text-emerald-600">({v.score} pts)</span>
                           </div>
                         </SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                  {formData.vendor_id && (() => {
-                    const selectedVendor = vendors.find(v => v.id === formData.vendor_id);
-                    if (selectedVendor?.is_preferred) {
-                      return (
-                        <Badge className="bg-amber-100 text-amber-800 text-xs">
-                          <Star className="w-3 h-3 mr-1" /> Preferred Vendor
-                        </Badge>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
+                      <div className="px-2 py-1.5 text-xs font-medium text-slate-500 bg-slate-50">
+                        All Vendors
+                      </div>
+                    </>
+                  )}
+                  {vendors
+                    .filter((v) => !recommendedVendors.slice(0, 3).find((r) => r.id === v.id))
+                    .map((v) => (
+                      <SelectItem key={v.id} value={v.id}>
+                        <div className="flex items-center gap-2">
+                          {v.is_preferred && <Star className="w-3 h-3 text-amber-500" />}
+                          <span>{v.name}</span>
+                          {v.cost_per_kg > 0 && (
+                            <span className="text-xs text-slate-400">฿{v.cost_per_kg}/kg</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {formData.vendor_id &&
+                (() => {
+                  const selectedVendor = vendors.find((v) => v.id === formData.vendor_id);
+                  if (selectedVendor?.is_preferred) {
+                    return (
+                      <Badge className="bg-amber-100 text-amber-800 text-xs">
+                        <Star className="w-3 h-3 mr-1" /> Preferred Vendor
+                      </Badge>
+                    );
+                  }
+                  return null;
+                })()}
+            </div>
             <div className="space-y-2">
               <Label>Order Date</Label>
               <Input
@@ -197,7 +217,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   min="0"
                   step="0.1"
                   value={formData.total_weight_kg}
-                  onChange={(e) => setFormData({ ...formData, total_weight_kg: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, total_weight_kg: parseFloat(e.target.value) || 0 })
+                  }
                   placeholder="Total weight in kg"
                 />
               </div>
@@ -208,7 +230,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   min="0"
                   step="0.01"
                   value={formData.cost_per_kg}
-                  onChange={(e) => setFormData({ ...formData, cost_per_kg: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, cost_per_kg: parseFloat(e.target.value) || 0 })
+                  }
                   placeholder="Vendor cost per kg"
                 />
               </div>
@@ -253,7 +277,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(idx, 'quantity', parseInt(e.target.value) || 0)
+                          }
                           className="text-center border-0 bg-transparent"
                         />
                       </td>
@@ -263,13 +289,13 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           min="0"
                           step="0.01"
                           value={item.unit_price}
-                          onChange={(e) => updateItem(idx, 'unit_price', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(idx, 'unit_price', parseFloat(e.target.value) || 0)
+                          }
                           className="text-center border-0 bg-transparent"
                         />
                       </td>
-                      <td className="p-2 text-right font-medium">
-                        ฿{item.total.toLocaleString()}
-                      </td>
+                      <td className="p-2 text-right font-medium">฿{item.total.toLocaleString()}</td>
                       <td className="p-2">
                         <Button
                           type="button"
@@ -304,7 +330,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   type="number"
                   min="0"
                   value={formData.tax_amount}
-                  onChange={(e) => setFormData({ ...formData, tax_amount: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tax_amount: parseFloat(e.target.value) || 0 })
+                  }
                   className="w-28 text-right"
                 />
               </div>
@@ -314,7 +342,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   type="number"
                   min="0"
                   value={formData.shipping_cost}
-                  onChange={(e) => setFormData({ ...formData, shipping_cost: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, shipping_cost: parseFloat(e.target.value) || 0 })
+                  }
                   className="w-28 text-right"
                 />
               </div>
@@ -338,7 +368,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
               {existingPO ? 'Update Order' : 'Create Order'}
             </Button>

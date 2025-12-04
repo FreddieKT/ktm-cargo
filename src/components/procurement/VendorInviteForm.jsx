@@ -1,35 +1,49 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Mail, Send, Copy, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { addDays, format } from 'date-fns';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { vendorInviteSchema } from '@/lib/schemas';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 function generateToken() {
-  return 'VND' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
+  return 'VND' + crypto.randomUUID().replace(/-/g, '').toUpperCase();
 }
 
 export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
-  const [email, setEmail] = useState('');
-  const [companyName, setCompanyName] = useState('');
   const [sending, setSending] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
+  const { handleError } = useErrorHandler();
 
-  const handleSendInvite = async () => {
-    if (!email) {
-      toast.error('Please enter vendor email');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm({
+    resolver: zodResolver(vendorInviteSchema),
+    defaultValues: {
+      email: '',
+      companyName: '',
+    },
+  });
 
+  const email = watch('email');
+
+  const onSubmit = async (data) => {
     setSending(true);
     try {
       const token = generateToken();
       const expiresAt = addDays(new Date(), 7);
-      
+
       // Get current user
       let currentUser = null;
       try {
@@ -38,12 +52,12 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
 
       // Create invitation record
       await base44.entities.VendorInvitation.create({
-        email,
-        company_name: companyName,
+        email: data.email,
+        company_name: data.companyName,
         token,
         status: 'pending',
         expires_at: expiresAt.toISOString(),
-        invited_by: currentUser?.email || 'system'
+        invited_by: currentUser?.email || 'system',
       });
 
       // Generate invite link
@@ -53,7 +67,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
 
       // Send invitation email
       await base44.integrations.Core.SendEmail({
-        to: email,
+        to: data.email,
         subject: 'You have been invited to register as a vendor',
         body: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -61,7 +75,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
               <h1 style="color: white; margin: 0;">Vendor Registration Invitation</h1>
             </div>
             <div style="background: #f8fafc; padding: 24px; border: 1px solid #e2e8f0;">
-              <p style="color: #475569;">Hello${companyName ? ` ${companyName}` : ''},</p>
+              <p style="color: #475569;">Hello${data.companyName ? ` ${data.companyName}` : ''},</p>
               <p style="color: #475569;">You have been invited to register as a vendor on our procurement portal.</p>
               <p style="color: #475569;">Please click the button below to complete your registration:</p>
               <div style="text-align: center; margin: 24px 0;">
@@ -73,14 +87,13 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
               <p style="color: #94a3b8; font-size: 14px;">If you did not expect this invitation, please ignore this email.</p>
             </div>
           </div>
-        `
+        `,
       });
 
       toast.success('Invitation sent successfully!');
       onInviteSent?.();
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to send invitation');
+      handleError(error, 'Failed to send invitation');
     } finally {
       setSending(false);
     }
@@ -92,8 +105,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
   };
 
   const handleClose = () => {
-    setEmail('');
-    setCompanyName('');
+    reset();
     setInviteLink('');
     onOpenChange(false);
   };
@@ -109,23 +121,19 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
         </DialogHeader>
 
         {!inviteLink ? (
-          <div className="space-y-4 mt-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label>Vendor Email *</Label>
               <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register('email')}
                 placeholder="vendor@company.com"
+                className={errors.email ? 'border-red-500' : ''}
               />
+              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>Company Name (Optional)</Label>
-              <Input
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Vendor Company Ltd."
-              />
+              <Input {...register('companyName')} placeholder="Vendor Company Ltd." />
             </div>
 
             <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
@@ -133,11 +141,11 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={handleClose} className="flex-1">
+              <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
                 Cancel
               </Button>
-              <Button 
-                onClick={handleSendInvite} 
+              <Button
+                type="submit"
                 disabled={sending}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
@@ -149,7 +157,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
                 Send Invite
               </Button>
             </div>
-          </div>
+          </form>
         ) : (
           <div className="space-y-4 mt-4">
             <div className="p-4 bg-emerald-50 rounded-lg text-center">
@@ -162,14 +170,14 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
               <Label>Registration Link</Label>
               <div className="flex gap-2">
                 <Input value={inviteLink} readOnly className="text-xs" />
-                <Button variant="outline" onClick={handleCopyLink}>
+                <Button type="button" variant="outline" onClick={handleCopyLink}>
                   <Copy className="w-4 h-4" />
                 </Button>
               </div>
               <p className="text-xs text-slate-500">Share this link if the email doesn't arrive</p>
             </div>
 
-            <Button onClick={handleClose} className="w-full">
+            <Button type="button" onClick={handleClose} className="w-full">
               Done
             </Button>
           </div>

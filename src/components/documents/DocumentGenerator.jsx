@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, Download, Printer, CheckCircle, 
-  Package, ClipboardList, Plane, FileCheck
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  FileText,
+  Download,
+  Printer,
+  CheckCircle,
+  Package,
+  ClipboardList,
+  Plane,
+  FileCheck,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -12,7 +18,7 @@ const documentTypes = [
   { id: 'commercial_invoice', label: 'Commercial Invoice', icon: FileText, required: true },
   { id: 'packing_list', label: 'Packing List', icon: ClipboardList, required: true },
   { id: 'air_waybill', label: 'Air Waybill', icon: Plane, required: true },
-  { id: 'customs_declaration', label: 'Customs Declaration', icon: FileCheck, required: true }
+  { id: 'customs_declaration', label: 'Customs Declaration', icon: FileCheck, required: true },
 ];
 
 export default function DocumentGenerator({ shipment, onGenerate }) {
@@ -22,7 +28,7 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
   const handleGenerate = async (docType) => {
     setGenerating(docType);
     // Simulate generation delay
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
     setGenerated([...generated, docType]);
     setGenerating(null);
     onGenerate?.(docType);
@@ -52,8 +58,8 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
             <FileText className="w-5 h-5 text-blue-600" />
             Shipping Documents
           </CardTitle>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             onClick={handleGenerateAll}
             disabled={generated.length === documentTypes.length}
           >
@@ -62,13 +68,13 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {documentTypes.map(doc => {
+        {documentTypes.map((doc) => {
           const Icon = doc.icon;
           const isGenerated = generated.includes(doc.id);
           const isGenerating = generating === doc.id;
 
           return (
-            <div 
+            <div
               key={doc.id}
               className={`flex items-center justify-between p-3 rounded-lg border ${
                 isGenerated ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
@@ -76,12 +82,16 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
             >
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${isGenerated ? 'bg-emerald-100' : 'bg-white'}`}>
-                  <Icon className={`w-4 h-4 ${isGenerated ? 'text-emerald-600' : 'text-slate-500'}`} />
+                  <Icon
+                    className={`w-4 h-4 ${isGenerated ? 'text-emerald-600' : 'text-slate-500'}`}
+                  />
                 </div>
                 <div>
                   <p className="font-medium text-slate-900">{doc.label}</p>
                   {doc.required && (
-                    <Badge variant="outline" className="text-xs">Required</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Required
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -94,8 +104,8 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={() => handleGenerate(doc.id)}
                     disabled={isGenerating}
@@ -115,7 +125,7 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
 function generateDocumentHTML(docType, shipment) {
   const today = format(new Date(), 'MMMM d, yyyy');
   const invoiceNumber = `INV-${shipment.tracking_number || Date.now()}`;
-  
+
   const baseStyles = `
     <style>
       body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
@@ -324,7 +334,7 @@ function generateDocumentHTML(docType, shipment) {
           <p>This declaration is subject to verification by customs authorities of Thailand and Myanmar.</p>
         </div>
       </body></html>
-    `
+    `,
   };
 
   return templates[docType] || '';

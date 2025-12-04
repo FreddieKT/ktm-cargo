@@ -1,23 +1,50 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  History, Search, FileText, User, Shield, Receipt, 
-  Package, CheckCircle, XCircle, AlertTriangle, Settings
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  History,
+  Search,
+  FileText,
+  User,
+  Shield,
+  Receipt,
+  Package,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Settings,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const ACTION_CONFIG = {
   po_created: { label: 'PO Created', icon: FileText, color: 'bg-blue-100 text-blue-800' },
-  po_approved: { label: 'PO Approved', icon: CheckCircle, color: 'bg-emerald-100 text-emerald-800' },
+  po_approved: {
+    label: 'PO Approved',
+    icon: CheckCircle,
+    color: 'bg-emerald-100 text-emerald-800',
+  },
   po_rejected: { label: 'PO Rejected', icon: XCircle, color: 'bg-rose-100 text-rose-800' },
   po_cancelled: { label: 'PO Cancelled', icon: XCircle, color: 'bg-slate-100 text-slate-800' },
   po_submitted: { label: 'PO Submitted', icon: FileText, color: 'bg-amber-100 text-amber-800' },
   invoice_created: { label: 'Invoice Created', icon: Receipt, color: 'bg-blue-100 text-blue-800' },
-  invoice_paid: { label: 'Invoice Paid', icon: CheckCircle, color: 'bg-emerald-100 text-emerald-800' },
-  goods_received: { label: 'Goods Received', icon: Package, color: 'bg-purple-100 text-purple-800' },
+  invoice_paid: {
+    label: 'Invoice Paid',
+    icon: CheckCircle,
+    color: 'bg-emerald-100 text-emerald-800',
+  },
+  goods_received: {
+    label: 'Goods Received',
+    icon: Package,
+    color: 'bg-purple-100 text-purple-800',
+  },
   user_role_changed: { label: 'Role Changed', icon: User, color: 'bg-amber-100 text-amber-800' },
   user_invited: { label: 'User Invited', icon: User, color: 'bg-blue-100 text-blue-800' },
   user_deactivated: { label: 'User Deactivated', icon: User, color: 'bg-rose-100 text-rose-800' },
@@ -25,10 +52,22 @@ const ACTION_CONFIG = {
   rule_updated: { label: 'Rule Updated', icon: Shield, color: 'bg-amber-100 text-amber-800' },
   rule_deleted: { label: 'Rule Deleted', icon: Shield, color: 'bg-rose-100 text-rose-800' },
   vendor_created: { label: 'Vendor Created', icon: Package, color: 'bg-blue-100 text-blue-800' },
-  contract_created: { label: 'Contract Created', icon: FileText, color: 'bg-purple-100 text-purple-800' },
-  payment_processed: { label: 'Payment Processed', icon: Receipt, color: 'bg-emerald-100 text-emerald-800' },
-  settings_updated: { label: 'Settings Updated', icon: Settings, color: 'bg-slate-100 text-slate-800' },
-  other: { label: 'Other', icon: AlertTriangle, color: 'bg-slate-100 text-slate-800' }
+  contract_created: {
+    label: 'Contract Created',
+    icon: FileText,
+    color: 'bg-purple-100 text-purple-800',
+  },
+  payment_processed: {
+    label: 'Payment Processed',
+    icon: Receipt,
+    color: 'bg-emerald-100 text-emerald-800',
+  },
+  settings_updated: {
+    label: 'Settings Updated',
+    icon: Settings,
+    color: 'bg-slate-100 text-slate-800',
+  },
+  other: { label: 'Other', icon: AlertTriangle, color: 'bg-slate-100 text-slate-800' },
 };
 
 export default function AuditLogViewer({ logs = [] }) {
@@ -36,20 +75,21 @@ export default function AuditLogViewer({ logs = [] }) {
   const [actionFilter, setActionFilter] = useState('all');
   const [entityFilter, setEntityFilter] = useState('all');
 
-  const filteredLogs = logs.filter(log => {
-    const matchesSearch = !search || 
+  const filteredLogs = logs.filter((log) => {
+    const matchesSearch =
+      !search ||
       log.entity_reference?.toLowerCase().includes(search.toLowerCase()) ||
       log.user_name?.toLowerCase().includes(search.toLowerCase()) ||
       log.user_email?.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesAction = actionFilter === 'all' || log.action === actionFilter;
     const matchesEntity = entityFilter === 'all' || log.entity_type === entityFilter;
-    
+
     return matchesSearch && matchesAction && matchesEntity;
   });
 
-  const uniqueActions = [...new Set(logs.map(l => l.action))];
-  const uniqueEntities = [...new Set(logs.map(l => l.entity_type))];
+  const uniqueActions = [...new Set(logs.map((l) => l.action))];
+  const uniqueEntities = [...new Set(logs.map((l) => l.entity_type))];
 
   return (
     <Card className="border-0 shadow-sm">
@@ -78,7 +118,7 @@ export default function AuditLogViewer({ logs = [] }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Actions</SelectItem>
-              {uniqueActions.map(action => (
+              {uniqueActions.map((action) => (
                 <SelectItem key={action} value={action}>
                   {ACTION_CONFIG[action]?.label || action}
                 </SelectItem>
@@ -91,8 +131,10 @@ export default function AuditLogViewer({ logs = [] }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Entities</SelectItem>
-              {uniqueEntities.map(entity => (
-                <SelectItem key={entity} value={entity}>{entity}</SelectItem>
+              {uniqueEntities.map((entity) => (
+                <SelectItem key={entity} value={entity}>
+                  {entity}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -101,14 +143,19 @@ export default function AuditLogViewer({ logs = [] }) {
         {/* Log List */}
         {filteredLogs.length > 0 ? (
           <div className="space-y-2 max-h-[500px] overflow-y-auto">
-            {filteredLogs.map(log => {
+            {filteredLogs.map((log) => {
               const config = ACTION_CONFIG[log.action] || ACTION_CONFIG.other;
               const Icon = config.icon;
               let details = {};
-              try { details = JSON.parse(log.details || '{}'); } catch (e) {}
+              try {
+                details = JSON.parse(log.details || '{}');
+              } catch (e) {}
 
               return (
-                <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors">
+                <div
+                  key={log.id}
+                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors"
+                >
                   <div className={`p-2 rounded-lg ${config.color.split(' ')[0]}`}>
                     <Icon className={`w-4 h-4 ${config.color.split(' ')[1]}`} />
                   </div>
@@ -118,9 +165,7 @@ export default function AuditLogViewer({ logs = [] }) {
                       {log.entity_reference && (
                         <span className="font-medium text-sm">{log.entity_reference}</span>
                       )}
-                      <span className="text-xs text-slate-400">
-                        {log.entity_type}
-                      </span>
+                      <span className="text-xs text-slate-400">{log.entity_type}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
                       <span>{log.user_name}</span>
@@ -130,7 +175,9 @@ export default function AuditLogViewer({ logs = [] }) {
                         <>
                           <span>•</span>
                           <span className="text-xs truncate max-w-[200px]">
-                            {Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                            {Object.entries(details)
+                              .map(([k, v]) => `${k}: ${v}`)
+                              .join(', ')}
                           </span>
                         </>
                       )}

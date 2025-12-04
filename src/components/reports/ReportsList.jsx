@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileSpreadsheet, Calendar, Mail, Download, Pencil, Trash2, 
-  Play, Clock, CheckCircle, Send, Loader2
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  FileSpreadsheet,
+  Calendar,
+  Mail,
+  Download,
+  Pencil,
+  Trash2,
+  Play,
+  Clock,
+  CheckCircle,
+  Send,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -13,7 +22,7 @@ const SCHEDULE_LABELS = {
   none: 'Manual',
   daily: 'Daily',
   weekly: 'Weekly',
-  monthly: 'Monthly'
+  monthly: 'Monthly',
 };
 
 const REPORT_TYPE_COLORS = {
@@ -22,17 +31,17 @@ const REPORT_TYPE_COLORS = {
   revenue: 'bg-emerald-100 text-emerald-800',
   campaigns: 'bg-amber-100 text-amber-800',
   expenses: 'bg-rose-100 text-rose-800',
-  pricing: 'bg-cyan-100 text-cyan-800'
+  pricing: 'bg-cyan-100 text-cyan-800',
 };
 
-export default function ReportsList({ 
-  reports, 
-  onEdit, 
-  onDelete, 
-  onRun, 
+export default function ReportsList({
+  reports,
+  onEdit,
+  onDelete,
+  onRun,
   onSendNow,
   runningReportId,
-  sendingReportId
+  sendingReportId,
 }) {
   if (reports.length === 0) {
     return (
@@ -48,7 +57,7 @@ export default function ReportsList({
 
   return (
     <div className="space-y-4">
-      {reports.map(report => (
+      {reports.map((report) => (
         <Card key={report.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-5">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -59,16 +68,18 @@ export default function ReportsList({
                 <div>
                   <h3 className="font-semibold text-slate-900">{report.name}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
-                    <Badge className={REPORT_TYPE_COLORS[report.report_type] || 'bg-slate-100 text-slate-800'}>
+                    <Badge
+                      className={
+                        REPORT_TYPE_COLORS[report.report_type] || 'bg-slate-100 text-slate-800'
+                      }
+                    >
                       {report.report_type?.replace(/_/g, ' ')}
                     </Badge>
                     <Badge variant="outline" className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {SCHEDULE_LABELS[report.schedule] || 'Manual'}
                     </Badge>
-                    <Badge variant="outline">
-                      {report.format?.toUpperCase() || 'CSV'}
-                    </Badge>
+                    <Badge variant="outline">{report.format?.toUpperCase() || 'CSV'}</Badge>
                     {report.recipients && (
                       <Badge variant="outline" className="flex items-center gap-1">
                         <Mail className="w-3 h-3" />
@@ -85,9 +96,9 @@ export default function ReportsList({
               </div>
 
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => onRun(report)}
                   disabled={runningReportId === report.id}
                 >
@@ -100,11 +111,11 @@ export default function ReportsList({
                     </>
                   )}
                 </Button>
-                
+
                 {report.recipients && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => onSendNow(report)}
                     disabled={sendingReportId === report.id}
                   >
@@ -118,14 +129,14 @@ export default function ReportsList({
                     )}
                   </Button>
                 )}
-                
+
                 <Button variant="ghost" size="sm" onClick={() => onEdit(report)}>
                   <Pencil className="w-4 h-4" />
                 </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                   onClick={() => onDelete(report.id)}
                 >

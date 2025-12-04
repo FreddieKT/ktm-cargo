@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  MessageSquare, Send, Phone, Mail, Clock, CheckCircle,
-  HelpCircle, AlertTriangle, FileQuestion, Loader2
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  MessageSquare,
+  Send,
+  Phone,
+  Mail,
+  Clock,
+  CheckCircle,
+  HelpCircle,
+  AlertTriangle,
+  FileQuestion,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -20,7 +34,7 @@ const ISSUE_TYPES = [
   { value: 'delivery', label: 'Delivery Problem', icon: AlertTriangle },
   { value: 'payment', label: 'Payment Question', icon: FileQuestion },
   { value: 'damage', label: 'Damaged Package', icon: AlertTriangle },
-  { value: 'other', label: 'Other', icon: MessageSquare }
+  { value: 'other', label: 'Other', icon: MessageSquare },
 ];
 
 export default function CustomerSupport({ customer, user }) {
@@ -40,13 +54,13 @@ export default function CustomerSupport({ customer, user }) {
       }
       return [];
     },
-    enabled: !!(customer?.id || user?.email)
+    enabled: !!(customer?.id || user?.email),
   });
 
   const createTicketMutation = useMutation({
     mutationFn: async () => {
       const ticketNumber = `TKT-${Date.now().toString(36).toUpperCase()}`;
-      
+
       // Create feedback/ticket
       await base44.entities.Feedback.create({
         customer_id: customer?.id,
@@ -56,7 +70,7 @@ export default function CustomerSupport({ customer, user }) {
         subject: subject,
         message: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
         status: 'pending',
-        ticket_number: ticketNumber
+        ticket_number: ticketNumber,
       });
 
       // Send notification email
@@ -68,10 +82,10 @@ export default function CustomerSupport({ customer, user }) {
             <h2>Support Request Received</h2>
             <p>Thank you for contacting us. We have received your support request.</p>
             <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
-            <p><strong>Issue Type:</strong> ${ISSUE_TYPES.find(t => t.value === issueType)?.label}</p>
+            <p><strong>Issue Type:</strong> ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}</p>
             <p><strong>Subject:</strong> ${subject}</p>
             <p>Our team will respond within 24 hours.</p>
-          `
+          `,
         });
       } catch (e) {
         console.error('Failed to send confirmation email', e);
@@ -89,7 +103,7 @@ export default function CustomerSupport({ customer, user }) {
     },
     onError: () => {
       toast.error('Failed to create ticket');
-    }
+    },
   });
 
   const handleSubmit = (e) => {
@@ -121,7 +135,7 @@ export default function CustomerSupport({ customer, user }) {
                   <SelectValue placeholder="Select issue type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ISSUE_TYPES.map(type => (
+                  {ISSUE_TYPES.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
                     </SelectItem>
@@ -158,8 +172,8 @@ export default function CustomerSupport({ customer, user }) {
               />
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={createTicketMutation.isPending}
             >
@@ -201,23 +215,29 @@ export default function CustomerSupport({ customer, user }) {
         <CardContent>
           {tickets.length > 0 ? (
             <div className="space-y-3">
-              {tickets.map(ticket => (
-                <div 
-                  key={ticket.id}
-                  className="p-4 border rounded-xl hover:bg-slate-50"
-                >
+              {tickets.map((ticket) => (
+                <div key={ticket.id} className="p-4 border rounded-xl hover:bg-slate-50">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="font-mono text-sm font-medium">{ticket.ticket_number || `TKT-${ticket.id?.slice(-6)}`}</p>
+                      <p className="font-mono text-sm font-medium">
+                        {ticket.ticket_number || `TKT-${ticket.id?.slice(-6)}`}
+                      </p>
                       <p className="font-medium mt-1">{ticket.subject}</p>
                     </div>
-                    <Badge className={
-                      ticket.status === 'resolved' ? 'bg-emerald-100 text-emerald-700' :
-                      ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                      'bg-amber-100 text-amber-700'
-                    }>
-                      {ticket.status === 'resolved' ? 'Resolved' :
-                       ticket.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                    <Badge
+                      className={
+                        ticket.status === 'resolved'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : ticket.status === 'in_progress'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-amber-100 text-amber-700'
+                      }
+                    >
+                      {ticket.status === 'resolved'
+                        ? 'Resolved'
+                        : ticket.status === 'in_progress'
+                          ? 'In Progress'
+                          : 'Pending'}
                     </Badge>
                   </div>
                   <p className="text-sm text-slate-500 line-clamp-2">{ticket.message}</p>
