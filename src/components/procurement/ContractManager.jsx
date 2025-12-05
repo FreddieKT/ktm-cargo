@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { base44 } from '@/api/base44Client';
+import { uploadFile } from '@/api/integrations';
 import {
   FileText,
   Plus,
@@ -184,7 +184,7 @@ export default function ContractManager({
 
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFile({ file });
       setFormData({
         ...formData,
         document_url: file_url,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,57 +97,57 @@ export default function Procurement() {
   // Data fetching
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+    queryFn: () => db.vendors.list(),
   });
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list('-created_date'),
+    queryFn: () => db.purchaseOrders.list('-created_date'),
   });
 
   const { data: goodsReceipts = [] } = useQuery({
     queryKey: ['goods-receipts'],
-    queryFn: () => base44.entities.GoodsReceipt.list('-created_at'),
+    queryFn: () => db.goodsReceipts.list('-created_at'),
   });
 
   const { data: contracts = [] } = useQuery({
     queryKey: ['vendor-contracts'],
-    queryFn: () => base44.entities.VendorContract.list(),
+    queryFn: () => db.vendorContracts.list(),
   });
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
-    queryFn: () => base44.entities.VendorPayment.list('-created_date'),
+    queryFn: () => db.vendorPayments.list('-created_date'),
   });
 
   const { data: approvalRules = [] } = useQuery({
     queryKey: ['approval-rules'],
-    queryFn: () => base44.entities.ApprovalRule.list(),
+    queryFn: () => db.approvalRules.list(),
   });
 
   const { data: approvalHistory = [] } = useQuery({
     queryKey: ['approval-history'],
-    queryFn: () => base44.entities.ApprovalHistory.list('-created_at'),
+    queryFn: () => db.approvalHistory.list('-created_at'),
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list('-created_at'),
+    queryFn: () => db.invoices.list('-created_at'),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date'),
+    queryFn: () => db.shipments.list('-created_date'),
   });
 
   const { data: shoppingOrders = [] } = useQuery({
     queryKey: ['shopping-orders'],
-    queryFn: () => base44.entities.ShoppingOrder.list('-created_date'),
+    queryFn: () => db.shoppingOrders.list('-created_date'),
   });
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => auth.me(),
   });
 
   const [selectedPOHistory, setSelectedPOHistory] = useState(null);
@@ -154,7 +155,7 @@ export default function Procurement() {
   // Mutations
   const createPOMutation = useMutation({
     mutationFn: async (data) => {
-      const po = await base44.entities.PurchaseOrder.create(data);
+      const po = await db.purchaseOrders.create(data);
       // Auto-route through approval workflow
       const result = await submitPOForApproval(po, approvalRules, vendors);
       return { po, approvalResult: result };
@@ -175,7 +176,7 @@ export default function Procurement() {
   });
 
   const updatePOMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.PurchaseOrder.update(id, data),
+    mutationFn: ({ id, data }) => db.purchaseOrders.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowPOForm(false);
@@ -185,7 +186,7 @@ export default function Procurement() {
   });
 
   const deletePOMutation = useMutation({
-    mutationFn: (id) => base44.entities.PurchaseOrder.delete(id),
+    mutationFn: (id) => db.purchaseOrders.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       toast.success('Purchase order deleted');
@@ -194,10 +195,10 @@ export default function Procurement() {
 
   const createReceiptMutation = useMutation({
     mutationFn: async (data) => {
-      const receipt = await base44.entities.GoodsReceipt.create(data);
+      const receipt = await db.goodsReceipts.create(data);
       // Update PO status
       const allReceived = true;
-      await base44.entities.PurchaseOrder.update(data.po_id, {
+      await db.purchaseOrders.update(data.po_id, {
         status: allReceived ? 'received' : 'partial_received',
       });
       // Auto-generate invoice
@@ -225,7 +226,7 @@ export default function Procurement() {
   });
 
   const createContractMutation = useMutation({
-    mutationFn: (data) => base44.entities.VendorContract.create(data),
+    mutationFn: (data) => db.vendorContracts.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract created');
@@ -233,7 +234,7 @@ export default function Procurement() {
   });
 
   const updateContractMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.VendorContract.update(id, data),
+    mutationFn: ({ id, data }) => db.vendorContracts.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract updated');
@@ -241,7 +242,7 @@ export default function Procurement() {
   });
 
   const deleteContractMutation = useMutation({
-    mutationFn: (id) => base44.entities.VendorContract.delete(id),
+    mutationFn: (id) => db.vendorContracts.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract deleted');
@@ -249,7 +250,7 @@ export default function Procurement() {
   });
 
   const createPaymentMutation = useMutation({
-    mutationFn: (data) => base44.entities.VendorPayment.create(data),
+    mutationFn: (data) => db.vendorPayments.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-payments'] });
       queryClient.invalidateQueries({ queryKey: ['goods-receipts'] });
@@ -258,17 +259,17 @@ export default function Procurement() {
 
   // Approval Rules Mutations
   const createRuleMutation = useMutation({
-    mutationFn: (data) => base44.entities.ApprovalRule.create(data),
+    mutationFn: (data) => db.approvalRules.create(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
   });
 
   const updateRuleMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ApprovalRule.update(id, data),
+    mutationFn: ({ id, data }) => db.approvalRules.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
   });
 
   const deleteRuleMutation = useMutation({
-    mutationFn: (id) => base44.entities.ApprovalRule.delete(id),
+    mutationFn: (id) => db.approvalRules.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
   });
 
@@ -281,14 +282,14 @@ export default function Procurement() {
   });
 
   const updateShipmentMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Shipment.update(id, data),
+    mutationFn: ({ id, data }) => db.shipments.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
     },
   });
 
   const updateShoppingOrderMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ShoppingOrder.update(id, data),
+    mutationFn: ({ id, data }) => db.shoppingOrders.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
     },

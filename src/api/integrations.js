@@ -1,17 +1,27 @@
-import { base44 } from './base44Client';
+import { uploadFile } from './integrations/storage';
+import { sendEmail } from './integrations/email';
 
-export const Core = base44.integrations.Core;
+// Mock Image Gen
+const generateImage = async (prompt) => {
+    console.log('MOCK IMAGE GEN:', prompt);
+    return { url: 'https://via.placeholder.com/150' };
+};
 
-export const InvokeLLM = base44.integrations.Core.InvokeLLM;
+export const Core = {
+    SendEmail: sendEmail,
+    UploadFile: uploadFile,
+    GenerateImage: generateImage,
+};
 
-export const SendEmail = base44.integrations.Core.SendEmail;
+// Re-export for compatibility if needed, or consumers should import Core
+export const InvokeLLM = undefined; // Not implemented in original
+export const SendEmail = sendEmail;
+export const UploadFile = uploadFile;
+export const GenerateImage = generateImage;
 
-export const UploadFile = base44.integrations.Core.UploadFile;
+// Direct camelCase exports for new refactored code
+export { sendEmail, uploadFile, generateImage };
+export const ExtractDataFromUploadedFile = undefined; // Not implemented in original
+export const CreateFileSignedUrl = undefined; // Not implemented in original
+export const UploadPrivateFile = undefined; // Not implemented in original
 
-export const GenerateImage = base44.integrations.Core.GenerateImage;
-
-export const ExtractDataFromUploadedFile = base44.integrations.Core.ExtractDataFromUploadedFile;
-
-export const CreateFileSignedUrl = base44.integrations.Core.CreateFileSignedUrl;
-
-export const UploadPrivateFile = base44.integrations.Core.UploadPrivateFile;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,16 +49,16 @@ export default function PricingManager() {
 
   const { data: servicePricing = [] } = useQuery({
     queryKey: ['service-pricing'],
-    queryFn: () => base44.entities.ServicePricing.list(),
+    queryFn: () => db.servicePricing.list(),
   });
 
   const { data: surcharges = [] } = useQuery({
     queryKey: ['surcharges'],
-    queryFn: () => base44.entities.Surcharge.list(),
+    queryFn: () => db.surcharges.list(),
   });
 
   const createPricingMutation = useMutation({
-    mutationFn: (data) => base44.entities.ServicePricing.create(data),
+    mutationFn: (data) => db.servicePricing.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-pricing'] });
       setShowPricingForm(false);
@@ -67,7 +67,7 @@ export default function PricingManager() {
   });
 
   const updatePricingMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ServicePricing.update(id, data),
+    mutationFn: ({ id, data }) => db.servicePricing.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-pricing'] });
       setShowPricingForm(false);
@@ -77,7 +77,7 @@ export default function PricingManager() {
   });
 
   const deletePricingMutation = useMutation({
-    mutationFn: (id) => base44.entities.ServicePricing.delete(id),
+    mutationFn: (id) => db.servicePricing.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-pricing'] });
       toast.success('Pricing deleted');
@@ -85,7 +85,7 @@ export default function PricingManager() {
   });
 
   const createSurchargeMutation = useMutation({
-    mutationFn: (data) => base44.entities.Surcharge.create(data),
+    mutationFn: (data) => db.surcharges.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['surcharges'] });
       setShowSurchargeForm(false);
@@ -94,7 +94,7 @@ export default function PricingManager() {
   });
 
   const updateSurchargeMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Surcharge.update(id, data),
+    mutationFn: ({ id, data }) => db.surcharges.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['surcharges'] });
       setShowSurchargeForm(false);
@@ -104,7 +104,7 @@ export default function PricingManager() {
   });
 
   const deleteSurchargeMutation = useMutation({
-    mutationFn: (id) => base44.entities.Surcharge.delete(id),
+    mutationFn: (id) => db.surcharges.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['surcharges'] });
       toast.success('Surcharge deleted');
@@ -159,9 +159,9 @@ export default function PricingManager() {
                 <p className="text-2xl font-bold text-emerald-900">
                   {profitMargins.length > 0
                     ? (
-                        profitMargins.reduce((sum, p) => sum + parseFloat(p.margin), 0) /
-                        profitMargins.length
-                      ).toFixed(1)
+                      profitMargins.reduce((sum, p) => sum + parseFloat(p.margin), 0) /
+                      profitMargins.length
+                    ).toFixed(1)
                     : 0}
                   %
                 </p>
@@ -207,9 +207,9 @@ export default function PricingManager() {
                     const margin =
                       pricing.price_per_kg > 0
                         ? (
-                            ((pricing.price_per_kg - pricing.cost_per_kg) / pricing.price_per_kg) *
-                            100
-                          ).toFixed(1)
+                          ((pricing.price_per_kg - pricing.cost_per_kg) / pricing.price_per_kg) *
+                          100
+                        ).toFixed(1)
                         : 0;
                     return (
                       <div

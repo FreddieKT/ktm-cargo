@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { format, addDays } from 'date-fns';
 
 /**
@@ -16,7 +16,7 @@ function generateShoppingInvoiceNumber() {
  */
 export async function generateShoppingOrderInvoice(order, customer) {
   // Check if invoice already exists
-  const existingInvoices = await base44.entities.CustomerInvoice.filter({
+  const existingInvoices = await db.customerInvoices.filter({
     order_id: order.id,
   });
 
@@ -30,7 +30,7 @@ export async function generateShoppingOrderInvoice(order, customer) {
   const shippingCost = parseFloat(order.shipping_cost) || 0;
   const totalAmount = parseFloat(order.total_amount) || 0;
 
-  const invoice = await base44.entities.CustomerInvoice.create({
+  const invoice = await db.customerInvoices.create({
     invoice_number: generateShoppingInvoiceNumber(),
     invoice_type: 'shopping_order',
     order_id: order.id,
@@ -57,7 +57,7 @@ export async function generateShoppingOrderInvoice(order, customer) {
   });
 
   // Create notification
-  await base44.entities.Notification.create({
+  await db.notifications.create({
     type: 'invoice_generated',
     title: `Invoice Generated - ${invoice.invoice_number}`,
     message: `Invoice for shopping order ${order.order_number} has been generated. Amount: ฿${totalAmount.toLocaleString()}`,

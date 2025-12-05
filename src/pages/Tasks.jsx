@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -100,7 +101,7 @@ export default function Tasks() {
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => base44.entities.Task.list('-priority', 200),
+    queryFn: () => db.tasks.list('-priority', 200),
   });
 
   const [form, setForm] = useState({
@@ -115,9 +116,9 @@ export default function Tasks() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const task = await base44.entities.Task.create(data);
+      const task = await db.tasks.create(data);
       // Trigger notification for new task
-      const user = await base44.auth.me().catch(() => null);
+      const user = await auth.me().catch(() => null);
       if (user?.email) {
         await triggerTaskAssignedAlert({ ...data, id: task.id }, user.email);
       }
@@ -132,7 +133,7 @@ export default function Tasks() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    mutationFn: ({ id, data }) => db.tasks.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       setShowForm(false);
@@ -177,7 +178,7 @@ export default function Tasks() {
   };
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Task.delete(id),
+    mutationFn: (id) => db.tasks.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success('Task deleted');
@@ -355,7 +356,7 @@ export default function Tasks() {
       ];
 
       initialTasks.forEach((task) => {
-        base44.entities.Task.create(task);
+        db.tasks.create(task);
       });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     }
@@ -821,13 +822,12 @@ function TaskItem({ task, onToggle, onEdit, onDelete, showPhase = false }) {
 
   return (
     <div
-      className={`group flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
-        task.status === 'completed'
-          ? 'bg-slate-50 border-slate-100 opacity-70'
-          : isOverdue
-            ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
-            : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
-      }`}
+      className={`group flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${task.status === 'completed'
+        ? 'bg-slate-50 border-slate-100 opacity-70'
+        : isOverdue
+          ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
+          : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
+        }`}
       onClick={() => onEdit(task)}
     >
       <button

@@ -1,7 +1,12 @@
-# Base44 App
+# KTM Cargo Express
 
-This app was created automatically by Base44.
-It's a Vite+React app that communicates with the Base44 API.
+This is the KTM Cargo Express application, a comprehensive logistics and shopping management platform.
+
+## Tech Stack
+- **Frontend**: React + Vite
+- **Styling**: Tailwind CSS + Radix UI
+- **Backend/Database**: Supabase
+- **State Management**: React Query
 
 ## Running the app
 
@@ -16,4 +21,8 @@ npm run dev
 npm run build
 ```
 
-For more information and support, please contact Base44 support at app@base44.com.
+## Project Structure
+- `src/api/db.js`: Centralized database access
+- `src/api/auth.js`: Authentication services
+- `src/api/integrations.js`: External integrations (Email, Storage)
+

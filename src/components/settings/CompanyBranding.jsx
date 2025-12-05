@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { uploadFile } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,7 @@ export default function CompanyBranding() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const list = await base44.entities.CompanySettings.list();
+      const list = await db.companySettings.list();
       return list[0] || null;
     },
   });
@@ -58,9 +59,9 @@ export default function CompanyBranding() {
   const saveMutation = useMutation({
     mutationFn: async (data) => {
       if (settings?.id) {
-        return base44.entities.CompanySettings.update(settings.id, data);
+        return db.companySettings.update(settings.id, data);
       } else {
-        return base44.entities.CompanySettings.create(data);
+        return db.companySettings.create(data);
       }
     },
     onSuccess: () => {
@@ -78,7 +79,7 @@ export default function CompanyBranding() {
 
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFile({ file });
       setForm((prev) => ({ ...prev, logo_url: file_url }));
       toast.success('Logo uploaded');
     } catch (err) {

@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { format, addDays } from 'date-fns';
 import {
   triggerInvoiceGeneratedAlert,
@@ -30,7 +30,7 @@ function generatePayoutNumber() {
  */
 export async function generateCustomerInvoice(shipment, customer) {
   // Check if invoice already exists for this shipment
-  const existingInvoices = await base44.entities.CustomerInvoice.filter({
+  const existingInvoices = await db.customerInvoices.filter({
     shipment_id: shipment.id,
   });
 
@@ -48,7 +48,7 @@ export async function generateCustomerInvoice(shipment, customer) {
   const taxAmount = 0; // Can be configured if needed
   const totalAmount = subtotal + taxAmount;
 
-  const invoice = await base44.entities.CustomerInvoice.create({
+  const invoice = await db.customerInvoices.create({
     invoice_number: generateInvoiceNumber(),
     invoice_type: 'shipment',
     shipment_id: shipment.id,
@@ -84,7 +84,7 @@ export async function generateCustomerInvoice(shipment, customer) {
  */
 export async function generateVendorPayout(shipment, invoice, vendorOrder, vendor) {
   // Check if payout already exists for this shipment
-  const existingPayouts = await base44.entities.VendorPayout.filter({
+  const existingPayouts = await db.vendorPayouts.filter({
     shipment_id: shipment.id,
   });
 
@@ -101,7 +101,7 @@ export async function generateVendorPayout(shipment, invoice, vendorOrder, vendo
   const totalPayout = costAmount + commissionAmount;
   const profitAmount = (shipment.total_amount || 0) - totalPayout;
 
-  const payout = await base44.entities.VendorPayout.create({
+  const payout = await db.vendorPayouts.create({
     payout_number: generatePayoutNumber(),
     shipment_id: shipment.id,
     tracking_number: shipment.tracking_number || '',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,9 +32,9 @@ export default function VendorPerformance({ vendor }) {
     queryKey: ['vendor-performance-pos', vendor?.id, vendor?.name],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.PurchaseOrder.filter({ vendor_id: vendor.id });
+        return db.purchaseOrders.filter({ vendor_id: vendor.id });
       } else if (vendor?.name) {
-        return base44.entities.PurchaseOrder.filter({ vendor_name: vendor.name });
+        return db.purchaseOrders.filter({ vendor_name: vendor.name });
       }
       return [];
     },
@@ -45,7 +45,7 @@ export default function VendorPerformance({ vendor }) {
     queryKey: ['vendor-performance-gr', vendor?.id],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.GoodsReceipt.filter({ vendor_id: vendor.id });
+        return db.goodsReceipts.filter({ vendor_id: vendor.id });
       }
       return [];
     },

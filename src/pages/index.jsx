@@ -24,86 +24,200 @@ const Invoices = lazy(() => import('./Invoices'));
 const LandingPage = lazy(() => import('./LandingPage'));
 
 const PAGES = {
-  Dashboard,
-  Shipments,
-  Customers,
-  ShoppingOrders,
-  Tasks,
-  Reports,
-  PriceCalculator,
-  CustomerSegments,
-  ShipmentDocuments,
-  Feedback,
-  FeedbackAnalytics,
-  Inventory,
-  Vendors,
-  Settings,
-  Procurement,
-  VendorRegistration,
-  ClientPortal,
-  Invoices,
+    Dashboard,
+    Shipments,
+    Customers,
+    ShoppingOrders,
+    Tasks,
+    Reports,
+    PriceCalculator,
+    CustomerSegments,
+    ShipmentDocuments,
+    Feedback,
+    FeedbackAnalytics,
+    Inventory,
+    Vendors,
+    Settings,
+    Procurement,
+    VendorRegistration,
+    ClientPortal,
+    Invoices,
 };
 
 function _getCurrentPage(url) {
-  if (url.endsWith('/')) {
-    url = url.slice(0, -1);
-  }
-  let urlLastPart = url.split('/').pop();
-  if (urlLastPart.includes('?')) {
-    urlLastPart = urlLastPart.split('?')[0];
-  }
+    if (url.endsWith('/')) {
+        url = url.slice(0, -1);
+    }
+    let urlLastPart = url.split('/').pop();
+    if (urlLastPart.includes('?')) {
+        urlLastPart = urlLastPart.split('?')[0];
+    }
 
-  const pageName = Object.keys(PAGES).find(
-    (page) => page.toLowerCase() === urlLastPart.toLowerCase()
-  );
-  return pageName || 'Dashboard';
+    const pageName = Object.keys(PAGES).find(
+        (page) => page.toLowerCase() === urlLastPart.toLowerCase()
+    );
+    return pageName || 'Dashboard';
 }
 
 // Loading component
 const PageLoader = () => (
-  <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-  </div>
+    <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+    </div>
 );
+
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Create a wrapper component that uses useLocation inside the Router context
 function PagesContent() {
-  const location = useLocation();
-  const currentPage = _getCurrentPage(location.pathname);
+    const location = useLocation();
+    const currentPage = _getCurrentPage(location.pathname);
 
-  return (
-    <Layout currentPageName={currentPage}>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
-          <Route path="/Shipments" element={<Shipments />} />
-          <Route path="/Customers" element={<Customers />} />
-          <Route path="/ShoppingOrders" element={<ShoppingOrders />} />
-          <Route path="/Tasks" element={<Tasks />} />
-          <Route path="/Reports" element={<Reports />} />
-          <Route path="/PriceCalculator" element={<PriceCalculator />} />
-          <Route path="/CustomerSegments" element={<CustomerSegments />} />
-          <Route path="/ShipmentDocuments" element={<ShipmentDocuments />} />
-          <Route path="/Feedback" element={<Feedback />} />
-          <Route path="/FeedbackAnalytics" element={<FeedbackAnalytics />} />
-          <Route path="/Inventory" element={<Inventory />} />
-          <Route path="/Vendors" element={<Vendors />} />
-          <Route path="/Settings" element={<Settings />} />
-          <Route path="/Procurement" element={<Procurement />} />
-          <Route path="/VendorRegistration" element={<VendorRegistration />} />
-          <Route path="/ClientPortal" element={<ClientPortal />} />
-          <Route path="/Invoices" element={<Invoices />} />
-        </Routes>
-      </Suspense>
-    </Layout>
-  );
+    return (
+        <Layout currentPageName={currentPage}>
+            <Suspense fallback={<PageLoader />}>
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/ClientPortal" element={<ClientPortal />} />
+                    <Route path="/VendorRegistration" element={<VendorRegistration />} />
+                    <Route path="/PriceCalculator" element={<PriceCalculator />} />
+
+                    {/* Protected Routes */}
+                    <Route
+                        path="/Dashboard"
+                        element={
+                            <ProtectedRoute pageName="Dashboard">
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Shipments"
+                        element={
+                            <ProtectedRoute pageName="Shipments">
+                                <Shipments />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Customers"
+                        element={
+                            <ProtectedRoute pageName="Customers">
+                                <Customers />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/ShoppingOrders"
+                        element={
+                            <ProtectedRoute pageName="ShoppingOrders">
+                                <ShoppingOrders />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Tasks"
+                        element={
+                            <ProtectedRoute pageName="Tasks">
+                                <Tasks />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Reports"
+                        element={
+                            <ProtectedRoute pageName="Reports">
+                                <Reports />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/CustomerSegments"
+                        element={
+                            <ProtectedRoute pageName="CustomerSegments">
+                                <CustomerSegments />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/ShipmentDocuments"
+                        element={
+                            <ProtectedRoute pageName="ShipmentDocuments">
+                                <ShipmentDocuments />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Feedback"
+                        element={
+                            <ProtectedRoute pageName="Feedback">
+                                <Feedback />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/FeedbackAnalytics"
+                        element={
+                            <ProtectedRoute pageName="FeedbackAnalytics">
+                                <FeedbackAnalytics />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Inventory"
+                        element={
+                            <ProtectedRoute pageName="Inventory">
+                                <Inventory />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Vendors"
+                        element={
+                            <ProtectedRoute pageName="Vendors">
+                                <Vendors />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Settings"
+                        element={
+                            <ProtectedRoute pageName="Settings">
+                                <Settings />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Procurement"
+                        element={
+                            <ProtectedRoute pageName="Procurement">
+                                <Procurement />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/Invoices"
+                        element={
+                            <ProtectedRoute pageName="Invoices">
+                                <Invoices />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Routes>
+            </Suspense>
+        </Layout>
+    );
 }
 
+import { UserProvider } from '@/components/auth/UserContext';
+
 export default function Pages() {
-  return (
-    <Router>
-      <PagesContent />
-    </Router>
-  );
+    return (
+        <Router>
+            <UserProvider>
+                <PagesContent />
+            </UserProvider>
+        </Router>
+    );
 }

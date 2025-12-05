@@ -214,7 +214,7 @@ async function seedCustomers() {
       customer_type: getRandomElement(['individual', 'online_shopper', 'sme_importer']),
       address_bangkok: `${getRandomInt(1, 999)} ${getRandomElement(streets)}, Bangkok`,
       address_yangon: `${getRandomInt(1, 999)} ${getRandomElement(streets)}, Yangon`,
-      referral_code: `REF-${getRandomInt(1000, 9999)}`,
+      referral_code: `REF-${Date.now().toString().slice(-6)}-${getRandomInt(100, 999)}`,
     });
   }
 
@@ -441,14 +441,20 @@ async function seedInvoices(shipments, shoppingOrders) {
         payment_method:
           order.payment_status === 'paid' ? getRandomElement(['bank_transfer', 'cash']) : null,
         product_cost: order.estimated_product_cost,
-        commission_amount: order.total_amount - order.estimated_product_cost,
+        // commission_amount: order.total_amount - order.estimated_product_cost, // Column missing in DB
       });
     }
   }
 
   const { data, error } = await supabase
-    .from('invoices')
-    .upsert(invoices, { onConflict: 'invoice_number' })
+    .from('customer_invoices')
+    .upsert(invoices.map(inv => ({
+      invoice_number: inv.invoice_number,
+      customer_id: inv.customer_id,
+      status: inv.status,
+      total_amount: inv.total_amount,
+      created_date: inv.invoice_date || new Date().toISOString()
+    })), { onConflict: 'invoice_number' })
     .select();
   if (error) console.error('Error seeding invoices:', error);
   else console.log(`Seeded ${data.length} invoices.`);

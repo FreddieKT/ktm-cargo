@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -34,22 +35,22 @@ import { checkSegmentHealth } from '@/components/notifications/NotificationServi
 export default function Dashboard() {
   const { data: shipments = [], isLoading: shipmentsLoading } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 100),
+    queryFn: () => db.shipments.list('-created_date', 100),
   });
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => db.customers.list(),
   });
 
   const { data: shoppingOrders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['shopping-orders'],
-    queryFn: () => base44.entities.ShoppingOrder.list('-created_date', 50),
+    queryFn: () => db.shoppingOrders.list('-created_date', 50),
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => db.expenses.list(),
   });
 
   const isLoading = shipmentsLoading || customersLoading || ordersLoading;
@@ -72,7 +73,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!alertsChecked.current && customers.length > 0) {
       alertsChecked.current = true;
-      base44.auth
+      auth
         .me()
         .then((user) => {
           if (
@@ -83,7 +84,7 @@ export default function Dashboard() {
             checkSegmentHealth(segmentSummary, user.email);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [customers.length, segmentSummary]);
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,26 +60,26 @@ export default function CustomerSegments() {
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list('-created_date'),
+    queryFn: () => db.customers.list('-created_date'),
   });
 
   const { data: shipments = [], isLoading: shipmentsLoading } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 500),
+    queryFn: () => db.shipments.list('-created_date', 500),
   });
 
   const { data: campaigns = [], isLoading: campaignsLoading } = useQuery({
     queryKey: ['campaigns'],
-    queryFn: () => base44.entities.Campaign.list('-created_date'),
+    queryFn: () => db.campaigns.list('-created_date'),
   });
 
   const { data: customSegments = [] } = useQuery({
     queryKey: ['custom-segments'],
-    queryFn: () => base44.entities.CustomSegment.list(),
+    queryFn: () => db.customSegments.list(),
   });
 
   const createCampaignMutation = useMutation({
-    mutationFn: (data) => base44.entities.Campaign.create(data),
+    mutationFn: (data) => db.campaigns.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       setShowCampaignForm(false);
@@ -88,14 +88,14 @@ export default function CustomerSegments() {
   });
 
   const updateCampaignMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Campaign.update(id, data),
+    mutationFn: ({ id, data }) => db.campaigns.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
     },
   });
 
   const createSegmentMutation = useMutation({
-    mutationFn: (data) => base44.entities.CustomSegment.create(data),
+    mutationFn: (data) => db.customSegments.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-segments'] });
       setShowSegmentBuilder(false);
@@ -104,7 +104,7 @@ export default function CustomerSegments() {
   });
 
   const updateSegmentMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.CustomSegment.update(id, data),
+    mutationFn: ({ id, data }) => db.customSegments.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-segments'] });
       setShowSegmentBuilder(false);
@@ -114,7 +114,7 @@ export default function CustomerSegments() {
   });
 
   const deleteSegmentMutation = useMutation({
-    mutationFn: (id) => base44.entities.CustomSegment.delete(id),
+    mutationFn: (id) => db.customSegments.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-segments'] });
       toast.success('Segment deleted');
@@ -320,11 +320,10 @@ export default function CustomerSegments() {
             {/* Behavioral Segments */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'high_value'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'high_value'
                     ? 'border-emerald-500 bg-emerald-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('high_value')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -341,11 +340,10 @@ export default function CustomerSegments() {
               </Card>
 
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'loyal'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'loyal'
                     ? 'border-amber-500 bg-amber-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('loyal')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -360,11 +358,10 @@ export default function CustomerSegments() {
               </Card>
 
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'at_risk'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'at_risk'
                     ? 'border-rose-500 bg-rose-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('at_risk')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -381,11 +378,10 @@ export default function CustomerSegments() {
               </Card>
 
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'new_customers'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'new_customers'
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('new_customers')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -417,11 +413,10 @@ export default function CustomerSegments() {
                     .map((segment) => (
                       <Card
                         key={segment.id}
-                        className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                          selectedSegment === `custom_${segment.id}`
+                        className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === `custom_${segment.id}`
                             ? `border-${segment.color || 'blue'}-500 bg-${segment.color || 'blue'}-50`
                             : 'border-transparent'
-                        }`}
+                          }`}
                         onClick={() => setSelectedSegment(`custom_${segment.id}`)}
                       >
                         <CardContent className="p-4">
@@ -590,22 +585,20 @@ export default function CustomerSegments() {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex items-start gap-4">
                           <div
-                            className={`p-3 rounded-xl ${
-                              campaign.status === 'active'
+                            className={`p-3 rounded-xl ${campaign.status === 'active'
                                 ? 'bg-emerald-100'
                                 : campaign.status === 'completed'
                                   ? 'bg-slate-100'
                                   : 'bg-blue-100'
-                            }`}
+                              }`}
                           >
                             <Megaphone
-                              className={`w-5 h-5 ${
-                                campaign.status === 'active'
+                              className={`w-5 h-5 ${campaign.status === 'active'
                                   ? 'text-emerald-600'
                                   : campaign.status === 'completed'
                                     ? 'text-slate-600'
                                     : 'text-blue-600'
-                              }`}
+                                }`}
                             />
                           </div>
                           <div>

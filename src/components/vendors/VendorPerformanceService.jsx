@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { format, differenceInDays } from 'date-fns';
 import { createNotification } from '@/components/notifications/NotificationService';
 
@@ -22,14 +23,14 @@ export async function updateVendorOnDelivery(shipmentId, vendorOrders, vendors) 
     : true;
 
   // Update vendor order with completion data
-  await base44.entities.VendorOrder.update(vendorOrder.id, {
+  await db.vendorOrders.update(vendorOrder.id, {
     status: 'completed',
     actual_date: actualDate,
     on_time: onTime,
   });
 
   // Recalculate vendor metrics
-  const allVendorOrders = await base44.entities.VendorOrder.filter({
+  const allVendorOrders = await db.vendorOrders.filter({
     vendor_id: vendor.id,
     status: 'completed',
   });
@@ -48,12 +49,12 @@ export async function updateVendorOnDelivery(shipmentId, vendorOrders, vendors) 
   const avgRating =
     ratedOrders.length > 0
       ? Math.round(
-          (ratedOrders.reduce((sum, o) => sum + o.quality_rating, 0) / ratedOrders.length) * 10
-        ) / 10
+        (ratedOrders.reduce((sum, o) => sum + o.quality_rating, 0) / ratedOrders.length) * 10
+      ) / 10
       : vendor.rating || 5;
 
   // Update vendor with new metrics
-  await base44.entities.Vendor.update(vendor.id, {
+  await db.vendors.update(vendor.id, {
     total_orders: totalOrders,
     total_spent: totalSpent,
     on_time_rate: onTimeRate,
@@ -118,7 +119,7 @@ export async function checkVendorContractAlerts(vendors) {
 
     if (daysRemaining <= 30 && daysRemaining > 0) {
       // Check if we already sent an alert recently
-      const existingAlerts = await base44.entities.Notification.filter({
+      const existingAlerts = await db.notifications.filter({
         reference_id: vendor.id,
         type: 'system',
         status: 'unread',
@@ -160,7 +161,7 @@ export async function checkVendorPerformanceAlerts(vendors, vendorOrders) {
 
     // Check if performance dropped below threshold
     if (currentOnTimeRate < 70) {
-      const existingAlerts = await base44.entities.Notification.filter({
+      const existingAlerts = await db.notifications.filter({
         reference_id: vendor.id,
         type: 'system',
         status: 'unread',
@@ -178,6 +179,6 @@ export async function checkVendorPerformanceAlerts(vendors, vendorOrders) {
 }
 
 async function getAdminEmail() {
-  const user = await base44.auth.me().catch(() => null);
+  const user = await auth.me().catch(() => null);
   return user?.email || null;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,22 +99,22 @@ export default function ShoppingOrders() {
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['shopping-orders'],
-    queryFn: () => base44.entities.ShoppingOrder.list('-created_date'),
+    queryFn: () => db.shoppingOrders.list('-created_date'),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => db.customers.list(),
   });
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list(),
+    queryFn: () => db.purchaseOrders.list(),
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+    queryFn: () => db.vendors.list(),
   });
 
   const [form, setForm] = useState({
@@ -185,7 +185,7 @@ export default function ShoppingOrders() {
 
   const createMutation = useMutation({
     mutationFn: (data) =>
-      base44.entities.ShoppingOrder.create({
+      db.shoppingOrders.create({
         ...data,
         order_number: `SHOP-${Date.now().toString(36).toUpperCase()}`,
       }),
@@ -199,7 +199,7 @@ export default function ShoppingOrders() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, sendNotification, customerEmail }) => {
-      const result = await base44.entities.ShoppingOrder.update(id, data);
+      const result = await db.shoppingOrders.update(id, data);
       // Send notification if status changed to shipping or delivered
       if (
         sendNotification &&
@@ -224,7 +224,7 @@ export default function ShoppingOrders() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.ShoppingOrder.delete(id),
+    mutationFn: (id) => db.shoppingOrders.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
       toast.success('Order deleted');
@@ -232,7 +232,7 @@ export default function ShoppingOrders() {
   });
 
   const updatePOMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.PurchaseOrder.update(id, data),
+    mutationFn: ({ id, data }) => db.purchaseOrders.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
     },
@@ -1077,9 +1077,9 @@ export default function ShoppingOrders() {
                               value={
                                 vendor.monthly_capacity_kg > 0
                                   ? ((vendor.monthly_capacity_kg -
-                                      (vendor.current_month_allocated_kg || 0)) /
-                                      vendor.monthly_capacity_kg) *
-                                    100
+                                    (vendor.current_month_allocated_kg || 0)) /
+                                    vendor.monthly_capacity_kg) *
+                                  100
                                   : 0
                               }
                               className="h-2"
@@ -1187,30 +1187,30 @@ export default function ShoppingOrders() {
                 form.actual_product_cost ||
                 form.estimated_weight ||
                 form.actual_weight) && (
-                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                  <p className="text-sm font-medium text-purple-700 mb-3">Price Calculation</p>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <span className="text-purple-600">Product Cost:</span>
-                    <span className="text-right font-medium">
-                      ฿{totals.productCost.toLocaleString()}
-                    </span>
-                    <span className="text-purple-600">Commission ({form.commission_rate}%):</span>
-                    <span className="text-right font-medium">
-                      ฿{totals.commission.toLocaleString()}
-                    </span>
-                    <span className="text-purple-600">Shipping (฿110/kg):</span>
-                    <span className="text-right font-medium">
-                      ฿{totals.shippingCost.toLocaleString()}
-                    </span>
-                    <span className="font-bold text-purple-800 pt-2 border-t border-purple-200">
-                      Total:
-                    </span>
-                    <span className="text-right font-bold text-purple-800 pt-2 border-t border-purple-200">
-                      ฿{totals.total.toLocaleString()}
-                    </span>
+                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                    <p className="text-sm font-medium text-purple-700 mb-3">Price Calculation</p>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <span className="text-purple-600">Product Cost:</span>
+                      <span className="text-right font-medium">
+                        ฿{totals.productCost.toLocaleString()}
+                      </span>
+                      <span className="text-purple-600">Commission ({form.commission_rate}%):</span>
+                      <span className="text-right font-medium">
+                        ฿{totals.commission.toLocaleString()}
+                      </span>
+                      <span className="text-purple-600">Shipping (฿110/kg):</span>
+                      <span className="text-right font-medium">
+                        ฿{totals.shippingCost.toLocaleString()}
+                      </span>
+                      <span className="font-bold text-purple-800 pt-2 border-t border-purple-200">
+                        Total:
+                      </span>
+                      <span className="text-right font-bold text-purple-800 pt-2 border-t border-purple-200">
+                        ฿{totals.total.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="flex gap-3 pt-4">
                 <Button

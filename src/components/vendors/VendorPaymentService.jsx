@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { format, addDays } from 'date-fns';
 import { createNotification } from '@/components/notifications/NotificationService';
 
@@ -17,7 +18,7 @@ export async function generatePaymentRequest(vendorOrder, vendor) {
   const dueDate = format(addDays(new Date(), daysToAdd), 'yyyy-MM-dd');
 
   // Check if payment already exists for this order
-  const existingPayments = await base44.entities.VendorPayment.filter({
+  const existingPayments = await db.vendorPayments.filter({
     vendor_id: vendor.id,
   });
 
@@ -28,7 +29,7 @@ export async function generatePaymentRequest(vendorOrder, vendor) {
   if (alreadyIncluded) return null;
 
   // Create new payment request
-  const payment = await base44.entities.VendorPayment.create({
+  const payment = await db.vendorPayments.create({
     vendor_id: vendor.id,
     vendor_name: vendor.name,
     order_ids: vendorOrder.id,
@@ -51,7 +52,7 @@ export async function generatePaymentRequest(vendorOrder, vendor) {
  */
 export async function processUnpaidOrders(vendorOrders, vendors) {
   const completedOrders = vendorOrders.filter((o) => o.status === 'completed');
-  const existingPayments = await base44.entities.VendorPayment.list();
+  const existingPayments = await db.vendorPayments.list();
 
   const processedOrderIds = new Set();
   existingPayments.forEach((p) => {
@@ -76,7 +77,7 @@ export async function processUnpaidOrders(vendorOrders, vendors) {
     const daysToAdd = PAYMENT_TERM_DAYS[vendor.payment_terms] || 30;
     const dueDate = format(addDays(new Date(), daysToAdd), 'yyyy-MM-dd');
 
-    const payment = await base44.entities.VendorPayment.create({
+    const payment = await db.vendorPayments.create({
       vendor_id: vendorId,
       vendor_name: vendor.name,
       order_ids: orders.map((o) => o.id).join(','),
@@ -96,7 +97,7 @@ export async function processUnpaidOrders(vendorOrders, vendors) {
  * Check and update overdue payments
  */
 export async function checkOverduePayments() {
-  const payments = await base44.entities.VendorPayment.filter({ status: 'pending' });
+  const payments = await db.vendorPayments.filter({ status: 'pending' });
   const today = new Date();
   const overduePayments = [];
 
@@ -104,7 +105,7 @@ export async function checkOverduePayments() {
     if (!payment.due_date) continue;
 
     if (new Date(payment.due_date) < today) {
-      await base44.entities.VendorPayment.update(payment.id, { status: 'overdue' });
+      await db.vendorPayments.update(payment.id, { status: 'overdue' });
       await triggerPaymentOverdueAlert(payment);
       overduePayments.push(payment);
     }
@@ -117,7 +118,7 @@ export async function checkOverduePayments() {
  * Check payments due soon
  */
 export async function checkUpcomingPayments() {
-  const payments = await base44.entities.VendorPayment.filter({ status: 'pending' });
+  const payments = await db.vendorPayments.filter({ status: 'pending' });
   const today = new Date();
   const upcoming = [];
 
@@ -139,7 +140,7 @@ export async function checkUpcomingPayments() {
  * Mark payment as paid
  */
 export async function markPaymentPaid(paymentId, paymentMethod, referenceNumber) {
-  return base44.entities.VendorPayment.update(paymentId, {
+  return db.vendorPayments.update(paymentId, {
     status: 'paid',
     payment_date: format(new Date(), 'yyyy-MM-dd'),
     payment_method: paymentMethod,
@@ -185,6 +186,6 @@ async function triggerPaymentOverdueAlert(payment) {
 }
 
 async function getAdminEmail() {
-  const user = await base44.auth.me().catch(() => null);
+  const user = await auth.me().catch(() => null);
   return user?.email || null;
 }

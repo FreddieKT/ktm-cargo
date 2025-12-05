@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { addDays, format } from 'date-fns';
 import { AuditActions } from '@/components/audit/AuditService';
 
@@ -36,7 +36,7 @@ function calculateDueDate(invoiceDate, paymentTerms) {
  */
 export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, vendor) {
   // Check if invoice already exists for this receipt
-  const existingInvoices = await base44.entities.Invoice.filter({ receipt_id: goodsReceipt.id });
+  const existingInvoices = await db.invoices.filter({ receipt_id: goodsReceipt.id });
   if (existingInvoices.length > 0) {
     return { status: 'exists', invoice: existingInvoices[0] };
   }
@@ -79,7 +79,7 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
   const invoiceDate = format(new Date(), 'yyyy-MM-dd');
   const paymentTerms = vendor?.payment_terms || 'net_30';
 
-  const invoice = await base44.entities.Invoice.create({
+  const invoice = await db.invoices.create({
     invoice_number: generateInvoiceNumber(),
     po_id: purchaseOrder.id,
     po_number: purchaseOrder.po_number,
@@ -101,7 +101,7 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
   });
 
   // Create notification
-  await base44.entities.Notification.create({
+  await db.notifications.create({
     type: 'system',
     title: 'New Invoice Generated',
     message: `Invoice ${invoice.invoice_number} for ฿${totalAmount.toLocaleString()} has been generated for PO ${purchaseOrder.po_number}.`,
@@ -121,7 +121,7 @@ export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, ve
  * Mark invoice as paid
  */
 export async function markInvoicePaid(invoiceId) {
-  const invoice = await base44.entities.Invoice.update(invoiceId, {
+  const invoice = await db.invoices.update(invoiceId, {
     status: 'paid',
     payment_date: format(new Date(), 'yyyy-MM-dd'),
   });
@@ -134,12 +134,12 @@ export async function markInvoicePaid(invoiceId) {
  * Check and update overdue invoices
  */
 export async function checkOverdueInvoices() {
-  const pendingInvoices = await base44.entities.Invoice.filter({ status: 'pending' });
+  const pendingInvoices = await db.invoices.filter({ status: 'pending' });
   const today = new Date();
 
   for (const invoice of pendingInvoices) {
     if (invoice.due_date && new Date(invoice.due_date) < today) {
-      await base44.entities.Invoice.update(invoice.id, { status: 'overdue' });
+      await db.invoices.update(invoice.id, { status: 'overdue' });
     }
   }
 }

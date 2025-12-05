@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,9 +46,9 @@ export default function CustomerOrderHistory({ customer }) {
     queryKey: ['customer-order-history', customer?.id, customer?.name],
     queryFn: async () => {
       if (customer?.id) {
-        return base44.entities.Shipment.filter({ customer_id: customer.id }, '-created_date');
+        return db.shipments.filter({ customer_id: customer.id }, '-created_date');
       } else if (customer?.name) {
-        return base44.entities.Shipment.filter({ customer_name: customer.name }, '-created_date');
+        return db.shipments.filter({ customer_name: customer.name }, '-created_date');
       }
       return [];
     },

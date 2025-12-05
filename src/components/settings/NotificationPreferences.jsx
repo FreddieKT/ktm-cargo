@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { auth } from '@/api/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -104,7 +104,7 @@ export default function NotificationPreferences({ user }) {
   }, [user]);
 
   const saveMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
+    mutationFn: (data) => auth.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast.success('Notification preferences saved');

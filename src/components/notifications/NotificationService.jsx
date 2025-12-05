@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 
 /**
  * Centralized Notification Service
@@ -16,7 +17,7 @@ export async function createNotification({
   sendEmail = false,
 }) {
   // Create in-app notification
-  const notification = await base44.entities.Notification.create({
+  const notification = await db.notifications.create({
     type,
     title,
     message,
@@ -31,12 +32,12 @@ export async function createNotification({
   // Send email if requested
   if (sendEmail && recipientEmail) {
     try {
-      await base44.integrations.Core.SendEmail({
+      await sendEmail({
         to: recipientEmail,
         subject: `[${priority.toUpperCase()}] ${title}`,
         body: generateEmailBody(type, title, message, priority),
       });
-      await base44.entities.Notification.update(notification.id, { email_sent: true });
+      await db.notifications.update(notification.id, { email_sent: true });
     } catch (error) {
       console.error('Failed to send notification email:', error);
     }

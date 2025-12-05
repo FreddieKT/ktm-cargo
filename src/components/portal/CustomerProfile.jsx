@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
         toast.error('No customer profile found');
         return Promise.reject('No customer ID');
       }
-      return base44.entities.Customer.update(customer.id, data);
+      return db.customers.update(customer.id, data);
     },
     onSuccess: () => {
       toast.success('Profile updated successfully');

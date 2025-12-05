@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export default function VendorInvoices({ vendor }) {
     queryKey: ['vendor-payments-list', vendor?.id],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.VendorPayment.filter({ vendor_id: vendor.id }, '-created_date');
+        return db.vendorPayments.filter({ vendor_id: vendor.id }, '-created_date');
       }
       return [];
     },

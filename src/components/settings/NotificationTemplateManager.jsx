@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Mail,
@@ -102,11 +102,11 @@ export default function NotificationTemplateManager() {
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['notification-templates'],
-    queryFn: () => base44.entities.NotificationTemplate.list(),
+    queryFn: () => db.notificationTemplates.list(),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.NotificationTemplate.create(data),
+    mutationFn: (data) => db.notificationTemplates.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates'] });
       setShowForm(false);
@@ -116,7 +116,7 @@ export default function NotificationTemplateManager() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.NotificationTemplate.update(id, data),
+    mutationFn: ({ id, data }) => db.notificationTemplates.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates'] });
       setShowForm(false);
@@ -126,7 +126,7 @@ export default function NotificationTemplateManager() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.NotificationTemplate.delete(id),
+    mutationFn: (id) => db.notificationTemplates.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates'] });
       toast.success('Template deleted');

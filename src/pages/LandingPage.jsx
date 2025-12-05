@@ -22,7 +22,7 @@ import {
   HelpCircle,
   ChevronDown,
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import {
   Accordion,
   AccordionContent,
@@ -42,7 +42,7 @@ export default function LandingPage() {
 
     setIsTracking(true);
     try {
-      const results = await base44.entities.Shipment.filter({
+      const results = await db.shipments.filter({
         tracking_number: trackingNumber.trim(),
       });
       if (results.length > 0) {

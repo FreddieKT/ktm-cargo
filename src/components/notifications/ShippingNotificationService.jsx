@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 
 /**
  * Shipping Notification Service
@@ -106,7 +107,7 @@ function processTemplate(template, data) {
  */
 async function getTemplate(templateType) {
   try {
-    const templates = await base44.entities.NotificationTemplate.filter({
+    const templates = await db.notificationTemplates.filter({
       template_type: templateType,
       is_active: true,
     });
@@ -161,14 +162,14 @@ export async function sendShoppingOrderNotification(order, newStatus, customerEm
   const body = processTemplate(template.body, data);
 
   try {
-    await base44.integrations.Core.SendEmail({
+    await sendEmail({
       to: customerEmail,
       subject,
       body,
     });
 
     // Log notification
-    await base44.entities.Notification.create({
+    await db.notifications.create({
       type: 'shipment_status',
       title: `Order ${data.order_number} - ${newStatus}`,
       message: `Notification sent to ${customerEmail}`,
@@ -222,13 +223,13 @@ export async function sendShipmentNotification(shipment, newStatus, customerEmai
   const body = processTemplate(template.body, data);
 
   try {
-    await base44.integrations.Core.SendEmail({
+    await sendEmail({
       to: customerEmail,
       subject,
       body,
     });
 
-    await base44.entities.Notification.create({
+    await db.notifications.create({
       type: 'shipment_status',
       title: `Shipment ${data.tracking_number} - ${newStatus}`,
       message: `Notification sent to ${customerEmail}`,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ export default function Feedback() {
     queryKey: ['shipment', shipmentId],
     queryFn: async () => {
       if (!shipmentId) return null;
-      const shipments = await base44.entities.Shipment.filter({ id: shipmentId });
+      const shipments = await db.shipments.filter({ id: shipmentId });
       return shipments[0] || null;
     },
     enabled: !!shipmentId,
@@ -37,7 +37,7 @@ export default function Feedback() {
     queryKey: ['feedback', shipmentId],
     queryFn: async () => {
       if (!shipmentId) return null;
-      const feedbacks = await base44.entities.Feedback.filter({ shipment_id: shipmentId });
+      const feedbacks = await db.feedback.filter({ shipment_id: shipmentId });
       return feedbacks[0] || null;
     },
     enabled: !!shipmentId,
@@ -46,9 +46,9 @@ export default function Feedback() {
   const submitMutation = useMutation({
     mutationFn: async (data) => {
       if (existingFeedback) {
-        return base44.entities.Feedback.update(existingFeedback.id, data);
+        return db.feedback.update(existingFeedback.id, data);
       }
-      return base44.entities.Feedback.create(data);
+      return db.feedback.create(data);
     },
     onSuccess: () => {
       setSubmitted(true);

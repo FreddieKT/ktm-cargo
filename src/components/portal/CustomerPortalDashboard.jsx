@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,9 +36,9 @@ export default function CustomerPortalDashboard({ customer, user }) {
     queryKey: ['customer-shipments', customer?.id, user?.email],
     queryFn: async () => {
       if (customer?.id) {
-        return base44.entities.Shipment.filter({ customer_id: customer.id }, '-created_date', 50);
+        return db.shipments.filter({ customer_id: customer.id }, '-created_date', 50);
       } else if (customer?.name) {
-        return base44.entities.Shipment.filter(
+        return db.shipments.filter(
           { customer_name: customer.name },
           '-created_date',
           50
@@ -54,7 +54,7 @@ export default function CustomerPortalDashboard({ customer, user }) {
     queryFn: async () => {
       const email = customer?.email || user?.email;
       if (email) {
-        return base44.entities.Notification.filter(
+        return db.notifications.filter(
           { recipient_email: email, status: 'unread' },
           '-created_date',
           10

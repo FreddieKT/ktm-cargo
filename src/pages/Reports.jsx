@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -108,47 +108,47 @@ export default function Reports() {
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 500),
+    queryFn: () => db.shipments.list('-created_date', 500),
   });
 
   const { data: shoppingOrders = [] } = useQuery({
     queryKey: ['shopping-orders'],
-    queryFn: () => base44.entities.ShoppingOrder.list('-created_date', 500),
+    queryFn: () => db.shoppingOrders.list('-created_date', 500),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => db.customers.list(),
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date'),
+    queryFn: () => db.expenses.list('-date'),
   });
 
   const { data: campaigns = [] } = useQuery({
     queryKey: ['campaigns'],
-    queryFn: () => base44.entities.Campaign.list('-created_date'),
+    queryFn: () => db.campaigns.list('-created_date'),
   });
 
   const { data: customReports = [] } = useQuery({
     queryKey: ['scheduled-reports'],
-    queryFn: () => base44.entities.ScheduledReport.list('-created_date'),
+    queryFn: () => db.scheduledReports.list('-created_date'),
   });
 
   const { data: servicePricing = [] } = useQuery({
     queryKey: ['service-pricing'],
-    queryFn: () => base44.entities.ServicePricing.list(),
+    queryFn: () => db.servicePricing.list(),
   });
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list('-created_date', 500),
+    queryFn: () => db.purchaseOrders.list('-created_date', 500),
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+    queryFn: () => db.vendors.list(),
   });
 
   // AI-powered customer segmentation
@@ -174,7 +174,7 @@ export default function Reports() {
   }, [shipments]);
 
   const createExpenseMutation = useMutation({
-    mutationFn: (data) => base44.entities.Expense.create(data),
+    mutationFn: (data) => db.expenses.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       setShowExpenseForm(false);
@@ -189,7 +189,7 @@ export default function Reports() {
   });
 
   const createReportMutation = useMutation({
-    mutationFn: (data) => base44.entities.ScheduledReport.create(data),
+    mutationFn: (data) => db.scheduledReports.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
       setShowReportBuilder(false);
@@ -198,7 +198,7 @@ export default function Reports() {
   });
 
   const updateReportMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ScheduledReport.update(id, data),
+    mutationFn: ({ id, data }) => db.scheduledReports.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
       setShowReportBuilder(false);
@@ -208,7 +208,7 @@ export default function Reports() {
   });
 
   const deleteReportMutation = useMutation({
-    mutationFn: (id) => base44.entities.ScheduledReport.delete(id),
+    mutationFn: (id) => db.scheduledReports.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
       toast.success('Report deleted');
@@ -255,7 +255,7 @@ export default function Reports() {
     try {
       const data = getReportData(report.report_type);
       const count = await sendReportEmail(report, data, report.recipients);
-      await base44.entities.ScheduledReport.update(report.id, {
+      await db.scheduledReports.update(report.id, {
         last_sent: new Date().toISOString(),
       });
       queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
@@ -1253,11 +1253,10 @@ export default function Reports() {
                       {recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className={`p-3 rounded-lg ${
-                            rec.priority === 'high'
-                              ? 'bg-rose-50 border border-rose-100'
-                              : 'bg-blue-50 border border-blue-100'
-                          }`}
+                          className={`p-3 rounded-lg ${rec.priority === 'high'
+                            ? 'bg-rose-50 border border-rose-100'
+                            : 'bg-blue-50 border border-blue-100'
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div>
@@ -1353,8 +1352,8 @@ export default function Reports() {
                         ฿
                         {customers.length > 0
                           ? Math.round(
-                              segmentSummary.totals.totalRevenue / customers.length
-                            ).toLocaleString()
+                            segmentSummary.totals.totalRevenue / customers.length
+                          ).toLocaleString()
                           : 0}
                       </span>
                     </div>

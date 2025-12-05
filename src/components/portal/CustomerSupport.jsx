@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -48,9 +49,9 @@ export default function CustomerSupport({ customer, user }) {
     queryKey: ['support-tickets', customer?.id, user?.email],
     queryFn: async () => {
       if (customer?.id) {
-        return base44.entities.Feedback.filter({ customer_id: customer.id }, '-created_date');
+        return db.feedback.filter({ customer_id: customer.id }, '-created_date');
       } else if (user?.email) {
-        return base44.entities.Feedback.filter({ customer_email: user.email }, '-created_date');
+        return db.feedback.filter({ customer_email: user.email }, '-created_date');
       }
       return [];
     },
@@ -62,7 +63,7 @@ export default function CustomerSupport({ customer, user }) {
       const ticketNumber = `TKT-${Date.now().toString(36).toUpperCase()}`;
 
       // Create feedback/ticket
-      await base44.entities.Feedback.create({
+      await db.feedback.create({
         customer_id: customer?.id,
         customer_name: customer?.name || user?.full_name,
         customer_email: customer?.email || user?.email,
@@ -75,7 +76,7 @@ export default function CustomerSupport({ customer, user }) {
 
       // Send notification email
       try {
-        await base44.integrations.Core.SendEmail({
+        await sendEmail({
           to: customer?.email || user?.email,
           subject: `Support Ticket Created: ${ticketNumber}`,
           body: `

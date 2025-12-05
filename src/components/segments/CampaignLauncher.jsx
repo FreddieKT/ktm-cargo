@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +47,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
 
     try {
       // Create campaign record
-      const campaign = await base44.entities.Campaign.create({
+      const campaign = await db.campaigns.create({
         name: form.name,
         description: form.description,
         campaign_type: form.campaign_type,
@@ -69,7 +70,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
             .replace('{code}', form.discount_code)
             .replace('{discount}', form.discount_percentage);
 
-          await base44.integrations.Core.SendEmail({
+          await sendEmail({
             to: customer.email,
             subject: form.name,
             body: `
@@ -85,17 +86,16 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                   <p style="font-size: 16px; color: #334155; line-height: 1.6;">
                     ${personalizedMessage}
                   </p>
-                  ${
-                    form.discount_code
-                      ? `
+                  ${form.discount_code
+                ? `
                     <div style="background: #dbeafe; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
                       <p style="color: #1e40af; margin: 0 0 8px 0;">Your exclusive code:</p>
                       <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0; letter-spacing: 2px;">${form.discount_code}</p>
                       ${form.discount_percentage > 0 ? `<p style="color: #3b82f6; margin: 8px 0 0 0;">${form.discount_percentage}% OFF</p>` : ''}
                     </div>
                   `
-                      : ''
-                  }
+                : ''
+              }
                 </div>
                 <div style="background: #f1f5f9; padding: 20px; border-radius: 0 0 12px 12px; text-align: center;">
                   <p style="color: #64748b; margin: 0; font-size: 12px;">
@@ -113,7 +113,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
       }
 
       // Update campaign with sent count
-      await base44.entities.Campaign.update(campaign.id, { sent_count: sent });
+      await db.campaigns.update(campaign.id, { sent_count: sent });
 
       toast.success(`Campaign sent to ${sent} customers!`);
       onSuccess?.();

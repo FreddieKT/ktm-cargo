@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 
 export async function sendFeedbackRequest(shipment, customer) {
   if (!customer?.email) return false;
@@ -25,14 +26,14 @@ The BKK-YGN Team
   `;
 
   try {
-    await base44.integrations.Core.SendEmail({
+    await sendEmail({
       to: customer.email,
       subject: `How was your delivery? Rate your experience - ${shipment.tracking_number}`,
       body: emailBody,
     });
 
     // Create pending feedback record
-    await base44.entities.Feedback.create({
+    await db.feedback.create({
       shipment_id: shipment.id,
       customer_id: customer.id || '',
       customer_name: customer.name || shipment.customer_name,

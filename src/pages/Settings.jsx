@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -64,37 +65,37 @@ export default function Settings() {
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['current-user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => auth.me(),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list(),
+    queryFn: () => db.shipments.list(),
   });
 
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory'],
-    queryFn: () => base44.entities.InventoryItem.list(),
+    queryFn: () => db.inventoryItems.list(),
   });
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
-    queryFn: () => base44.entities.VendorPayment.list(),
+    queryFn: () => db.vendorPayments.list(),
   });
 
   const { data: notificationsList = [] } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => base44.entities.Notification.filter({ status: 'unread' }),
+    queryFn: () => db.notifications.filter({ status: 'unread' }),
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+    queryFn: () => db.vendors.list(),
   });
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: () => base44.entities.AuditLog.list('-created_date', 100),
+    queryFn: () => db.auditLogs.list('-created_date', 100),
   });
 
   const [actionLoading, setActionLoading] = useState(null);
@@ -149,7 +150,7 @@ export default function Settings() {
   }, [user]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
+    mutationFn: (data) => auth.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast.success('Profile updated');
@@ -189,7 +190,7 @@ export default function Settings() {
   const handleClearNotifications = async () => {
     setActionLoading('notifications');
     for (const n of notificationsList) {
-      await base44.entities.Notification.update(n.id, { status: 'dismissed' });
+      await db.notifications.update(n.id, { status: 'dismissed' });
     }
     queryClient.invalidateQueries({ queryKey: ['notifications'] });
     toast.success('All notifications cleared');

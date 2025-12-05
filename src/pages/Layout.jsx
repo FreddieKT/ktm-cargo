@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/components/auth/UserContext';
 import {
   LayoutDashboard,
   Package,
@@ -47,8 +49,16 @@ const navItems = [
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const { user } = useUser();
   const location = useLocation();
+
+  const { data: companySettings } = useQuery({
+    queryKey: ['company-settings'],
+    queryFn: async () => {
+      const list = await db.companySettings.list();
+      return list[0] || null;
+    },
+  });
 
   // Bypass Layout (Sidebar/Header) for Public Pages
   if (
@@ -59,27 +69,12 @@ export default function Layout({ children, currentPageName }) {
     return <>{children}</>;
   }
 
-  const { data: companySettings } = useQuery({
-    queryKey: ['company-settings'],
-    queryFn: async () => {
-      const list = await base44.entities.CompanySettings.list();
-      return list[0] || null;
-    },
-  });
-
   const companyName = companySettings?.company_name || 'BKK-YGN Cargo';
   const companyLogo = companySettings?.logo_url;
   const companyTagline = companySettings?.tagline || '& Shopping Services';
 
-  useEffect(() => {
-    base44.auth
-      .me()
-      .then(setUser)
-      .catch(() => {});
-  }, []);
-
   const handleLogout = () => {
-    base44.auth.logout();
+    auth.logout();
   };
 
   return (
@@ -147,11 +142,10 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setSidebarOpen(false)}
                     className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${
-                      isActive
+                    ${isActive
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }
+                      }
                   `}
                   >
                     <item.icon

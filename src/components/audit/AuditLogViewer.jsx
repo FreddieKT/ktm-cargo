@@ -149,7 +149,9 @@ export default function AuditLogViewer({ logs = [] }) {
               let details = {};
               try {
                 details = JSON.parse(log.details || '{}');
-              } catch (e) {}
+              } catch (e) {
+                // Ignore
+              }
 
               return (
                 <div

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { supabase } from '@/api/supabaseClient';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -51,6 +53,7 @@ import { toast } from 'sonner';
 import ClientNotificationBell from '@/components/portal/ClientNotificationBell';
 
 export default function ClientPortal() {
+  const navigate = useNavigate();
   const [portalType, setPortalType] = useState(null); // 'customer' or 'vendor'
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState(null);
@@ -68,7 +71,7 @@ export default function ClientPortal() {
   const { data: companySettings } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const list = await base44.entities.CompanySettings.list();
+      const list = await db.companySettings.list();
       return list[0] || null;
     },
   });
@@ -101,26 +104,24 @@ export default function ClientPortal() {
 
     try {
       // Check if authenticated
-      const isAuth = await base44.auth.isAuthenticated();
+      const isAuth = await auth.isAuthenticated();
       if (!isAuth) {
         // Not authenticated, stay on login screen
         setIsLoading(false);
         return;
       }
 
-      const currentUser = await base44.auth.me();
+      const currentUser = await auth.me();
       setUser(currentUser);
 
       // Admin users should not have customer records created - they use the admin dashboard
       if (currentUser.role === 'admin') {
-        setPortalType('customer');
-        setClientData(null);
-        setIsLoading(false);
+        navigate('/Dashboard');
         return;
       }
 
       // Check if user is a vendor
-      const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      const vendors = await db.vendors.filter({ email: currentUser.email });
       if (vendors.length > 0) {
         setPortalType('vendor');
         setClientData(vendors[0]);
@@ -129,7 +130,7 @@ export default function ClientPortal() {
       }
 
       // Check if user is a customer
-      const customers = await base44.entities.Customer.filter({ email: currentUser.email });
+      const customers = await db.customers.filter({ email: currentUser.email });
       if (customers.length > 0) {
         setPortalType('customer');
         setClientData(customers[0]);
@@ -139,7 +140,7 @@ export default function ClientPortal() {
 
       // Check by phone as fallback for customers
       if (currentUser.phone) {
-        const customersByPhone = await base44.entities.Customer.filter({
+        const customersByPhone = await db.customers.filter({
           phone: currentUser.phone,
         });
         if (customersByPhone.length > 0) {
@@ -154,7 +155,7 @@ export default function ClientPortal() {
       setPortalType('customer');
 
       // Double-check no customer exists with this email before creating
-      const existingByEmail = await base44.entities.Customer.filter({ email: currentUser.email });
+      const existingByEmail = await db.customers.filter({ email: currentUser.email });
       if (existingByEmail.length > 0) {
         setClientData(existingByEmail[0]);
         setIsLoading(false);
@@ -163,7 +164,7 @@ export default function ClientPortal() {
 
       // Create a new customer record for this user (only non-admin users reach here)
       try {
-        const newCustomer = await base44.entities.Customer.create({
+        const newCustomer = await db.customers.create({
           name: currentUser.full_name || currentUser.email?.split('@')[0] || 'New Customer',
           email: currentUser.email,
           phone: currentUser.phone || '',
@@ -223,7 +224,7 @@ export default function ClientPortal() {
   };
 
   const handleLogout = () => {
-    base44.auth.logout();
+    auth.logout();
   };
 
   if (isLoading) {

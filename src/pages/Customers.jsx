@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,13 +60,13 @@ export default function Customers() {
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list('-created_date'),
+    queryFn: () => db.customers.list('-created_date'),
     refetchInterval: 5000, // Auto-refresh every 5 seconds
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 500),
+    queryFn: () => db.shipments.list('-created_date', 500),
   });
 
   // AI-powered customer segmentation
@@ -84,7 +84,7 @@ export default function Customers() {
         ...data,
         referral_code: data.referral_code || `REF${Date.now().toString(36).toUpperCase()}`,
       };
-      const created = await base44.entities.Customer.create(customerData);
+      const created = await db.customers.create(customerData);
       return { ...customerData, ...created };
     },
     onSuccess: async (createdCustomer) => {
@@ -107,7 +107,7 @@ export default function Customers() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
+    mutationFn: ({ id, data }) => db.customers.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);

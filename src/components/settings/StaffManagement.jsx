@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,11 +44,11 @@ export default function StaffManagement() {
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['all-users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => db.users.list(),
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
+    mutationFn: ({ id, data }) => db.users.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
       setEditingUser(null);
@@ -63,7 +64,7 @@ export default function StaffManagement() {
 
     try {
       // Send invitation email
-      await base44.integrations.Core.SendEmail({
+      await sendEmail({
         to: inviteData.email,
         subject: 'You have been invited to BKK-YGN Cargo Portal',
         body: `

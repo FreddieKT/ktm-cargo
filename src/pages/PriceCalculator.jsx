@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -135,12 +135,12 @@ export default function PriceCalculator() {
   // Fetch pricing from database if available
   const { data: servicePricing = [] } = useQuery({
     queryKey: ['service-pricing'],
-    queryFn: () => base44.entities.ServicePricing.filter({ is_active: true }),
+    queryFn: () => db.servicePricing.filter({ is_active: true }),
   });
 
   const { data: surcharges = [] } = useQuery({
     queryKey: ['surcharges'],
-    queryFn: () => base44.entities.Surcharge.filter({ is_active: true }),
+    queryFn: () => db.surcharges.filter({ is_active: true }),
   });
 
   // Merge database pricing with defaults
@@ -163,9 +163,9 @@ export default function PriceCalculator() {
   const volumetricWeight =
     dimensions.length && dimensions.width && dimensions.height
       ? (parseFloat(dimensions.length) *
-          parseFloat(dimensions.width) *
-          parseFloat(dimensions.height)) /
-        5000
+        parseFloat(dimensions.width) *
+        parseFloat(dimensions.height)) /
+      5000
       : 0;
 
   const actualWeight = parseFloat(weight) || 0;
@@ -339,11 +339,10 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                       <button
                         key={service.value}
                         onClick={() => setServiceType(service.value)}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${
-                          isSelected
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${isSelected
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2">
                           <Icon
@@ -708,11 +707,10 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                     <button
                       key={service.value}
                       onClick={() => setServiceType(service.value)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        isSelected
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-slate-200 hover:border-blue-200'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Icon

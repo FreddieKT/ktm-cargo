@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ShipmentCard from '@/components/shipments/ShipmentCard';
 import ShipmentForm from '@/components/shipments/ShipmentForm';
@@ -51,32 +51,32 @@ export default function Shipments() {
 
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date'),
+    queryFn: () => db.shipments.list('-created_date'),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => db.customers.list(),
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
+    queryFn: () => db.vendors.list(),
   });
 
   const { data: vendorOrders = [] } = useQuery({
     queryKey: ['vendor-orders'],
-    queryFn: () => base44.entities.VendorOrder.list(),
+    queryFn: () => db.vendorOrders.list(),
   });
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list('-created_date'),
+    queryFn: () => db.purchaseOrders.list('-created_date'),
   });
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const shipment = await base44.entities.Shipment.create(data);
+      const shipment = await db.shipments.create(data);
 
       // Update PO allocated weight if linked to a PO
       if (data.vendor_po_id && data.weight_kg) {
@@ -84,7 +84,7 @@ export default function Shipments() {
         if (po) {
           const newAllocated = (po.allocated_weight_kg || 0) + parseFloat(data.weight_kg);
           const remaining = (po.total_weight_kg || 0) - newAllocated;
-          await base44.entities.PurchaseOrder.update(data.vendor_po_id, {
+          await db.purchaseOrders.update(data.vendor_po_id, {
             allocated_weight_kg: newAllocated,
             remaining_weight_kg: Math.max(0, remaining),
           });
@@ -102,7 +102,7 @@ export default function Shipments() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Shipment.update(id, data),
+    mutationFn: ({ id, data }) => db.shipments.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
       queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
@@ -131,7 +131,7 @@ export default function Shipments() {
     const updatedShipment = { ...shipment, status: newStatus };
 
     // Update shipment first
-    await base44.entities.Shipment.update(shipment.id, { status: newStatus });
+    await db.shipments.update(shipment.id, { status: newStatus });
     queryClient.invalidateQueries({ queryKey: ['shipments'] });
 
     // Trigger status change notification
@@ -184,7 +184,7 @@ export default function Shipments() {
     const updatedShipment = { ...shipment, payment_status: newPaymentStatus };
 
     // Update shipment first
-    await base44.entities.Shipment.update(shipment.id, { payment_status: newPaymentStatus });
+    await db.shipments.update(shipment.id, { payment_status: newPaymentStatus });
     queryClient.invalidateQueries({ queryKey: ['shipments'] });
 
     // Trigger payment received notification

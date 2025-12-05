@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { sendEmail } from '@/api/integrations';
 
 const emailTemplates = {
   welcome: {
@@ -174,7 +174,7 @@ export async function sendWelcomeEmailSeries(customer) {
   const welcomeTemplate = emailTemplates.welcome;
 
   try {
-    await base44.integrations.Core.SendEmail({
+    await sendEmail({
       to: customer.email,
       subject: welcomeTemplate.subject,
       body: welcomeTemplate.getBody(customer),
@@ -193,7 +193,7 @@ export async function sendOnboardingEmail(customer, templateKey) {
   if (!template || !customer.email) return false;
 
   try {
-    await base44.integrations.Core.SendEmail({
+    await sendEmail({
       to: customer.email,
       subject: template.subject,
       body: template.getBody(customer),

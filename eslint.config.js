@@ -12,7 +12,13 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        process: 'readonly',
+        jest: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -32,6 +38,27 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'react/prop-types': 'off',
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'react/no-unknown-property': 'off',
+      'react/no-unescaped-entities': 'off',
+    },
+  },
+  {
+    files: [
+      '*.config.js',
+      'test_connection.js',
+      'seed_database.js',
+      'cleanup_database.js',
+      'audit_database.js',
+      'check_columns.js',
+      'diagnose_and_fix.js',
+      'promote_to_admin.js',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
 ];

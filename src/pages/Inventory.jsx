@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,21 +60,21 @@ export default function Inventory() {
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['inventory'],
-    queryFn: () => base44.entities.InventoryItem.list('-created_date'),
+    queryFn: () => db.inventoryItems.list('-created_date'),
   });
 
   const { data: movements = [] } = useQuery({
     queryKey: ['stock-movements'],
-    queryFn: () => base44.entities.StockMovement.list('-created_date', 500),
+    queryFn: () => db.stockMovements.list('-created_date', 500),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 200),
+    queryFn: () => db.shipments.list('-created_date', 200),
   });
 
   const createItemMutation = useMutation({
-    mutationFn: (data) => base44.entities.InventoryItem.create(data),
+    mutationFn: (data) => db.inventoryItems.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       setShowForm(false);
@@ -82,7 +83,7 @@ export default function Inventory() {
   });
 
   const updateItemMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.InventoryItem.update(id, data),
+    mutationFn: ({ id, data }) => db.inventoryItems.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
@@ -91,7 +92,7 @@ export default function Inventory() {
   // Check for low stock and trigger notifications
   const checkLowStockAlerts = async (item, newStock) => {
     if (newStock <= item.reorder_point) {
-      const user = await base44.auth.me().catch(() => null);
+      const user = await auth.me().catch(() => null);
       if (user?.email) {
         triggerLowStockAlert({ ...item, current_stock: newStock }, user.email);
       }
@@ -106,13 +107,13 @@ export default function Inventory() {
           ? (item.current_stock || 0) + data.quantity
           : (item.current_stock || 0) - data.quantity;
 
-      await base44.entities.StockMovement.create({
+      await db.stockMovements.create({
         ...data,
         item_name: item.name,
         stock_after: newStock,
       });
 
-      await base44.entities.InventoryItem.update(item.id, {
+      await db.inventoryItems.update(item.id, {
         current_stock: newStock,
         status: getStockStatus({ ...item, current_stock: newStock }).status,
         ...(data.movement_type === 'in'
@@ -395,13 +396,12 @@ export default function Inventory() {
                 {alerts.map(({ item, analytics }) => (
                   <Card
                     key={item.id}
-                    className={`border-l-4 ${
-                      analytics.urgency === 'critical'
-                        ? 'border-l-rose-500 bg-rose-50'
-                        : analytics.urgency === 'high'
-                          ? 'border-l-amber-500 bg-amber-50'
-                          : 'border-l-blue-500 bg-blue-50'
-                    }`}
+                    className={`border-l-4 ${analytics.urgency === 'critical'
+                      ? 'border-l-rose-500 bg-rose-50'
+                      : analytics.urgency === 'high'
+                        ? 'border-l-amber-500 bg-amber-50'
+                        : 'border-l-blue-500 bg-blue-50'
+                      }`}
                   >
                     <CardContent className="p-4">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,9 +50,9 @@ export default function VendorOrders({ vendor }) {
     queryKey: ['vendor-orders-list', vendor?.id, vendor?.name],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.PurchaseOrder.filter({ vendor_id: vendor.id }, '-created_date');
+        return db.purchaseOrders.filter({ vendor_id: vendor.id }, '-created_date');
       } else if (vendor?.name) {
-        return base44.entities.PurchaseOrder.filter({ vendor_name: vendor.name }, '-created_date');
+        return db.purchaseOrders.filter({ vendor_name: vendor.name }, '-created_date');
       }
       return [];
     },
@@ -61,7 +61,7 @@ export default function VendorOrders({ vendor }) {
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ orderId, status }) => {
-      await base44.entities.PurchaseOrder.update(orderId, {
+      await db.purchaseOrders.update(orderId, {
         status,
         notes: updateNotes
           ? `${selectedOrder?.notes || ''}\n[Vendor] ${updateNotes}`

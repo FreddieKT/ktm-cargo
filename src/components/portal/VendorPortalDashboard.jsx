@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,9 +23,9 @@ export default function VendorPortalDashboard({ vendor }) {
     queryKey: ['vendor-pos', vendor?.id, vendor?.name],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.PurchaseOrder.filter({ vendor_id: vendor.id }, '-created_date');
+        return db.purchaseOrders.filter({ vendor_id: vendor.id }, '-created_date');
       } else if (vendor?.name) {
-        return base44.entities.PurchaseOrder.filter({ vendor_name: vendor.name }, '-created_date');
+        return db.purchaseOrders.filter({ vendor_name: vendor.name }, '-created_date');
       }
       return [];
     },
@@ -36,7 +36,7 @@ export default function VendorPortalDashboard({ vendor }) {
     queryKey: ['vendor-orders', vendor?.id],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.VendorOrder.filter({ vendor_id: vendor.id }, '-created_date');
+        return db.vendorOrders.filter({ vendor_id: vendor.id }, '-created_date');
       }
       return [];
     },
@@ -47,7 +47,7 @@ export default function VendorPortalDashboard({ vendor }) {
     queryKey: ['vendor-payments', vendor?.id],
     queryFn: async () => {
       if (vendor?.id) {
-        return base44.entities.VendorPayment.filter({ vendor_id: vendor.id }, '-created_date');
+        return db.vendorPayments.filter({ vendor_id: vendor.id }, '-created_date');
       }
       return [];
     },

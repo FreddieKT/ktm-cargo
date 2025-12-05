@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,13 +67,13 @@ export default function Invoices() {
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['customer-invoices'],
-    queryFn: () => base44.entities.CustomerInvoice.list('-created_at', 500),
+    queryFn: () => db.customerInvoices.list('-created_at', 500),
   });
 
   const { data: companySettings } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const list = await base44.entities.CompanySettings.list();
+      const list = await db.companySettings.list();
       return list[0] || null;
     },
   });

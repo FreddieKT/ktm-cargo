@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { sendEmail } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,7 +77,7 @@ export default function VendorRegistration() {
     }
 
     try {
-      const invitations = await base44.entities.VendorInvitation.filter({ token });
+      const invitations = await db.vendorInvitations.filter({ token });
 
       if (invitations.length === 0) {
         setError('Invitation not found');
@@ -151,7 +152,7 @@ export default function VendorRegistration() {
     setSubmitting(true);
     try {
       // Create vendor
-      const vendor = await base44.entities.Vendor.create({
+      const vendor = await db.vendors.create({
         ...form,
         status: 'pending',
         onboarding_source: 'invitation',
@@ -159,7 +160,7 @@ export default function VendorRegistration() {
       });
 
       // Update invitation
-      await base44.entities.VendorInvitation.update(invitation.id, {
+      await db.vendorInvitations.update(invitation.id, {
         status: 'completed',
         completed_vendor_id: vendor.id,
       });
@@ -169,7 +170,7 @@ export default function VendorRegistration() {
 
       // Notify admin
       try {
-        await base44.integrations.Core.SendEmail({
+        await sendEmail({
           to: invitation.invited_by,
           subject: `New Vendor Registration: ${form.name}`,
           body: `
@@ -267,13 +268,12 @@ export default function VendorRegistration() {
               <div key={s.id} className="flex items-center">
                 <div className={`flex items-center gap-2 ${idx > 0 ? 'ml-4' : ''}`}>
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isComplete
-                        ? 'bg-emerald-500 text-white'
-                        : isActive
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-200 text-slate-400'
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isComplete
+                      ? 'bg-emerald-500 text-white'
+                      : isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-slate-200 text-slate-400'
+                      }`}
                   >
                     {isComplete ? (
                       <CheckCircle className="w-5 h-5" />

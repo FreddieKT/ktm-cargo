@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,7 @@ export default function InvoiceView({ invoice, onClose }) {
   const { data: companySettings } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const list = await base44.entities.CompanySettings.list();
+      const list = await db.companySettings.list();
       return list[0] || null;
     },
   });

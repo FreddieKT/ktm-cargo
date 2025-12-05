@@ -1,4 +1,6 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
+import { sendEmail } from '@/api/integrations';
 import { AuditActions } from '@/components/audit/AuditService';
 
 /**
@@ -58,14 +60,14 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
 
   if (autoApproveRule) {
     // Auto-approve the PO
-    await base44.entities.PurchaseOrder.update(purchaseOrder.id, {
+    await db.purchaseOrders.update(purchaseOrder.id, {
       status: 'approved',
       approved_date: new Date().toISOString().split('T')[0],
       approved_by: 'System (Auto-Approved)',
     });
 
     // Record history
-    await base44.entities.ApprovalHistory.create({
+    await db.approvalHistory.create({
       po_id: purchaseOrder.id,
       po_number: purchaseOrder.po_number,
       action: 'auto_approved',
@@ -89,12 +91,12 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
 
   if (approverRule && approverRule.approver_email) {
     // Update PO status and send for approval
-    await base44.entities.PurchaseOrder.update(purchaseOrder.id, {
+    await db.purchaseOrders.update(purchaseOrder.id, {
       status: 'pending_approval',
     });
 
     // Record submission
-    await base44.entities.ApprovalHistory.create({
+    await db.approvalHistory.create({
       po_id: purchaseOrder.id,
       po_number: purchaseOrder.po_number,
       action: 'submitted',
@@ -107,7 +109,7 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
     });
 
     // Create notification
-    await base44.entities.Notification.create({
+    await db.notifications.create({
       type: 'system',
       title: 'PO Pending Approval',
       message: `Purchase Order ${purchaseOrder.po_number} for ฿${purchaseOrder.total_amount?.toLocaleString()} requires your approval.`,
@@ -120,7 +122,7 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
 
     // Send email notification
     try {
-      await base44.integrations.Core.SendEmail({
+      await sendEmail({
         to: approverRule.approver_email,
         subject: `[Approval Required] PO ${purchaseOrder.po_number} - ฿${purchaseOrder.total_amount?.toLocaleString()}`,
         body: `
@@ -146,7 +148,7 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
   }
 
   // No matching rules, set to pending approval without specific approver
-  await base44.entities.PurchaseOrder.update(purchaseOrder.id, {
+  await db.purchaseOrders.update(purchaseOrder.id, {
     status: 'pending_approval',
   });
 
@@ -154,21 +156,21 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
 }
 
 export async function approvePO(purchaseOrder, approverEmail, approverName, comments = '') {
-  const user = await base44.auth.me();
+  const user = await auth.me();
 
   // Get current approval level from history
-  const history = await base44.entities.ApprovalHistory.filter({ po_id: purchaseOrder.id });
+  const history = await db.approvalHistory.filter({ po_id: purchaseOrder.id });
   const currentLevel = Math.max(...history.map((h) => h.approval_level || 1), 0);
 
   // Get rules to check if more approvals needed
-  const rules = await base44.entities.ApprovalRule.filter({ is_active: true });
-  const vendors = await base44.entities.Vendor.list();
+  const rules = await db.approvalRules.filter({ is_active: true });
+  const vendors = await db.vendors.list();
   const matchingRules = await evaluatePOForApproval(purchaseOrder, rules, vendors);
 
   const nextLevelRules = matchingRules.filter((r) => (r.approval_level || 1) > currentLevel);
 
   // Record approval
-  await base44.entities.ApprovalHistory.create({
+  await db.approvalHistory.create({
     po_id: purchaseOrder.id,
     po_number: purchaseOrder.po_number,
     action: 'approved',
@@ -183,7 +185,7 @@ export async function approvePO(purchaseOrder, approverEmail, approverName, comm
     // Escalate to next level
     const nextApprover = nextLevelRules[0];
 
-    await base44.entities.ApprovalHistory.create({
+    await db.approvalHistory.create({
       po_id: purchaseOrder.id,
       po_number: purchaseOrder.po_number,
       action: 'escalated',
@@ -196,7 +198,7 @@ export async function approvePO(purchaseOrder, approverEmail, approverName, comm
     });
 
     // Notify next approver
-    await base44.entities.Notification.create({
+    await db.notifications.create({
       type: 'system',
       title: 'PO Escalated for Approval',
       message: `PO ${purchaseOrder.po_number} has been escalated and requires your approval.`,
@@ -211,7 +213,7 @@ export async function approvePO(purchaseOrder, approverEmail, approverName, comm
   }
 
   // Final approval
-  await base44.entities.PurchaseOrder.update(purchaseOrder.id, {
+  await db.purchaseOrders.update(purchaseOrder.id, {
     status: 'approved',
     approved_date: new Date().toISOString().split('T')[0],
     approved_by: approverName || user.full_name,
@@ -224,7 +226,7 @@ export async function approvePO(purchaseOrder, approverEmail, approverName, comm
 }
 
 export async function rejectPO(purchaseOrder, rejecterEmail, rejecterName, comments = '') {
-  await base44.entities.ApprovalHistory.create({
+  await db.approvalHistory.create({
     po_id: purchaseOrder.id,
     po_number: purchaseOrder.po_number,
     action: 'rejected',
@@ -234,7 +236,7 @@ export async function rejectPO(purchaseOrder, rejecterEmail, rejecterName, comme
     comments,
   });
 
-  await base44.entities.PurchaseOrder.update(purchaseOrder.id, {
+  await db.purchaseOrders.update(purchaseOrder.id, {
     status: 'cancelled',
   });
 
@@ -245,12 +247,12 @@ export async function rejectPO(purchaseOrder, rejecterEmail, rejecterName, comme
 }
 
 export async function getApprovalHistory(poId) {
-  return await base44.entities.ApprovalHistory.filter({ po_id: poId }, '-created_date');
+  return await db.approvalHistory.filter({ po_id: poId }, '-created_date');
 }
 
 export async function getPendingApprovals(approverEmail) {
-  const allPOs = await base44.entities.PurchaseOrder.filter({ status: 'pending_approval' });
-  const allHistory = await base44.entities.ApprovalHistory.list();
+  const allPOs = await db.purchaseOrders.filter({ status: 'pending_approval' });
+  const allHistory = await db.approvalHistory.list();
 
   // Filter POs that are pending this approver
   return allPOs.filter((po) => {

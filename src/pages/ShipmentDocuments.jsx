@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -92,13 +92,13 @@ export default function ShipmentDocuments() {
 
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 200),
+    queryFn: () => db.shipments.list('-created_date', 200),
   });
 
   const { data: companySettings } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const list = await base44.entities.CompanySettings.list();
+      const list = await db.companySettings.list();
       return list[0] || null;
     },
   });
@@ -365,11 +365,10 @@ export default function ShipmentDocuments() {
                     return (
                       <div
                         key={shipment.id}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-blue-200'
+                          }`}
                       >
                         <div className="flex items-start gap-3">
                           <Checkbox
@@ -470,13 +469,12 @@ export default function ShipmentDocuments() {
                     return (
                       <Card
                         key={doc.id}
-                        className={`border-2 cursor-pointer transition-all ${
-                          isActive
-                            ? 'border-blue-500 bg-blue-50'
-                            : isGenerated
-                              ? 'border-emerald-300 bg-emerald-50'
-                              : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                        className={`border-2 cursor-pointer transition-all ${isActive
+                          ? 'border-blue-500 bg-blue-50'
+                          : isGenerated
+                            ? 'border-emerald-300 bg-emerald-50'
+                            : 'border-slate-200 hover:border-blue-200'
+                          }`}
                         onClick={() => setActiveDoc(doc.id)}
                       >
                         <CardContent className="p-3">
@@ -589,5 +587,5 @@ function DocumentPreview({ type, shipment, companySettings }) {
     default:
       return null;
   }
-  return templates[docType] || '';
+
 }

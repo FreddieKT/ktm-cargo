@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,20 +18,6 @@ import { Building2, User, Phone, Mail, CreditCard, Save, Loader2, FileText } fro
 import { toast } from 'sonner';
 
 export default function VendorProfile({ vendor, onUpdate }) {
-  if (!vendor?.id) {
-    return (
-      <div className="max-w-3xl mx-auto">
-        <Card className="border-0 shadow-lg">
-          <CardContent className="p-8 text-center">
-            <Building2 className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-            <h3 className="font-medium text-slate-900 mb-2">Profile Not Available</h3>
-            <p className="text-slate-500">Your vendor profile is being set up.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const [form, setForm] = useState({
     name: vendor?.name || '',
     vendor_type: vendor?.vendor_type || 'supplier',
@@ -48,7 +34,7 @@ export default function VendorProfile({ vendor, onUpdate }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Vendor.update(vendor.id, data),
+    mutationFn: (data) => db.vendors.update(vendor.id, data),
     onSuccess: () => {
       toast.success('Profile updated successfully');
       onUpdate?.();
@@ -66,6 +52,20 @@ export default function VendorProfile({ vendor, onUpdate }) {
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
+
+  if (!vendor?.id) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-8 text-center">
+            <Building2 className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+            <h3 className="font-medium text-slate-900 mb-2">Profile Not Available</h3>
+            <p className="text-slate-500">Your vendor profile is being set up.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">

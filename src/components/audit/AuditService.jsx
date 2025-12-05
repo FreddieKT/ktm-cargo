@@ -1,4 +1,5 @@
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
 
 /**
  * Centralized Audit Trail Service
@@ -16,7 +17,7 @@ export async function logAuditEvent({
 }) {
   let user = null;
   try {
-    user = await base44.auth.me();
+    user = await auth.me();
   } catch (e) {
     // User not logged in
   }
@@ -34,7 +35,7 @@ export async function logAuditEvent({
     new_value: newValue ? JSON.stringify(newValue) : '',
   };
 
-  return await base44.entities.AuditLog.create(auditEntry);
+  return await db.auditLogs.create(auditEntry);
 }
 
 // Convenience functions for common actions

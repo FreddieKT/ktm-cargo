@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -97,31 +97,31 @@ export default function Vendors() {
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list('-created_date'),
+    queryFn: () => db.vendors.list('-created_date'),
   });
 
   const { data: vendorOrders = [] } = useQuery({
     queryKey: ['vendor-orders'],
-    queryFn: () => base44.entities.VendorOrder.list('-created_date', 500),
+    queryFn: () => db.vendorOrders.list('-created_date', 500),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
-    queryFn: () => base44.entities.Shipment.list('-created_date', 100),
+    queryFn: () => db.shipments.list('-created_date', 100),
   });
 
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory'],
-    queryFn: () => base44.entities.InventoryItem.list(),
+    queryFn: () => db.inventoryItems.list(),
   });
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
-    queryFn: () => base44.entities.VendorPayment.list('-created_date'),
+    queryFn: () => db.vendorPayments.list('-created_date'),
   });
 
   const createVendorMutation = useMutation({
-    mutationFn: (data) => base44.entities.Vendor.create(data),
+    mutationFn: (data) => db.vendors.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowForm(false);
@@ -130,7 +130,7 @@ export default function Vendors() {
   });
 
   const updateVendorMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Vendor.update(id, data),
+    mutationFn: ({ id, data }) => db.vendors.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowForm(false);
@@ -140,7 +140,7 @@ export default function Vendors() {
   });
 
   const createOrderMutation = useMutation({
-    mutationFn: (data) => base44.entities.VendorOrder.create(data),
+    mutationFn: (data) => db.vendorOrders.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
       setShowOrderForm(false);
@@ -149,7 +149,7 @@ export default function Vendors() {
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.VendorOrder.update(id, data),
+    mutationFn: ({ id, data }) => db.vendorOrders.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
     },

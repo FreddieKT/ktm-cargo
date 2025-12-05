@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,7 +41,7 @@ export default function ClientNotificationBell({ user, clientData }) {
     queryKey: ['client-notifications', email],
     queryFn: async () => {
       if (!email) return [];
-      return base44.entities.Notification.filter(
+      return db.notifications.filter(
         { recipient_email: email, status: 'unread' },
         '-created_date',
         20
@@ -52,7 +52,7 @@ export default function ClientNotificationBell({ user, clientData }) {
   });
 
   const markReadMutation = useMutation({
-    mutationFn: (id) => base44.entities.Notification.update(id, { status: 'read' }),
+    mutationFn: (id) => db.notifications.update(id, { status: 'read' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['customer-notifications'] });
@@ -62,7 +62,7 @@ export default function ClientNotificationBell({ user, clientData }) {
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       await Promise.all(
-        notifications.map((n) => base44.entities.Notification.update(n.id, { status: 'read' }))
+        notifications.map((n) => db.notifications.update(n.id, { status: 'read' }))
       );
     },
     onSuccess: () => {

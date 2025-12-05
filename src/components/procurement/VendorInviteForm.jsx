@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
+import { sendEmail } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,11 +49,13 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
       // Get current user
       let currentUser = null;
       try {
-        currentUser = await base44.auth.me();
-      } catch (e) {}
+        currentUser = await auth.me();
+      } catch (e) {
+        // Ignore
+      }
 
       // Create invitation record
-      await base44.entities.VendorInvitation.create({
+      await db.vendorInvitations.create({
         email: data.email,
         company_name: data.companyName,
         token,
@@ -66,7 +70,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
       setInviteLink(link);
 
       // Send invitation email
-      await base44.integrations.Core.SendEmail({
+      await sendEmail({
         to: data.email,
         subject: 'You have been invited to register as a vendor',
         body: `

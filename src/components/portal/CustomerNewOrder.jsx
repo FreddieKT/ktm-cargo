@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/api/db';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -76,7 +76,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
       const trackingNumber = 'TRK' + Date.now().toString(36).toUpperCase();
       const estimatedDelivery = addDays(new Date(), selectedService?.value === 'express' ? 2 : 5);
 
-      const shipment = await base44.entities.Shipment.create({
+      const shipment = await db.shipments.create({
         ...data,
         customer_id: customer?.id || '',
         customer_name: customer?.name || user?.full_name || 'Customer',
@@ -95,7 +95,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
       // Update customer stats if customer exists
       if (customer?.id) {
         try {
-          await base44.entities.Customer.update(customer.id, {
+          await db.customers.update(customer.id, {
             total_shipments: (customer.total_shipments || 0) + 1,
             total_spent: (customer.total_spent || 0) + totalAmount,
           });
@@ -135,9 +135,8 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
-              }`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
+                }`}
             >
               {step > s ? <CheckCircle className="w-5 h-5" /> : s}
             </div>
@@ -167,11 +166,10 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   <button
                     key={service.value}
                     onClick={() => updateForm('service_type', service.value)}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      isSelected
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-slate-200 hover:border-blue-200'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
