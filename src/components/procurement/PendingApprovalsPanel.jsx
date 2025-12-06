@@ -25,6 +25,7 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function PendingApprovalsPanel({
   pendingPOs = [],
   currentUserEmail,

@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { campaignSchema } from '@/lib/schemas';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -79,39 +83,52 @@ Code: {code}`,
 };
 
 export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel }) {
-  const [form, setForm] = useState({
-    name: '',
-    description: '',
-    target_segment: 'all',
-    campaign_type: 'promotion',
-    discount_percentage: 10,
-    discount_code: '',
-    message_template: messageTemplates.promotion,
-    channel: 'all',
-    start_date: '',
-    end_date: '',
-    budget: 0,
-    ...campaign,
+  const { handleError, handleValidationError } = useErrorHandler();
+  
+  const form = useForm({
+    resolver: zodResolver(campaignSchema),
+    defaultValues: {
+      name: campaign?.name || '',
+      description: campaign?.description || '',
+      target_segment: campaign?.target_segment || 'all',
+      campaign_type: campaign?.campaign_type || 'promotion',
+      discount_percentage: campaign?.discount_percentage || 10,
+      discount_code: campaign?.discount_code || '',
+      message_template: campaign?.message_template || messageTemplates.promotion,
+      channel: campaign?.channel || 'all',
+      start_date: campaign?.start_date || '',
+      end_date: campaign?.end_date || '',
+      budget: campaign?.budget || 0,
+    },
   });
 
   const handleTypeChange = (type) => {
-    setForm({
-      ...form,
-      campaign_type: type,
-      message_template: messageTemplates[type] || form.message_template,
-    });
+    form.setValue('campaign_type', type);
+    form.setValue('message_template', messageTemplates[type] || form.getValues('message_template'));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({
-      ...form,
-      target_count: targetCount,
-      discount_code: form.discount_code || `PROMO${Date.now().toString(36).toUpperCase()}`,
-    });
+  const handleFormSubmit = async (data) => {
+    try {
+      const validatedData = campaignSchema.parse({
+        ...data,
+        target_count: targetCount,
+        discount_code: data.discount_code || `PROMO${Date.now().toString(36).toUpperCase()}`,
+      });
+      await onSubmit(validatedData);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Campaign');
+      } else {
+        handleError(error, 'Failed to submit campaign', {
+          component: 'CampaignForm',
+          action: 'submit',
+        });
+      }
+    }
   };
 
-  const selectedSegment = segmentOptions.find((s) => s.value === form.target_segment);
+  const watchedValues = form.watch();
+  const selectedSegment = segmentOptions.find((s) => s.value === watchedValues.target_segment);
 
   return (
     <Card className="border-0 shadow-xl max-h-[90vh] overflow-y-auto">
@@ -125,25 +142,28 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
         </Button>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Campaign Name & Description */}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Campaign Name *</Label>
               <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                {...form.register('name')}
                 placeholder="e.g., New Year Promotion"
-                required
               />
+              {form.formState.errors.name && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
               <Input
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                {...form.register('description')}
                 placeholder="Brief description of the campaign"
               />
+              {form.formState.errors.description && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.description.message}</p>
+              )}
             </div>
           </div>
 
@@ -155,9 +175,9 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                 <button
                   key={segment.value}
                   type="button"
-                  onClick={() => setForm({ ...form, target_segment: segment.value })}
+                  onClick={() => form.setValue('target_segment', segment.value)}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
-                    form.target_segment === segment.value
+                    watchedValues.target_segment === segment.value
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-slate-200 hover:border-blue-200'
                   }`}
@@ -189,7 +209,7 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                     type="button"
                     onClick={() => handleTypeChange(type.value)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                      form.campaign_type === type.value
+                      watchedValues.campaign_type === type.value
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-slate-200 hover:border-blue-200'
                     }`}
@@ -203,13 +223,13 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
           </div>
 
           {/* Discount Settings */}
-          {(form.campaign_type === 'discount' || form.campaign_type === 'loyalty') && (
+          {(watchedValues.campaign_type === 'discount' || watchedValues.campaign_type === 'loyalty') && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Discount Percentage</Label>
                 <Select
-                  value={form.discount_percentage.toString()}
-                  onValueChange={(v) => setForm({ ...form, discount_percentage: parseInt(v) })}
+                  value={watchedValues.discount_percentage?.toString() || '10'}
+                  onValueChange={(v) => form.setValue('discount_percentage', parseInt(v))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -222,16 +242,22 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                     <SelectItem value="25">25%</SelectItem>
                   </SelectContent>
                 </Select>
+                {form.formState.errors.discount_percentage && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.discount_percentage.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Discount Code</Label>
                 <Input
-                  value={form.discount_code}
-                  onChange={(e) =>
-                    setForm({ ...form, discount_code: e.target.value.toUpperCase() })
-                  }
+                  {...form.register('discount_code')}
                   placeholder="Auto-generated if empty"
+                  onChange={(e) => {
+                    form.setValue('discount_code', e.target.value.toUpperCase());
+                  }}
                 />
+                {form.formState.errors.discount_code && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.discount_code.message}</p>
+                )}
               </div>
             </div>
           )}
@@ -239,7 +265,10 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
           {/* Channel */}
           <div className="space-y-2">
             <Label>Distribution Channel</Label>
-            <Select value={form.channel} onValueChange={(v) => setForm({ ...form, channel: v })}>
+            <Select 
+              value={watchedValues.channel || 'all'} 
+              onValueChange={(v) => form.setValue('channel', v)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -251,6 +280,9 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                 ))}
               </SelectContent>
             </Select>
+            {form.formState.errors.channel && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.channel.message}</p>
+            )}
           </div>
 
           {/* Date Range */}
@@ -259,17 +291,21 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
               <Label>Start Date</Label>
               <Input
                 type="date"
-                value={form.start_date}
-                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                {...form.register('start_date')}
               />
+              {form.formState.errors.start_date && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.start_date.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>End Date</Label>
               <Input
                 type="date"
-                value={form.end_date}
-                onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                {...form.register('end_date')}
               />
+              {form.formState.errors.end_date && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.end_date.message}</p>
+              )}
             </div>
           </div>
 
@@ -277,11 +313,13 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
           <div className="space-y-2">
             <Label>Message Template</Label>
             <Textarea
-              value={form.message_template}
-              onChange={(e) => setForm({ ...form, message_template: e.target.value })}
+              {...form.register('message_template')}
               rows={6}
               className="font-mono text-sm"
             />
+            {form.formState.errors.message_template && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.message_template.message}</p>
+            )}
             <p className="text-xs text-slate-500">
               Use {'{discount}'}, {'{code}'}, {'{end_date}'} as placeholders
             </p>
@@ -292,10 +330,14 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
             <Label>Budget (THB)</Label>
             <Input
               type="number"
-              value={form.budget}
-              onChange={(e) => setForm({ ...form, budget: parseFloat(e.target.value) || 0 })}
+              {...form.register('budget', {
+                valueAsNumber: true,
+              })}
               placeholder="Optional"
             />
+            {form.formState.errors.budget && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.budget.message}</p>
+            )}
           </div>
 
           {/* Actions */}

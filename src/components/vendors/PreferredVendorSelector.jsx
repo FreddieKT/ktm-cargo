@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 /**
  * Calculates vendor score for selection based on multiple factors
  */

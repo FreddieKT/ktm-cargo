@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/select';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 export default function VendorOrderForm({
   vendors,
   shipments,

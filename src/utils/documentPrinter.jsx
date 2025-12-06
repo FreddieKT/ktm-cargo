@@ -41,6 +41,9 @@ export function printDocument(Component, props) {
     </html>
   `;
 
+  // NOTE: document.write() is used here intentionally for print functionality.
+  // This is safe because we're writing to a new window (printWindow) that we control,
+  // not the main document. This is a standard pattern for print dialogs.
   printWindow.document.write(html);
   printWindow.document.close();
 

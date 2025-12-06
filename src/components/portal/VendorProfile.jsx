@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { vendorSchema } from '@/lib/schemas';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,39 +22,54 @@ import { Building2, User, Phone, Mail, CreditCard, Save, Loader2, FileText } fro
 import { toast } from 'sonner';
 
 export default function VendorProfile({ vendor, onUpdate }) {
-  const [form, setForm] = useState({
-    name: vendor?.name || '',
-    vendor_type: vendor?.vendor_type || 'supplier',
-    contact_name: vendor?.contact_name || '',
-    phone: vendor?.phone || '',
-    email: vendor?.email || '',
-    address: vendor?.address || '',
-    tax_id: vendor?.tax_id || '',
-    bank_name: vendor?.bank_name || '',
-    bank_account_number: vendor?.bank_account_number || '',
-    bank_account_name: vendor?.bank_account_name || '',
-    services: vendor?.services || '',
-    payment_terms: vendor?.payment_terms || 'net_30',
+  const { handleError, handleValidationError } = useErrorHandler();
+  
+  const form = useForm({
+    resolver: zodResolver(vendorSchema.partial()),
+    defaultValues: {
+      name: vendor?.name || '',
+      vendor_type: vendor?.vendor_type || 'supplier',
+      contact_name: vendor?.contact_name || '',
+      phone: vendor?.phone || '',
+      email: vendor?.email || '',
+      address: vendor?.address || '',
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => db.vendors.update(vendor.id, data),
+    mutationFn: async (data) => {
+      const validatedData = vendorSchema.partial().parse(data);
+      return db.vendors.update(vendor.id, validatedData);
+    },
     onSuccess: () => {
       toast.success('Profile updated successfully');
       onUpdate?.();
     },
-    onError: () => {
-      toast.error('Failed to update profile');
+    onError: (error) => {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Vendor Profile');
+      } else {
+        handleError(error, 'Failed to update profile', {
+          component: 'VendorProfile',
+          action: 'update',
+        });
+      }
     },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateMutation.mutate(form);
-  };
-
-  const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const handleFormSubmit = async (data) => {
+    try {
+      updateMutation.mutate(data);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Vendor Profile');
+      } else {
+        handleError(error, 'Failed to submit form', {
+          component: 'VendorProfile',
+          action: 'submit',
+        });
+      }
+    }
   };
 
   if (!vendor?.id) {
@@ -96,7 +115,7 @@ export default function VendorProfile({ vendor, onUpdate }) {
         </CardContent>
       </Card>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)}>
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -109,16 +128,18 @@ export default function VendorProfile({ vendor, onUpdate }) {
               <div className="space-y-2">
                 <Label>Company Name</Label>
                 <Input
-                  value={form.name}
-                  onChange={(e) => updateField('name', e.target.value)}
+                  {...form.register('name')}
                   placeholder="Company name"
                 />
+                {form.formState.errors.name && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Vendor Type</Label>
                 <Select
-                  value={form.vendor_type}
-                  onValueChange={(v) => updateField('vendor_type', v)}
+                  value={form.watch('vendor_type') || 'supplier'}
+                  onValueChange={(v) => form.setValue('vendor_type', v)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -131,19 +152,27 @@ export default function VendorProfile({ vendor, onUpdate }) {
                     <SelectItem value="warehouse">Warehouse</SelectItem>
                   </SelectContent>
                 </Select>
+                {form.formState.errors.vendor_type && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.vendor_type.message}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
               <Label>Business Address</Label>
               <Textarea
-                value={form.address}
-                onChange={(e) => updateField('address', e.target.value)}
+                {...form.register('address')}
                 rows={2}
               />
+              {form.formState.errors.address && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.address.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Tax ID</Label>
-              <Input value={form.tax_id} onChange={(e) => updateField('tax_id', e.target.value)} />
+              <Input {...form.register('tax_id')} />
+              {form.formState.errors.tax_id && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.tax_id.message}</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -159,9 +188,11 @@ export default function VendorProfile({ vendor, onUpdate }) {
             <div className="space-y-2">
               <Label>Contact Person</Label>
               <Input
-                value={form.contact_name}
-                onChange={(e) => updateField('contact_name', e.target.value)}
+                {...form.register('contact_name')}
               />
+              {form.formState.errors.contact_name && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.contact_name.message}</p>
+              )}
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -169,7 +200,10 @@ export default function VendorProfile({ vendor, onUpdate }) {
                   <Phone className="w-4 h-4 text-slate-400" />
                   Phone
                 </Label>
-                <Input value={form.phone} onChange={(e) => updateField('phone', e.target.value)} />
+                <Input {...form.register('phone')} />
+                {form.formState.errors.phone && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.phone.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
@@ -178,9 +212,11 @@ export default function VendorProfile({ vendor, onUpdate }) {
                 </Label>
                 <Input
                   type="email"
-                  value={form.email}
-                  onChange={(e) => updateField('email', e.target.value)}
+                  {...form.register('email')}
                 />
+                {form.formState.errors.email && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.email.message}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -197,31 +233,37 @@ export default function VendorProfile({ vendor, onUpdate }) {
             <div className="space-y-2">
               <Label>Bank Name</Label>
               <Input
-                value={form.bank_name}
-                onChange={(e) => updateField('bank_name', e.target.value)}
+                {...form.register('bank_name')}
               />
+              {form.formState.errors.bank_name && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.bank_name.message}</p>
+              )}
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Account Number</Label>
                 <Input
-                  value={form.bank_account_number}
-                  onChange={(e) => updateField('bank_account_number', e.target.value)}
+                  {...form.register('bank_account_number')}
                 />
+                {form.formState.errors.bank_account_number && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.bank_account_number.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Account Name</Label>
                 <Input
-                  value={form.bank_account_name}
-                  onChange={(e) => updateField('bank_account_name', e.target.value)}
+                  {...form.register('bank_account_name')}
                 />
+                {form.formState.errors.bank_account_name && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.bank_account_name.message}</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
               <Label>Payment Terms</Label>
               <Select
-                value={form.payment_terms}
-                onValueChange={(v) => updateField('payment_terms', v)}
+                value={form.watch('payment_terms') || 'net_30'}
+                onValueChange={(v) => form.setValue('payment_terms', v)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -233,6 +275,9 @@ export default function VendorProfile({ vendor, onUpdate }) {
                   <SelectItem value="net_60">Net 60 Days</SelectItem>
                 </SelectContent>
               </Select>
+              {form.formState.errors.payment_terms && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.payment_terms.message}</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -246,10 +291,12 @@ export default function VendorProfile({ vendor, onUpdate }) {
           </CardHeader>
           <CardContent>
             <Textarea
-              value={form.services}
-              onChange={(e) => updateField('services', e.target.value)}
+              {...form.register('services')}
               rows={3}
             />
+            {form.formState.errors.services && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.services.message}</p>
+            )}
           </CardContent>
         </Card>
 

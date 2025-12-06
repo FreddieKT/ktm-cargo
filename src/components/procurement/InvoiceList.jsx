@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,7 @@ const STATUS_CONFIG = {
 };
 
 export default function InvoiceList({ invoices = [], onMarkPaid }) {
+  const { handleError } = useErrorHandler();
   const [search, setSearch] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [payConfirm, setPayConfirm] = useState({ open: false, invoice: null });
@@ -272,9 +274,16 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => {
-                onMarkPaid?.(payConfirm.invoice?.id);
-                setPayConfirm({ open: false, invoice: null });
+              onClick={async () => {
+                try {
+                  await onMarkPaid?.(payConfirm.invoice?.id);
+                  setPayConfirm({ open: false, invoice: null });
+                } catch (error) {
+                  handleError(error, 'Failed to mark invoice as paid', {
+                    component: 'InvoiceList',
+                    action: 'markPaid',
+                  });
+                }
               }}
             >
               Mark as Paid
@@ -287,6 +296,7 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
 }
 
 function InvoiceDetail({ invoice, onMarkPaid, onClose }) {
+  const { handleError } = useErrorHandler();
   const config = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.pending;
   let items = [];
   try {
@@ -375,9 +385,16 @@ function InvoiceDetail({ invoice, onMarkPaid, onClose }) {
       {['pending', 'overdue'].includes(invoice.status) && (
         <Button
           className="w-full bg-emerald-600 hover:bg-emerald-700"
-          onClick={() => {
-            onMarkPaid?.(invoice.id);
-            onClose?.();
+          onClick={async () => {
+            try {
+              await onMarkPaid?.(invoice.id);
+              onClose?.();
+            } catch (error) {
+              handleError(error, 'Failed to mark invoice as paid', {
+                component: 'InvoiceDetail',
+                action: 'markPaid',
+              });
+            }
           }}
         >
           <CreditCard className="w-4 h-4 mr-2" />

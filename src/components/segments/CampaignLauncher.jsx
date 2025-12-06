@@ -47,7 +47,9 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
 
     try {
       // Create campaign record
-      const campaign = await db.campaigns.create({
+      // Validate campaign data before creating
+      const { campaignSchema } = await import('@/lib/schemas');
+      const campaignData = {
         name: form.name,
         description: form.description,
         campaign_type: form.campaign_type,
@@ -57,10 +59,9 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
         message_template: form.message_template,
         channel: form.channel,
         status: 'active',
-        target_count: targetCustomers.length,
-        sent_count: 0,
-        start_date: new Date().toISOString().split('T')[0],
-      });
+      };
+      const validatedData = campaignSchema.parse(campaignData);
+      const campaign = await db.campaigns.create(validatedData);
 
       // Send emails
       for (const customer of customersWithEmail) {

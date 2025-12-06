@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +27,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { uploadFile } from '@/api/integrations';
+import { uploadFile } from '@/api/integrations/storage';
 import {
   FileText,
   Plus,
@@ -50,6 +51,8 @@ import {
 import { differenceInDays, format, addDays } from 'date-fns';
 import { toast } from 'sonner';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 const STATUS_CONFIG = {
   draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800', icon: FileText },
   active: { label: 'Active', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
@@ -184,42 +187,62 @@ export default function ContractManager({
 
     setUploading(true);
     try {
-      const { file_url } = await uploadFile({ file });
+      const { url, file_url } = await uploadFile(file, 'documents', 'contracts');
       setFormData({
         ...formData,
-        document_url: file_url,
+        document_url: url || file_url,
         document_name: file.name,
       });
       toast.success('Document uploaded');
     } catch (error) {
-      toast.error('Failed to upload document');
+      handleError(error, 'Failed to upload document', {
+        component: 'ContractManager',
+        action: 'fileUpload',
+      });
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const contractNumber =
-      editingContract?.contract_number || `CON-${Date.now().toString(36).toUpperCase()}`;
-    const data = {
-      ...formData,
-      contract_number: contractNumber,
-      status: formData.status || 'active',
-      agreed_rate_per_kg: parseFloat(formData.agreed_rate_per_kg) || 0,
-      volume_commitment_kg: parseFloat(formData.volume_commitment_kg) || 0,
-      sla_on_time_target: parseFloat(formData.sla_on_time_target) || 95,
-      sla_quality_target: parseFloat(formData.sla_quality_target) || 99,
-      total_value: parseFloat(formData.total_value) || 0,
-    };
+  const { handleError, handleValidationError } = useErrorHandler();
 
-    if (editingContract) {
-      onUpdate?.(editingContract.id, data);
-    } else {
-      onAdd?.(data);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const { vendorContractSchema } = await import('@/lib/schemas');
+      const contractNumber =
+        editingContract?.contract_number || `CON-${Date.now().toString(36).toUpperCase()}`;
+      const data = {
+        ...formData,
+        contract_number: contractNumber,
+        status: formData.status || 'active',
+        agreed_rate_per_kg: parseFloat(formData.agreed_rate_per_kg) || 0,
+        volume_commitment_kg: parseFloat(formData.volume_commitment_kg) || 0,
+        sla_on_time_target: parseFloat(formData.sla_on_time_target) || 95,
+        sla_quality_target: parseFloat(formData.sla_quality_target) || 99,
+        total_value: parseFloat(formData.total_value) || 0,
+      };
+
+      // Validate data
+      const validatedData = vendorContractSchema.partial().parse(data);
+
+      if (editingContract) {
+        await onUpdate?.(editingContract.id, validatedData);
+      } else {
+        await onAdd?.(validatedData);
+      }
+      setShowForm(false);
+      toast.success(editingContract ? 'Contract updated' : 'Contract created');
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Contract');
+      } else {
+        handleError(error, 'Failed to save contract', {
+          component: 'ContractManager',
+          action: 'submit',
+        });
+      }
     }
-    setShowForm(false);
-    toast.success(editingContract ? 'Contract updated' : 'Contract created');
   };
 
   const ContractCard = ({ contract }) => {
@@ -295,9 +318,16 @@ export default function ContractManager({
             size="sm"
             variant="outline"
             className="flex-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditConfirm({ open: true, contract });
+            onClick={async (e) => {
+              try {
+                e.stopPropagation();
+                setEditConfirm({ open: true, contract });
+              } catch (error) {
+                handleError(error, 'Failed to open edit dialog', {
+                  component: 'ContractManager',
+                  action: 'openEdit',
+                });
+              }
             }}
           >
             <Pencil className="w-3 h-3 mr-1" /> Edit
@@ -306,9 +336,16 @@ export default function ContractManager({
             size="sm"
             variant="outline"
             className="text-rose-600 hover:bg-rose-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteConfirm({ open: true, contract });
+            onClick={async (e) => {
+              try {
+                e.stopPropagation();
+                setDeleteConfirm({ open: true, contract });
+              } catch (error) {
+                handleError(error, 'Failed to open delete dialog', {
+                  component: 'ContractManager',
+                  action: 'openDelete',
+                });
+              }
             }}
           >
             <Trash2 className="w-3 h-3" />
@@ -950,9 +987,16 @@ export default function ContractManager({
                     Close
                   </Button>
                   <Button
-                    onClick={() => {
-                      openForm(selectedContract);
-                      setSelectedContract(null);
+                    onClick={async () => {
+                      try {
+                        openForm(selectedContract);
+                        setSelectedContract(null);
+                      } catch (error) {
+                        handleError(error, 'Failed to open edit form', {
+                          component: 'ContractManager',
+                          action: 'openEditFromDetail',
+                        });
+                      }
                     }}
                     className="flex-1"
                   >
@@ -987,9 +1031,16 @@ export default function ContractManager({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-rose-600 hover:bg-rose-700"
-              onClick={() => {
-                onDelete?.(deleteConfirm.contract?.id);
-                setDeleteConfirm({ open: false, contract: null });
+              onClick={async () => {
+                try {
+                  await onDelete?.(deleteConfirm.contract?.id);
+                  setDeleteConfirm({ open: false, contract: null });
+                } catch (error) {
+                  handleError(error, 'Failed to delete contract', {
+                    component: 'ContractManager',
+                    action: 'delete',
+                  });
+                }
               }}
             >
               Delete
@@ -1020,9 +1071,16 @@ export default function ContractManager({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => {
-                openForm(editConfirm.contract);
-                setEditConfirm({ open: false, contract: null });
+              onClick={async () => {
+                try {
+                  openForm(editConfirm.contract);
+                  setEditConfirm({ open: false, contract: null });
+                } catch (error) {
+                  handleError(error, 'Failed to open edit form', {
+                    component: 'ContractManager',
+                    action: 'openEditForm',
+                  });
+                }
               }}
             >
               Edit Contract

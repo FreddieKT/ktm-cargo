@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -58,6 +59,7 @@ const priorityColors = {
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
@@ -76,10 +78,17 @@ export default function NotificationBell() {
   });
 
   const markAllRead = async () => {
-    for (const n of notifications) {
-      await db.notifications.update(n.id, { status: 'read' });
+    try {
+      for (const n of notifications) {
+        await db.notifications.update(n.id, { status: 'read' });
+      }
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      handleError(error, 'Failed to mark all notifications as read', {
+        component: 'NotificationBell',
+        action: 'markAllRead',
+      });
     }
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
   };
 
   const getLink = (notification) => {
@@ -121,7 +130,13 @@ export default function NotificationBell() {
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllRead} className="text-xs">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={markAllRead} 
+              className="text-xs"
+              disabled={markReadMutation.isPending}
+            >
               Mark all read
             </Button>
           )}
@@ -157,9 +172,16 @@ export default function NotificationBell() {
                           {link && (
                             <Link
                               to={link}
-                              onClick={() => {
-                                markReadMutation.mutate(notification.id);
-                                setOpen(false);
+                              onClick={async () => {
+                                try {
+                                  markReadMutation.mutate(notification.id);
+                                  setOpen(false);
+                                } catch (error) {
+                                  handleError(error, 'Failed to mark notification as read', {
+                                    component: 'NotificationBell',
+                                    action: 'markRead',
+                                  });
+                                }
                               }}
                             >
                               <Button variant="ghost" size="sm" className="h-6 text-xs">

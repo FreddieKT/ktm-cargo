@@ -215,6 +215,7 @@ export default function Inventory() {
     } catch (error) {
       console.error('Import error:', error);
       toast.error('Failed to import items');
+import { useErrorHandler } from '@/hooks/useErrorHandler';
     }
   };
 

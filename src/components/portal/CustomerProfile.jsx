@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { customerSchema } from '@/lib/schemas';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,34 +14,56 @@ import { User, Phone, Mail, MapPin, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CustomerProfile({ customer, onUpdate }) {
-  const [form, setForm] = useState({
-    name: customer?.name || '',
-    phone: customer?.phone || '',
-    email: customer?.email || '',
-    address_bangkok: customer?.address_bangkok || '',
-    address_yangon: customer?.address_yangon || '',
+  const { handleError, handleValidationError } = useErrorHandler();
+  
+  const form = useForm({
+    resolver: zodResolver(customerSchema.partial()),
+    defaultValues: {
+      name: customer?.name || '',
+      phone: customer?.phone || '',
+      email: customer?.email || '',
+      address_bangkok: customer?.address_bangkok || '',
+      address_yangon: customer?.address_yangon || '',
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       if (!customer?.id) {
-        toast.error('No customer profile found');
-        return Promise.reject('No customer ID');
+        throw new Error('No customer profile found');
       }
-      return db.customers.update(customer.id, data);
+      const validatedData = customerSchema.partial().parse(data);
+      return db.customers.update(customer.id, validatedData);
     },
     onSuccess: () => {
       toast.success('Profile updated successfully');
       onUpdate?.();
     },
-    onError: () => {
-      toast.error('Failed to update profile');
+    onError: (error) => {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Customer Profile');
+      } else {
+        handleError(error, 'Failed to update profile', {
+          component: 'CustomerProfile',
+          action: 'update',
+        });
+      }
     },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateMutation.mutate(form);
+  const handleFormSubmit = async (data) => {
+    try {
+      updateMutation.mutate(data);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Customer Profile');
+      } else {
+        handleError(error, 'Failed to submit form', {
+          component: 'CustomerProfile',
+          action: 'submit',
+        });
+      }
+    }
   };
 
   if (!customer?.id) {
@@ -64,14 +90,16 @@ export default function CustomerProfile({ customer, onUpdate }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Label>Full Name</Label>
               <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                {...form.register('name')}
                 placeholder="Your full name"
               />
+              {form.formState.errors.name && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
+              )}
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -81,10 +109,12 @@ export default function CustomerProfile({ customer, onUpdate }) {
                   Phone Number
                 </Label>
                 <Input
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  {...form.register('phone')}
                   placeholder="+66..."
                 />
+                {form.formState.errors.phone && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.phone.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
@@ -92,11 +122,13 @@ export default function CustomerProfile({ customer, onUpdate }) {
                   Email
                 </Label>
                 <Input
+                  {...form.register('email')}
                   type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="your@email.com"
                 />
+                {form.formState.errors.email && (
+                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.email.message}</p>
+                )}
               </div>
             </div>
 
@@ -106,8 +138,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
                 Default Pickup Address (Bangkok)
               </Label>
               <Textarea
-                value={form.address_bangkok}
-                onChange={(e) => setForm({ ...form, address_bangkok: e.target.value })}
+                {...form.register('address_bangkok')}
                 placeholder="Your Bangkok address for pickups"
                 rows={2}
               />
@@ -119,8 +150,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
                 Default Delivery Address (Yangon)
               </Label>
               <Textarea
-                value={form.address_yangon}
-                onChange={(e) => setForm({ ...form, address_yangon: e.target.value })}
+                {...form.register('address_yangon')}
                 placeholder="Your Yangon address for deliveries"
                 rows={2}
               />
@@ -129,7 +159,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={updateMutation.isPending}
+              disabled={updateMutation.isPending || form.formState.isSubmitting}
             >
               {updateMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

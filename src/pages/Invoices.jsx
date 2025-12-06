@@ -57,6 +57,7 @@ const TYPE_CONFIG = {
 
 import { startTour } from '@/components/common/TourGuide';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function Invoices() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');

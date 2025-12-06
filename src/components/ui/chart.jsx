@@ -55,12 +55,12 @@ const ChartStyle = ({ id, config }) => {
   // Sanitize id to prevent XSS (id is already from React.useId() but extra safety)
   const sanitizedId = id.replace(/[^a-zA-Z0-9-_]/g, '');
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+  // Safely generate CSS with error handling
+  const generateCSS = () => {
+    try {
+      return Object.entries(THEMES)
+        .map(
+          ([theme, prefix]) => `
 ${prefix} [data-chart="${sanitizedId}"] {
 ${colorConfig
   .map(([key, itemConfig]) => {
@@ -69,11 +69,22 @@ ${colorConfig
     const sanitizedColor = color ? color.replace(/[<>"']/g, '') : null;
     return sanitizedColor ? `  --color-${key}: ${sanitizedColor.replace(/[{}]/g, '')};` : null;
   })
+  .filter(Boolean)
   .join('\n')}
 }
 `
-          )
-          .join('\n'),
+        )
+        .join('\n');
+    } catch (error) {
+      console.error('Error generating chart CSS:', error);
+      return ''; // Return empty CSS on error
+    }
+  };
+
+  return (
+    <style
+      dangerouslySetInnerHTML={{
+        __html: generateCSS(),
       }}
     />
   );

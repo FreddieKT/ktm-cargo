@@ -1,0 +1,143 @@
+{
+  "timestamp": "2025-12-06T12:24:55.010Z",
+  "roleDefinitions": {
+    "issues": [],
+    "tests": [
+      {
+        "test": "Database roles found",
+        "roles": [
+          "admin"
+        ],
+        "staffRoles": [
+          "managing_director"
+        ]
+      }
+    ]
+  },
+  "permissionChecks": {
+    "issues": [],
+    "tests": [
+      {
+        "test": "Admin has all permissions",
+        "passed": true
+      },
+      {
+        "test": "Null user has no permissions",
+        "passed": true
+      },
+      {
+        "test": "Managing Director can manage settings",
+        "passed": true
+      },
+      {
+        "test": "Marketing Manager cannot manage settings",
+        "passed": true
+      },
+      {
+        "test": "Marketing Manager can view campaigns",
+        "passed": true
+      },
+      {
+        "test": "Finance Lead cannot view campaigns",
+        "passed": true
+      },
+      {
+        "test": "User without staff_role defaults to marketing_manager",
+        "passed": true
+      },
+      {
+        "test": "Invalid permission returns false",
+        "passed": true
+      }
+    ]
+  },
+  "logicErrors": {
+    "found": [
+      {
+        "severity": "info",
+        "issue": "Admin role bypasses all permission checks (expected behavior)",
+        "location": "hasPermission function"
+      },
+      {
+        "severity": "high",
+        "issue": "Users without staff_role default to marketing_manager - may grant unintended access",
+        "location": "hasPermission function line 102",
+        "recommendation": "Consider requiring explicit staff_role assignment"
+      },
+      {
+        "severity": "medium",
+        "issue": "Page \"Invoices\" not in NAV_PERMISSIONS - will default to allowing access",
+        "location": "canAccessPage function",
+        "recommendation": "Add explicit permission check for this page"
+      },
+      {
+        "severity": "medium",
+        "issue": "Page \"ClientPortal\" not in NAV_PERMISSIONS - will default to allowing access",
+        "location": "canAccessPage function",
+        "recommendation": "Add explicit permission check for this page"
+      }
+    ],
+    "critical": []
+  },
+  "inconsistencies": {
+    "found": []
+  },
+  "codeAnalysis": {
+    "issues": [
+      {
+        "file": "src/components/auth/RolePermissions.jsx",
+        "issue": "Mixed permission checks (hasPermission + direct role check)",
+        "severity": "low",
+        "recommendation": "Use hasPermission() consistently"
+      },
+      {
+        "file": "src/components/settings/StaffManagement.jsx",
+        "issue": "Direct role check instead of using hasPermission()",
+        "severity": "medium",
+        "recommendation": "Use hasPermission() for consistent permission checks"
+      },
+      {
+        "file": "src/pages/CustomerSegments.jsx",
+        "issue": "Sensitive operation \"db.campaigns.delete\" without permission check",
+        "severity": "high"
+      },
+      {
+        "file": "src/pages/Customers.jsx",
+        "issue": "Sensitive operation \"db.customers.create\" without permission check",
+        "severity": "high"
+      },
+      {
+        "file": "src/pages/Customers.jsx",
+        "issue": "Sensitive operation \"db.customers.delete\" without permission check",
+        "severity": "high"
+      },
+      {
+        "file": "src/pages/Layout.jsx",
+        "issue": "Direct role check instead of using hasPermission()",
+        "severity": "medium",
+        "recommendation": "Use hasPermission() for consistent permission checks"
+      },
+      {
+        "file": "src/pages/Shipments.jsx",
+        "issue": "Sensitive operation \"db.shipments.delete\" without permission check",
+        "severity": "high"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "recommendation": "Require explicit staff_role assignment - do not default to marketing_manager"
+    },
+    {
+      "priority": "high",
+      "recommendation": "Add permission checks to all sensitive operations"
+    }
+  ],
+  "summary": {
+    "totalIssues": 11,
+    "critical": 0,
+    "high": 5,
+    "medium": 4
+  }
+}

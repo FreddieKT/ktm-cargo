@@ -78,6 +78,7 @@ export const NAV_PERMISSIONS = {
   Shipments: 'view_shipments',
   ShipmentDocuments: 'view_shipments',
   ShoppingOrders: 'view_shopping_orders',
+  Invoices: 'view_reports', // Invoices require reports view permission
   Customers: 'view_customers',
   CustomerSegments: 'view_campaigns',
   FeedbackAnalytics: 'view_feedback',
@@ -87,6 +88,7 @@ export const NAV_PERMISSIONS = {
   Tasks: 'view_tasks',
   Reports: 'view_reports',
   PriceCalculator: 'view_dashboard',
+  ClientPortal: null, // Public page - no permission required
   Settings: 'view_settings',
 };
 
@@ -99,10 +101,16 @@ export function hasPermission(user, permission) {
   // Admin role always has full access
   if (user.role === 'admin') return true;
 
-  const staffRole = user.staff_role || ROLES.MARKETING_MANAGER;
+  // Require explicit staff_role - do not default (security best practice)
+  // If staff_role is missing, deny access to prevent unintended permissions
+  if (!user.staff_role) {
+    console.warn('User missing staff_role - denying permission:', permission);
+    return false;
+  }
+
   const allowedRoles = PERMISSIONS[permission] || [];
 
-  return allowedRoles.includes(staffRole);
+  return allowedRoles.includes(user.staff_role);
 }
 
 /**

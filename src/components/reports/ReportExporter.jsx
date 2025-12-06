@@ -147,6 +147,7 @@ export function downloadFile(content, filename, type = 'text/csv') {
 // Open PDF in new window for printing
 export function openPDFPrint(htmlContent) {
   const printWindow = window.open('', '_blank');
+  // NOTE: document.write() is safe here - writing to a new controlled window for printing
   printWindow.document.write(htmlContent);
   printWindow.document.close();
   printWindow.onload = () => {

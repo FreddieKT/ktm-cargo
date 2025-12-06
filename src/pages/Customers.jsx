@@ -59,6 +59,8 @@ import {
 import CustomerSegmentBadges from '@/components/customers/CustomerSegmentBadges';
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useUser } from '@/components/auth/UserContext';
+import { hasPermission } from '@/components/auth/RolePermissions';
 
 export default function Customers() {
   const [showForm, setShowForm] = useState(false);
@@ -72,6 +74,7 @@ export default function Customers() {
 
   const queryClient = useQueryClient();
   const { handleError } = useErrorHandler();
+  const { user } = useUser();
 
   const [segmentFilter, setSegmentFilter] = useState('all');
 
@@ -99,6 +102,10 @@ export default function Customers() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
+      // Check permission before creating
+      if (!hasPermission(user, 'manage_customers')) {
+        throw new Error('You do not have permission to create customers');
+      }
       const customerData = {
         ...data,
         referral_code: data.referral_code || `REF${Date.now().toString(36).toUpperCase()}`,
@@ -150,7 +157,13 @@ export default function Customers() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => db.customers.delete(id),
+    mutationFn: (id) => {
+      // Check permission before deleting
+      if (!hasPermission(user, 'manage_customers')) {
+        throw new Error('You do not have permission to delete customers');
+      }
+      return db.customers.delete(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
@@ -611,6 +624,8 @@ export default function Customers() {
                   variant="outline"
                   onClick={() => {
                     setShowForm(false);
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
                     resetForm();
                   }}
                   className="flex-1"

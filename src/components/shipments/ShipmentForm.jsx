@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { shipmentSchema } from '@/lib/schemas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +28,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const serviceTypes = [
   { value: 'cargo_small', label: 'Cargo (1-5kg)', costBasis: 90, price: 120 },
@@ -45,37 +49,42 @@ export default function ShipmentForm({
   vendors = [],
   customers = [],
 }) {
-  const [form, setForm] = useState({
-    customer_name: '',
-    customer_phone: '',
-    service_type: 'cargo_medium',
-    weight_kg: '',
-    items_description: '',
-    pickup_address: '',
-    delivery_address: '',
-    pickup_date: '',
-    insurance_opted: false,
-    packaging_fee: 0,
-    notes: '',
-    vendor_po_id: '',
-    vendor_po_number: '',
-    vendor_id: '',
-    vendor_name: '',
-    vendor_cost_per_kg: 0,
-    customer_id: '',
-    ...shipment,
-  });
-
-  const [calculated, setCalculated] = useState({
-    cost: 0,
-    price: 0,
-    profit: 0,
-    total: 0,
-    vendorCost: 0,
-  });
-
   const [openCombobox, setOpenCombobox] = useState(false);
   const [poWeightStatus, setPoWeightStatus] = useState(null);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(shipmentSchema),
+    defaultValues: {
+      customer_name: '',
+      customer_phone: '',
+      service_type: 'cargo_medium',
+      weight_kg: '',
+      items_description: '',
+      pickup_address: '',
+      delivery_address: '',
+      estimated_delivery: '', // pickup_date in original form was mapped here implicitly or separately? Let's assume estimated_delivery for simplicity or fix field name
+      insurance_opted: false,
+      packaging_fee: 0,
+      notes: '',
+      vendor_po_id: '',
+      vendor_po_number: '',
+      vendor_id: '',
+      vendor_name: '',
+      vendor_cost_per_kg: 0,
+      customer_id: '',
+      ...shipment,
+    },
+  });
+
+  const watchedValues = watch();
 
   // Filter POs that are approved/received and have remaining weight
   const availablePOs = purchaseOrders.filter(
@@ -84,18 +93,28 @@ export default function ShipmentForm({
       (po.remaining_weight_kg > 0 || !po.total_weight_kg)
   );
 
-  useEffect(() => {
-    const service = serviceTypes.find((s) => s.value === form.service_type);
-    if (service && form.weight_kg) {
-      const weight = parseFloat(form.weight_kg) || 0;
+  // Calculation Logic
+  const [calculated, setCalculated] = useState({
+    cost: 0,
+    price: 0,
+    profit: 0,
+    total: 0,
+    vendorCost: 0,
+    insurance: 0,
+  });
 
+  useEffect(() => {
+    const service = serviceTypes.find((s) => s.value === watchedValues.service_type);
+    const weight = parseFloat(watchedValues.weight_kg) || 0;
+    const packaging = parseFloat(watchedValues.packaging_fee) || 0;
+
+    if (service && weight > 0) {
       // Use vendor cost from PO if linked, otherwise use default service cost
-      const vendorCostPerKg = form.vendor_cost_per_kg || service.costBasis;
+      const vendorCostPerKg = parseFloat(watchedValues.vendor_cost_per_kg) || service.costBasis;
       const vendorCost = vendorCostPerKg * weight;
 
       const price = service.price * weight;
-      const insurance = form.insurance_opted ? price * 0.03 : 0;
-      const packaging = parseFloat(form.packaging_fee) || 0;
+      const insurance = watchedValues.insurance_opted ? price * 0.03 : 0;
       const total = price + insurance + packaging;
       const profit = total - vendorCost - insurance;
 
@@ -110,8 +129,8 @@ export default function ShipmentForm({
       });
 
       // Update PO weight status
-      if (form.vendor_po_id) {
-        const po = purchaseOrders.find((p) => p.id === form.vendor_po_id);
+      if (watchedValues.vendor_po_id) {
+        const po = purchaseOrders.find((p) => p.id === watchedValues.vendor_po_id);
         if (po && po.total_weight_kg) {
           const remaining = po.remaining_weight_kg || 0;
           const isOverLimit = weight > remaining;
@@ -134,83 +153,80 @@ export default function ShipmentForm({
       }
     } else {
       setPoWeightStatus(null);
+      setCalculated({
+        cost: 0,
+        price: 0,
+        profit: 0,
+        total: 0,
+        insurance: 0,
+        vendorCost: 0,
+      });
     }
   }, [
-    form.service_type,
-    form.weight_kg,
-    form.insurance_opted,
-    form.packaging_fee,
-    form.vendor_cost_per_kg,
-    form.vendor_po_id,
-    purchaseOrders,
+    watchedValues.service_type,
+    watchedValues.weight_kg,
+    watchedValues.insurance_opted,
+    watchedValues.packaging_fee,
+    watchedValues.vendor_cost_per_kg,
+    watchedValues.vendor_po_id,
   ]);
 
   const handlePOChange = (poId) => {
     if (!poId || poId === 'none') {
-      setForm({
-        ...form,
-        vendor_po_id: '',
-        vendor_po_number: '',
-        vendor_id: '',
-        vendor_name: '',
-        vendor_cost_per_kg: 0,
-      });
+      setValue('vendor_po_id', '');
+      setValue('vendor_po_number', '');
+      setValue('vendor_id', '');
+      setValue('vendor_name', '');
+      setValue('vendor_cost_per_kg', 0);
       return;
     }
 
     const selectedPO = purchaseOrders.find((po) => po.id === poId);
     if (selectedPO) {
-      setForm({
-        ...form,
-        vendor_po_id: selectedPO.id,
-        vendor_po_number: selectedPO.po_number,
-        vendor_id: selectedPO.vendor_id,
-        vendor_name: selectedPO.vendor_name,
-        vendor_cost_per_kg: selectedPO.cost_per_kg || 0,
-      });
+      setValue('vendor_po_id', selectedPO.id);
+      setValue('vendor_po_number', selectedPO.po_number);
+      setValue('vendor_id', selectedPO.vendor_id);
+      setValue('vendor_name', selectedPO.vendor_name);
+      setValue('vendor_cost_per_kg', selectedPO.cost_per_kg || 0);
     }
   };
 
   const handleCustomerSelect = (customerName) => {
     const customer = customers.find((c) => c.name === customerName);
     if (customer) {
-      setForm({
-        ...form,
-        customer_name: customer.name,
-        customer_phone: customer.phone || '',
-        delivery_address: customer.address || '',
-        customer_id: customer.id,
-      });
+      setValue('customer_name', customer.name);
+      setValue('customer_phone', customer.phone || '');
+      setValue('delivery_address', customer.address_yangon || customer.address || ''); // Prefer Yangon address
+      setValue('customer_id', customer.id);
     } else {
-      setForm({ ...form, customer_name: customerName, customer_id: '' });
+      setValue('customer_name', customerName);
+      setValue('customer_id', '');
     }
     setOpenCombobox(false);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  const onFormSubmit = (data) => {
     if (poWeightStatus?.isOverLimit) {
-      return; // Prevent submission if over weight
+      toast.error('Weight exceeds available PO capacity!');
+      return;
     }
 
-    const service = serviceTypes.find((s) => s.value === form.service_type);
-    const weight = parseFloat(form.weight_kg);
+    const service = serviceTypes.find((s) => s.value === data.service_type);
 
-    onSubmit({
-      ...form,
-      weight_kg: weight,
-      cost_basis: form.vendor_cost_per_kg || service?.costBasis,
+    const enhancedData = {
+      ...data,
+      cost_basis: data.vendor_cost_per_kg || service?.costBasis,
       price_per_kg: service?.price,
-      vendor_cost_per_kg: form.vendor_cost_per_kg || 0,
       vendor_total_cost: calculated.vendorCost || 0,
       total_amount: calculated.total,
       profit: calculated.profit,
       insurance_amount: calculated.insurance || 0,
-      tracking_number: form.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`,
+      tracking_number: data.tracking_number || shipment?.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`,
       origin: 'Bangkok',
       destination: 'Yangon',
-    });
+    };
+
+    onSubmit(enhancedData);
   };
 
   return (
@@ -219,7 +235,7 @@ export default function ShipmentForm({
         <CardTitle>{shipment ? 'Edit Shipment' : 'New Shipment'}</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2 flex flex-col">
               <Label>Customer Name *</Label>
@@ -229,9 +245,9 @@ export default function ShipmentForm({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openCombobox}
-                    className="w-full justify-between"
+                    className={cn("w-full justify-between", errors.customer_name && "border-red-500")}
                   >
-                    {form.customer_name || 'Select customer...'}
+                    {watchedValues.customer_name || 'Select customer...'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -250,7 +266,7 @@ export default function ShipmentForm({
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                form.customer_name === customer.name ? 'opacity-100' : 'opacity-0'
+                                watchedValues.customer_name === customer.name ? 'opacity-100' : 'opacity-0'
                               )}
                             />
                             {customer.name}
@@ -261,15 +277,18 @@ export default function ShipmentForm({
                   </Command>
                 </PopoverContent>
               </Popover>
+              {errors.customer_name && <p className="text-xs text-red-500">{errors.customer_name.message}</p>}
+              <input type="hidden" {...register('customer_name')} />
             </div>
+
             <div className="space-y-2">
               <Label>Phone Number *</Label>
               <Input
-                value={form.customer_phone}
-                onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                {...register('customer_phone')}
                 placeholder="+66 or +95"
-                required
+                className={cn(errors.customer_phone && "border-red-500")}
               />
+              {errors.customer_phone && <p className="text-xs text-red-500">{errors.customer_phone.message}</p>}
             </div>
           </div>
 
@@ -280,39 +299,40 @@ export default function ShipmentForm({
                 <Truck className="w-4 h-4 text-blue-600" />
                 <Label className="text-blue-800 font-medium">Link to Vendor Purchase Order</Label>
               </div>
-              <Select value={form.vendor_po_id || 'none'} onValueChange={handlePOChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select vendor PO (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No PO Linked (use default pricing)</SelectItem>
-                  {availablePOs.map((po) => (
-                    <SelectItem key={po.id} value={po.id}>
-                      {po.po_number} - {po.vendor_name}
-                      {po.cost_per_kg ? ` (฿${po.cost_per_kg}/kg)` : ''}
-                      {po.remaining_weight_kg ? ` - ${po.remaining_weight_kg}kg available` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="vendor_po_id"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value || 'none'} onValueChange={handlePOChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select vendor PO (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No PO Linked (use default pricing)</SelectItem>
+                      {availablePOs.map((po) => (
+                        <SelectItem key={po.id} value={po.id}>
+                          {po.po_number} - {po.vendor_name}
+                          {po.cost_per_kg ? ` (฿${po.cost_per_kg}/kg)` : ''}
+                          {po.remaining_weight_kg ? ` - ${po.remaining_weight_kg}kg available` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
 
-              {form.vendor_po_id && (
+              {watchedValues.vendor_po_id && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-blue-100 text-blue-800">
                         <Package className="w-3 h-3 mr-1" />
-                        {form.vendor_name}
+                        {watchedValues.vendor_name}
                       </Badge>
-                      <span className="text-blue-600">Cost: ฿{form.vendor_cost_per_kg}/kg</span>
+                      <span className="text-blue-600">Cost: ฿{watchedValues.vendor_cost_per_kg}/kg</span>
                     </div>
                     {poWeightStatus && (
-                      <span
-                        className={cn(
-                          'font-medium',
-                          poWeightStatus.isOverLimit ? 'text-rose-600' : 'text-slate-600'
-                        )}
-                      >
+                      <span className={cn('font-medium', poWeightStatus.isOverLimit ? 'text-rose-600' : 'text-slate-600')}>
                         {poWeightStatus.remaining}kg remaining
                       </span>
                     )}
@@ -323,9 +343,7 @@ export default function ShipmentForm({
                       <Progress
                         value={poWeightStatus.percentUsed}
                         className={cn('h-2', poWeightStatus.isOverLimit ? 'bg-rose-100' : '')}
-                        indicatorClassName={
-                          poWeightStatus.isOverLimit ? 'bg-rose-500' : 'bg-blue-500'
-                        }
+                        indicatorClassName={poWeightStatus.isOverLimit ? 'bg-rose-500' : 'bg-blue-500'}
                       />
                       {poWeightStatus.isOverLimit && (
                         <div className="flex items-center gap-1 text-xs text-rose-600 font-medium">
@@ -343,63 +361,65 @@ export default function ShipmentForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Service Type *</Label>
-              <Select
-                value={form.service_type}
-                onValueChange={(v) => setForm({ ...form, service_type: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceTypes.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label} - ฿{s.price}/kg
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="service_type"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <SelectTrigger className={cn(errors.service_type && "border-red-500")}>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceTypes.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label} - ฿{s.price}/kg
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.service_type && <p className="text-xs text-red-500">{errors.service_type.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>Weight (kg) *</Label>
               <Input
                 type="number"
                 step="0.1"
-                min="0.1"
-                value={form.weight_kg}
-                onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
+                {...register('weight_kg')}
                 placeholder="Enter weight"
-                required
                 className={cn(
-                  poWeightStatus?.isOverLimit && 'border-rose-500 focus-visible:ring-rose-500'
+                  poWeightStatus?.isOverLimit && 'border-rose-500 focus-visible:ring-rose-500',
+                  errors.weight_kg && "border-red-500"
                 )}
               />
+              {errors.weight_kg && <p className="text-xs text-red-500">{errors.weight_kg.message}</p>}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Items Description</Label>
+            <Label>Items Description *</Label>
             <Textarea
-              value={form.items_description}
-              onChange={(e) => setForm({ ...form, items_description: e.target.value })}
+              {...register('items_description')}
               placeholder="Describe the items being shipped..."
               rows={2}
+              className={cn(errors.items_description && "border-red-500")}
             />
+            {errors.items_description && <p className="text-xs text-red-500">{errors.items_description.message}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Pickup Address (Bangkok)</Label>
               <Input
-                value={form.pickup_address}
-                onChange={(e) => setForm({ ...form, pickup_address: e.target.value })}
+                {...register('pickup_address')}
                 placeholder="Bangkok address"
               />
             </div>
             <div className="space-y-2">
               <Label>Delivery Address (Yangon)</Label>
               <Input
-                value={form.delivery_address}
-                onChange={(e) => setForm({ ...form, delivery_address: e.target.value })}
+                {...register('delivery_address')}
                 placeholder="Yangon address"
               />
             </div>
@@ -407,11 +427,10 @@ export default function ShipmentForm({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Pickup Date</Label>
+              <Label>Estimated Date</Label>
               <Input
                 type="date"
-                value={form.pickup_date}
-                onChange={(e) => setForm({ ...form, pickup_date: e.target.value })}
+                {...register('estimated_delivery')}
               />
             </div>
             <div className="space-y-2">
@@ -419,20 +438,25 @@ export default function ShipmentForm({
               <Input
                 type="number"
                 min="0"
-                value={form.packaging_fee}
-                onChange={(e) => setForm({ ...form, packaging_fee: e.target.value })}
+                {...register('packaging_fee')}
                 placeholder="0"
               />
             </div>
             <div className="space-y-2">
               <Label>Insurance (3%)</Label>
               <div className="flex items-center gap-2 h-10">
-                <Switch
-                  checked={form.insurance_opted}
-                  onCheckedChange={(v) => setForm({ ...form, insurance_opted: v })}
+                <Controller
+                  control={control}
+                  name="insurance_opted"
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
                 <span className="text-sm text-slate-600">
-                  {form.insurance_opted
+                  {watchedValues.insurance_opted
                     ? `฿${calculated.insurance?.toFixed(0) || 0}`
                     : 'Not included'}
                 </span>
@@ -443,14 +467,14 @@ export default function ShipmentForm({
           <div className="space-y-2">
             <Label>Notes</Label>
             <Textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              {...register('notes')}
               placeholder="Additional notes..."
               rows={2}
             />
           </div>
 
-          {form.weight_kg && (
+          {/* Pricing Summary */}
+          {watchedValues.weight_kg > 0 && (
             <div className="bg-slate-50 rounded-xl p-4 space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Calculator className="w-4 h-4 text-slate-600" />
@@ -463,8 +487,8 @@ export default function ShipmentForm({
                     ฿{calculated.vendorCost?.toLocaleString()}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {form.vendor_po_id
-                      ? `(PO: ฿${form.vendor_cost_per_kg}/kg)`
+                    {watchedValues.vendor_po_id
+                      ? `(PO: ฿${watchedValues.vendor_cost_per_kg}/kg)`
                       : `(Default: ฿${calculated.vendorCostPerKg}/kg)`}
                   </p>
                 </div>
@@ -479,7 +503,7 @@ export default function ShipmentForm({
                 <div>
                   <p className="text-slate-500">Packaging</p>
                   <p className="font-semibold">
-                    ฿{parseFloat(form.packaging_fee || 0).toLocaleString()}
+                    ฿{parseFloat(watchedValues.packaging_fee || 0).toLocaleString()}
                   </p>
                 </div>
                 <div>
@@ -493,9 +517,9 @@ export default function ShipmentForm({
                 <p className="text-sm text-emerald-600 font-medium">
                   Est. Profit: ฿{calculated.profit?.toLocaleString()}
                 </p>
-                {form.vendor_po_id && (
+                {watchedValues.vendor_po_id && (
                   <Badge className="bg-blue-100 text-blue-700">
-                    Linked to {form.vendor_po_number}
+                    Linked to {watchedValues.vendor_po_number}
                   </Badge>
                 )}
               </div>

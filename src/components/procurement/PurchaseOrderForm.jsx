@@ -15,7 +15,13 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, FileText, X, Star, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { purchaseOrderSchema } from '@/lib/schemas';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, onCancel }) {
+  const { handleError, handleValidationError } = useErrorHandler();
   const [formData, setFormData] = useState({
     vendor_id: existingPO?.vendor_id || '',
     vendor_name: existingPO?.vendor_name || '',
@@ -91,27 +97,42 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.vendor_id || items.every((i) => !i.name)) {
-      toast.error('Please select a vendor and add at least one item');
-      return;
+    try {
+      if (!formData.vendor_id || items.every((i) => !i.name)) {
+        toast.error('Please select a vendor and add at least one item');
+        return;
+      }
+
+      const poNumber = existingPO?.po_number || `PO-${Date.now().toString(36).toUpperCase()}`;
+
+      const data = {
+        ...formData,
+        po_number: poNumber,
+        items: JSON.stringify(items),
+        subtotal,
+        total_amount: total,
+        total_weight_kg: parseFloat(formData.total_weight_kg) || 0,
+        cost_per_kg: parseFloat(formData.cost_per_kg) || 0,
+        remaining_weight_kg: parseFloat(formData.total_weight_kg) || 0,
+        allocated_weight_kg: existingPO?.allocated_weight_kg || 0,
+        status: existingPO?.status || 'draft',
+      };
+
+      // Validate data
+      const validatedData = purchaseOrderSchema.partial().parse(data);
+      await onSubmit(validatedData);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Purchase Order');
+      } else {
+        handleError(error, 'Failed to submit purchase order', {
+          component: 'PurchaseOrderForm',
+          action: 'submit',
+        });
+      }
     }
-
-    const poNumber = existingPO?.po_number || `PO-${Date.now().toString(36).toUpperCase()}`;
-
-    onSubmit({
-      ...formData,
-      po_number: poNumber,
-      items: JSON.stringify(items),
-      subtotal,
-      total_amount: total,
-      total_weight_kg: parseFloat(formData.total_weight_kg) || 0,
-      cost_per_kg: parseFloat(formData.cost_per_kg) || 0,
-      remaining_weight_kg: parseFloat(formData.total_weight_kg) || 0,
-      allocated_weight_kg: existingPO?.allocated_weight_kg || 0,
-      status: existingPO?.status || 'draft',
-    });
   };
 
   return (

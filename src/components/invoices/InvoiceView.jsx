@@ -36,6 +36,7 @@ export default function InvoiceView({ invoice, onClose }) {
   const handlePrint = () => {
     const printContent = printRef.current;
     const printWindow = window.open('', '', 'width=800,height=600');
+    // NOTE: document.write() is safe here - writing to a new controlled window for printing
     printWindow.document.write(`
       <html>
         <head>

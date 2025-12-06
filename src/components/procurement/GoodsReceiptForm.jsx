@@ -14,7 +14,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { PackageCheck, X, AlertTriangle, CheckCircle } from 'lucide-react';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) {
+  const { handleError, handleValidationError } = useErrorHandler();
   const [receivedBy, setReceivedBy] = useState('');
   const [notes, setNotes] = useState('');
   const [discrepancyNotes, setDiscrepancyNotes] = useState('');
@@ -54,30 +59,43 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
     (item) => item.received_qty !== item.ordered_qty || item.condition !== 'good'
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      if (!receivedBy) {
+        toast.error('Please enter who received the goods');
+        return;
+      }
 
-    const receiptNumber = `GR-${Date.now().toString(36).toUpperCase()}`;
-    const qualityStatus = items.every((i) => i.condition === 'good')
-      ? 'passed'
-      : items.every((i) => i.condition === 'rejected')
-        ? 'rejected'
-        : 'partial_reject';
+      const receiptNumber = `GR-${Date.now().toString(36).toUpperCase()}`;
+      const qualityStatus = items.every((i) => i.condition === 'good')
+        ? 'passed'
+        : items.every((i) => i.condition === 'rejected')
+          ? 'rejected'
+          : 'partial_reject';
 
-    onSubmit({
-      receipt_number: receiptNumber,
-      po_id: purchaseOrder.id,
-      po_number: purchaseOrder.po_number,
-      vendor_id: purchaseOrder.vendor_id,
-      vendor_name: purchaseOrder.vendor_name,
-      received_date: new Date().toISOString().split('T')[0],
-      received_by: receivedBy,
-      items_received: JSON.stringify(items),
-      total_value: totalValue,
-      quality_status: qualityStatus,
-      notes,
-      discrepancy_notes: hasDiscrepancy ? discrepancyNotes : '',
-    });
+      const data = {
+        receipt_number: receiptNumber,
+        po_id: purchaseOrder.id,
+        po_number: purchaseOrder.po_number,
+        vendor_id: purchaseOrder.vendor_id,
+        vendor_name: purchaseOrder.vendor_name,
+        received_date: new Date().toISOString().split('T')[0],
+        received_by: receivedBy,
+        items_received: JSON.stringify(items),
+        total_value: totalValue,
+        quality_status: qualityStatus,
+        notes,
+        discrepancy_notes: hasDiscrepancy ? discrepancyNotes : '',
+      };
+
+      await onSubmit(data);
+    } catch (error) {
+      handleError(error, 'Failed to submit goods receipt', {
+        component: 'GoodsReceiptForm',
+        action: 'submit',
+      });
+    }
   };
 
   if (!purchaseOrder) return null;

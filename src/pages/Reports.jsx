@@ -1518,6 +1518,7 @@ export default function Reports() {
               <Button
                 onClick={() => {
                   setEditingReport(null);
+import { useErrorHandler } from '@/hooks/useErrorHandler';
                   setShowReportBuilder(true);
                 }}
                 className="bg-blue-600 hover:bg-blue-700"

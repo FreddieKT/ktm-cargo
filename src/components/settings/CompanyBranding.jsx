@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '@/api/db';
-import { uploadFile } from '@/api/integrations';
+import { uploadLogo } from '@/api/integrations/storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -77,13 +77,27 @@ export default function CompanyBranding() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload an image (JPEG, PNG, GIF, or WebP).');
+      return;
+    }
+
+    // Validate file size (max 5MB for logos)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 5MB limit. Please upload a smaller image.');
+      return;
+    }
+
     setUploading(true);
     try {
-      const { file_url } = await uploadFile({ file });
-      setForm((prev) => ({ ...prev, logo_url: file_url }));
-      toast.success('Logo uploaded');
+      const { url, file_url } = await uploadLogo(file);
+      setForm((prev) => ({ ...prev, logo_url: url || file_url }));
+      toast.success('Logo uploaded successfully');
     } catch (err) {
-      toast.error('Failed to upload logo');
+      toast.error(err.message || 'Failed to upload logo');
     } finally {
       setUploading(false);
     }

@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import * as Sentry from '@sentry/react';
 
 // Helper to parse sort string (e.g. "-created_date" -> { column: "created_date", ascending: false })
 const parseSort = (sortString) => {
@@ -76,30 +77,128 @@ export const createEntityClient = (tableName, selectFields = '*') => ({
   ...createReadOnlyEntityClient(tableName, selectFields),
 
   create: async (data) => {
-    const { data: created, error } = await supabase
-      .from(tableName)
-      .insert(data)
-      .select(selectFields)
-      .single();
-    if (error) throw error;
-    return created;
+    try {
+      const { data: created, error } = await supabase
+        .from(tableName)
+        .insert(data)
+        .select(selectFields)
+        .single();
+      if (error) {
+        // Create a proper Error instance with meaningful message
+        // Prefer details > hint > message for better error description
+        const errorMessage = error.details || error.hint || error.message || `Failed to create ${tableName}`;
+        const enhancedError = new Error(errorMessage);
+        
+        // Preserve Supabase error properties
+        enhancedError.name = 'SupabaseError';
+        enhancedError.code = error.code;
+        enhancedError.details = error.details;
+        enhancedError.hint = error.hint;
+        enhancedError.originalMessage = error.message;
+        
+        // Capture in Sentry with proper error instance
+        Sentry.captureException(enhancedError, {
+          tags: { 
+            component: 'db', 
+            operation: 'create', 
+            table: tableName,
+            supabaseCode: error.code,
+          },
+          extra: { 
+            data,
+            supabaseCode: error.code,
+            supabaseDetails: error.details,
+            supabaseHint: error.hint,
+            supabaseMessage: error.message,
+          },
+        });
+        throw enhancedError;
+      }
+      return created;
+    } catch (error) {
+      // If it's already enhanced, just re-throw
+      if (error.code && error.details) {
+        throw error;
+      }
+      
+      // Otherwise enhance it
+      const enhancedError = error?.originalError || error;
+      Sentry.captureException(enhancedError, {
+        tags: { component: 'db', operation: 'create', table: tableName },
+        extra: { data },
+      });
+      throw enhancedError;
+    }
   },
 
   update: async (id, updates) => {
-    const { data: updated, error } = await supabase
-      .from(tableName)
-      .update(updates)
-      .eq('id', id)
-      .select(selectFields)
-      .single();
-    if (error) throw error;
-    return updated;
+    try {
+      const { data: updated, error } = await supabase
+        .from(tableName)
+        .update(updates)
+        .eq('id', id)
+        .select(selectFields)
+        .single();
+      if (error) {
+        const errorMessage = error.details || error.hint || error.message || `Failed to update ${tableName}`;
+        const enhancedError = new Error(errorMessage);
+        
+        enhancedError.name = 'SupabaseError';
+        enhancedError.code = error.code;
+        enhancedError.details = error.details;
+        enhancedError.hint = error.hint;
+        enhancedError.originalMessage = error.message;
+        
+        Sentry.captureException(enhancedError, {
+          tags: { 
+            component: 'db', 
+            operation: 'update', 
+            table: tableName,
+            supabaseCode: error.code,
+          },
+          extra: { 
+            id, 
+            updates,
+            supabaseCode: error.code,
+            supabaseDetails: error.details,
+            supabaseHint: error.hint,
+            supabaseMessage: error.message,
+          },
+        });
+        throw enhancedError;
+      }
+      return updated;
+    } catch (error) {
+      if (error.code && error.details) {
+        throw error;
+      }
+      const enhancedError = error?.originalError || error;
+      Sentry.captureException(enhancedError, {
+        tags: { component: 'db', operation: 'update', table: tableName },
+        extra: { id, updates },
+      });
+      throw enhancedError;
+    }
   },
 
   delete: async (id) => {
-    const { error } = await supabase.from(tableName).delete().eq('id', id);
-    if (error) throw error;
-    return true;
+    try {
+      const { error } = await supabase.from(tableName).delete().eq('id', id);
+      if (error) {
+        Sentry.captureException(error, {
+          tags: { component: 'db', operation: 'delete', table: tableName },
+          extra: { id },
+        });
+        throw error;
+      }
+      return true;
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { component: 'db', operation: 'delete', table: tableName },
+        extra: { id },
+      });
+      throw error;
+    }
   },
 });
 

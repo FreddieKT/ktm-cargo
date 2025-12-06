@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,8 @@ import {
 import { Plus, Pencil, Trash2, Shield, Zap, Users, DollarSign, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 const RULE_TYPES = {
   auto_approve: { label: 'Auto-Approve', icon: Zap, color: 'bg-emerald-100 text-emerald-800' },
   amount_threshold: {
@@ -37,6 +40,7 @@ const RULE_TYPES = {
 };
 
 export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDelete }) {
+  const { handleError, handleValidationError } = useErrorHandler();
   const [showForm, setShowForm] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, rule: null });
@@ -78,21 +82,36 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
     setShowForm(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = {
-      ...formData,
-      max_amount: formData.max_amount ? parseFloat(formData.max_amount) : null,
-      min_amount: parseFloat(formData.min_amount) || 0,
-    };
+    try {
+      const { approvalRuleSchema } = await import('@/lib/schemas');
+      const data = {
+        ...formData,
+        max_amount: formData.max_amount ? parseFloat(formData.max_amount) : null,
+        min_amount: parseFloat(formData.min_amount) || 0,
+      };
 
-    if (editingRule) {
-      onUpdate?.(editingRule.id, data);
-    } else {
-      onAdd?.(data);
+      // Validate data
+      const validatedData = approvalRuleSchema.partial().parse(data);
+
+      if (editingRule) {
+        await onUpdate?.(editingRule.id, validatedData);
+      } else {
+        await onAdd?.(validatedData);
+      }
+      setShowForm(false);
+      toast.success(editingRule ? 'Rule updated' : 'Rule created');
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Approval Rule');
+      } else {
+        handleError(error, 'Failed to save approval rule', {
+          component: 'ApprovalRulesManager',
+          action: 'submit',
+        });
+      }
     }
-    setShowForm(false);
-    toast.success(editingRule ? 'Rule updated' : 'Rule created');
   };
 
   const sortedRules = [...rules].sort((a, b) => (a.priority || 1) - (b.priority || 1));
@@ -180,7 +199,16 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setEditConfirm({ open: true, rule })}
+                        onClick={async () => {
+                          try {
+                            setEditConfirm({ open: true, rule });
+                          } catch (error) {
+                            handleError(error, 'Failed to open edit dialog', {
+                              component: 'ApprovalRulesManager',
+                              action: 'openEdit',
+                            });
+                          }
+                        }}
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -188,7 +216,16 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
                         variant="ghost"
                         size="icon"
                         className="text-rose-600"
-                        onClick={() => setDeleteConfirm({ open: true, rule })}
+                        onClick={async () => {
+                          try {
+                            setDeleteConfirm({ open: true, rule });
+                          } catch (error) {
+                            handleError(error, 'Failed to open delete dialog', {
+                              component: 'ApprovalRulesManager',
+                              action: 'openDelete',
+                            });
+                          }
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -394,9 +431,16 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-rose-600 hover:bg-rose-700"
-              onClick={() => {
-                onDelete?.(deleteConfirm.rule?.id);
-                setDeleteConfirm({ open: false, rule: null });
+              onClick={async () => {
+                try {
+                  await onDelete?.(deleteConfirm.rule?.id);
+                  setDeleteConfirm({ open: false, rule: null });
+                } catch (error) {
+                  handleError(error, 'Failed to delete approval rule', {
+                    component: 'ApprovalRulesManager',
+                    action: 'delete',
+                  });
+                }
               }}
             >
               Delete
@@ -427,8 +471,15 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
             <AlertDialogAction
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => {
-                openForm(editConfirm.rule);
-                setEditConfirm({ open: false, rule: null });
+                try {
+                  openForm(editConfirm.rule);
+                  setEditConfirm({ open: false, rule: null });
+                } catch (error) {
+                  handleError(error, 'Failed to open edit form', {
+                    component: 'ApprovalRulesManager',
+                    action: 'edit',
+                  });
+                }
               }}
             >
               Edit Rule

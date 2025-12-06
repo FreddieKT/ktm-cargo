@@ -129,7 +129,12 @@ const FILTER_OPTIONS = {
   ],
 };
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function ReportBuilder({ report, onSubmit, onCancel }) {
+  const { handleError } = useErrorHandler();
   const [form, setForm] = useState({
     name: '',
     report_type: 'shipments',
@@ -207,13 +212,27 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
     setFilters(filters.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
-      ...form,
-      columns: JSON.stringify(selectedColumns),
-      filters: JSON.stringify(filters),
-    });
+    try {
+      if (!form.name || !form.report_type) {
+        handleError(new Error('Report name and type are required'), 'Validation failed', {
+          component: 'ReportBuilder',
+          action: 'submit',
+        });
+        return;
+      }
+      await onSubmit({
+        ...form,
+        columns: JSON.stringify(selectedColumns),
+        filters: JSON.stringify(filters),
+      });
+    } catch (error) {
+      handleError(error, 'Failed to save report', {
+        component: 'ReportBuilder',
+        action: 'submit',
+      });
+    }
   };
 
   const reportConfig = REPORT_TYPES[form.report_type];

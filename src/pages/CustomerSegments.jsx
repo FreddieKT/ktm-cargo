@@ -55,6 +55,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format, subDays, differenceInDays } from 'date-fns';
+import { useUser } from '@/components/auth/UserContext';
+import { hasPermission } from '@/components/auth/RolePermissions';
 
 export default function CustomerSegments() {
   const [selectedSegment, setSelectedSegment] = useState(null);
@@ -69,6 +71,7 @@ export default function CustomerSegments() {
   const [campaignToDelete, setCampaignToDelete] = useState(null);
 
   const queryClient = useQueryClient();
+  const { user } = useUser();
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ['customers'],
@@ -91,7 +94,12 @@ export default function CustomerSegments() {
   });
 
   const createCampaignMutation = useMutation({
-    mutationFn: (data) => db.campaigns.create(data),
+    mutationFn: async (data) => {
+      // Validate campaign data before creating
+      const { campaignSchema } = await import('@/lib/schemas');
+      const validatedData = campaignSchema.parse(data);
+      return db.campaigns.create(validatedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       setShowCampaignForm(false);
@@ -107,7 +115,13 @@ export default function CustomerSegments() {
   });
 
   const deleteCampaignMutation = useMutation({
-    mutationFn: (id) => db.campaigns.delete(id),
+    mutationFn: (id) => {
+      // Check permission before deleting
+      if (!hasPermission(user, 'manage_campaigns')) {
+        throw new Error('You do not have permission to delete campaigns');
+      }
+      return db.campaigns.delete(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       setCampaignToDelete(null);
@@ -470,6 +484,7 @@ export default function CustomerSegments() {
                                 variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
+import { useErrorHandler } from '@/hooks/useErrorHandler';
                                   setEditingSegment(segment);
                                   setShowSegmentBuilder(true);
                                 }}

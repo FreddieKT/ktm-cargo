@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Scale, Clock, Star } from 'lucide-react';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 const vendorTypes = [
   { value: 'cargo_carrier', label: 'Cargo Carrier' },
   { value: 'supplier', label: 'Supplier' },

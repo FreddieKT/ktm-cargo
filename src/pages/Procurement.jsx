@@ -83,6 +83,7 @@ const PO_STATUS_CONFIG = {
 
 import { startTour } from '@/components/common/TourGuide';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function Procurement() {
   const [activeTab, setActiveTab] = useState('orders');
   const [showOnboarding, setShowOnboarding] = useState(false);

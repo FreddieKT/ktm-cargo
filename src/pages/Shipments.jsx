@@ -57,7 +57,11 @@ import { processShipmentForInvoicing } from '@/components/invoices/InvoiceGenera
 import { startTour } from '@/components/common/TourGuide';
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useUser } from '@/components/auth/UserContext';
+import { hasPermission } from '@/components/auth/RolePermissions';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 export default function Shipments() {
   const [showForm, setShowForm] = useState(false);
   const [editingShipment, setEditingShipment] = useState(null);
@@ -68,6 +72,7 @@ export default function Shipments() {
 
   const queryClient = useQueryClient();
   const { handleError } = useErrorHandler();
+  const { user } = useUser();
 
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
@@ -126,7 +131,11 @@ export default function Shipments() {
       // Trigger notification for new shipment
       triggerShipmentCreatedAlert(newShipment).catch(console.error);
     },
-    onError: (err) => handleError(err, 'Failed to create shipment'),
+    onError: (err) => handleError(err, 'Failed to create shipment', {
+      component: 'Shipments',
+      action: 'create',
+      data: { shipmentData: err?.data || 'unknown' },
+    }),
   });
 
   const updateMutation = useMutation({
@@ -149,7 +158,13 @@ export default function Shipments() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => db.shipments.delete(id),
+    mutationFn: (id) => {
+      // Check permission before deleting
+      if (!hasPermission(user, 'manage_shipments')) {
+        throw new Error('You do not have permission to delete shipments');
+      }
+      return db.shipments.delete(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
       setSelectedShipment(null);

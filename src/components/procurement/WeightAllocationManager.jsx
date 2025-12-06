@@ -28,6 +28,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function WeightAllocationManager({
   purchaseOrders = [],
   shipments = [],

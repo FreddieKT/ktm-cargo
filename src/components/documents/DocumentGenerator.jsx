@@ -45,6 +45,7 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
   const handlePrint = (docType) => {
     const printWindow = window.open('', '_blank');
     const content = generateDocumentHTML(docType, shipment);
+    // NOTE: document.write() is safe here - writing to a new controlled window for printing
     printWindow.document.write(content);
     printWindow.document.close();
     printWindow.print();

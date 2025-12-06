@@ -17,8 +17,12 @@ export const auth = {
       return null;
     }
 
-    // Fetch profile data
-    let { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    // Fetch profile data - only select needed columns for performance
+    let { data: profile } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, role, staff_role, created_date, updated_date')
+      .eq('id', user.id)
+      .single();
 
     // If profile doesn't exist, create it (Self-healing)
     if (!profile) {
@@ -43,8 +47,9 @@ export const auth = {
         profile = created;
       } else {
         console.error('Error creating profile:', error);
-        // Fallback so app doesn't crash
-        profile = { staff_role: 'marketing_manager', role: 'staff' };
+        // Fallback - but note: users without staff_role will be denied access
+        // This is intentional for security - staff_role must be explicitly assigned
+        profile = { role: 'staff' }; // No staff_role - will require explicit assignment
       }
     }
 

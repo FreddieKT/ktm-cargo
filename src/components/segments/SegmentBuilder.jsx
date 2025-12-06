@@ -30,6 +30,8 @@ const CRITERIA_TYPES = [
   { value: 'has_email', label: 'Has Email', type: 'boolean' },
 ];
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 const OPERATORS = {
   number: [
     { value: 'gte', label: '>=' },

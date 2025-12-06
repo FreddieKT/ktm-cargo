@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { feedbackSchema } from '@/lib/schemas';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -40,6 +44,16 @@ const ISSUE_TYPES = [
 
 export default function CustomerSupport({ customer, user }) {
   const queryClient = useQueryClient();
+  const { handleError, handleValidationError } = useErrorHandler();
+  
+  const form = useForm({
+    resolver: zodResolver(feedbackSchema.partial()),
+    defaultValues: {
+      category: '',
+      comment: '',
+    },
+  });
+  
   const [issueType, setIssueType] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -60,19 +74,29 @@ export default function CustomerSupport({ customer, user }) {
 
   const createTicketMutation = useMutation({
     mutationFn: async () => {
-      const ticketNumber = `TKT-${Date.now().toString(36).toUpperCase()}`;
+      try {
+        const ticketNumber = `TKT-${Date.now().toString(36).toUpperCase()}`;
 
-      // Create feedback/ticket
-      await db.feedback.create({
-        customer_id: customer?.id,
-        customer_name: customer?.name || user?.full_name,
-        customer_email: customer?.email || user?.email,
-        feedback_type: issueType,
-        subject: subject,
-        message: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
-        status: 'pending',
-        ticket_number: ticketNumber,
-      });
+        // Validate data
+        const ticketData = {
+          customer_id: customer?.id,
+          customer_name: customer?.name || user?.full_name,
+          customer_email: customer?.email || user?.email,
+          category: issueType,
+          comment: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
+          status: 'pending',
+        };
+        
+        const validatedData = feedbackSchema.partial().parse(ticketData);
+
+        // Create feedback/ticket
+        await db.feedback.create({
+          ...validatedData,
+          feedback_type: issueType,
+          subject: subject,
+          message: ticketData.comment,
+          ticket_number: ticketNumber,
+        });
 
       // Send notification email
       try {
@@ -85,7 +109,13 @@ export default function CustomerSupport({ customer, user }) {
         console.error('Failed to send confirmation email', e);
       }
 
-      return ticketNumber;
+        return ticketNumber;
+      } catch (error) {
+        if (error.name === 'ZodError') {
+          throw error; // Let onError handle it
+        }
+        throw error;
+      }
     },
     onSuccess: (ticketNumber) => {
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
@@ -94,9 +124,17 @@ export default function CustomerSupport({ customer, user }) {
       setSubject('');
       setMessage('');
       setTrackingNumber('');
+      form.reset();
     },
-    onError: () => {
-      toast.error('Failed to create ticket');
+    onError: (error) => {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Support Ticket');
+      } else {
+        handleError(error, 'Failed to create ticket', {
+          component: 'CustomerSupport',
+          action: 'createTicket',
+        });
+      }
     },
   });
 
@@ -121,7 +159,7 @@ export default function CustomerSupport({ customer, user }) {
           <CardDescription>Our team typically responds within 24 hours</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label>Issue Type *</Label>
               <Select value={issueType} onValueChange={setIssueType}>

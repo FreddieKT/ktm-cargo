@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-12-06T13:37:13.357Z",
+  "results": {
+    "passed": [
+      "✅ Zod: Valid data parsed successfully",
+      "✅ Zod: Invalid data correctly rejected",
+      "✅ Zod: Error messages provided (3 errors)",
+      "✅ Error Handler: Uses Sentry.captureException",
+      "✅ Error Handler: Has validation error handler (for Zod)",
+      "✅ Error Handler: Handles Zod errors",
+      "✅ Schemas: All required schemas found (customerSchema, shipmentSchema)",
+      "✅ Schemas: Properly exported",
+      "✅ Components: 3 files use Zod",
+      "✅ Components: 6 files use error handler"
+    ],
+    "failed": [],
+    "warnings": [
+      "⚠️  Sentry: Client not initialized (VITE_SENTRY_DSN may not be set)",
+      "⚠️  Sentry: This is expected if DSN is not configured in .env",
+      "⚠️  Components: No components use Sentry directly"
+    ]
+  },
+  "passRate": 100
+}

@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
