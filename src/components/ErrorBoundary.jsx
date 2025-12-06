@@ -1,11 +1,21 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { AlertTriangle, Send } from 'lucide-react';
+import { logger } from '@/api/logger';
+import { toast } from 'sonner';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      feedback: '',
+      sendingFeedback: false,
+      feedbackSent: false,
+    };
   }
 
   static getDerivedStateFromError(error) {
@@ -13,12 +23,40 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    // Log to our service
+    logger.logError(error, errorInfo);
     this.setState({ errorInfo });
   }
 
+  handleFeedbackSubmit = () => {
+    if (!this.state.feedback.trim()) return;
+
+    this.setState({ sendingFeedback: true });
+
+    // Simulate sending feedback
+    setTimeout(() => {
+      logger.logEvent('user_crash_feedback', {
+        message: this.state.feedback,
+        error: this.state.error?.message,
+      });
+
+      this.setState({
+        sendingFeedback: false,
+        feedbackSent: true,
+        feedback: '',
+      });
+      toast.success('Thank you for your feedback!');
+    }, 1000);
+  };
+
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      feedback: '',
+      feedbackSent: false,
+    });
     window.location.reload();
   };
 
@@ -34,6 +72,39 @@ class ErrorBoundary extends React.Component {
             <p className="text-slate-600 mb-6">
               We encountered an unexpected error. Please try refreshing the page.
             </p>
+
+            {/* Feedback Form */}
+            {!this.state.feedbackSent ? (
+              <div className="mb-6 text-left">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  What were you doing when this happened?
+                </label>
+                <div className="flex gap-2">
+                  <Textarea
+                    value={this.state.feedback}
+                    onChange={(e) => this.setState({ feedback: e.target.value })}
+                    placeholder="Describing the steps helps us fix this faster..."
+                    className="min-h-[80px] text-sm"
+                  />
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Button
+                    size="sm"
+                    onClick={this.handleFeedbackSubmit}
+                    disabled={this.state.sendingFeedback || !this.state.feedback.trim()}
+                    className="bg-slate-800 text-white hover:bg-slate-700"
+                  >
+                    {this.state.sendingFeedback ? 'Sending...' : 'Send Report'}
+                    {!this.state.sendingFeedback && <Send className="w-3 h-3 ml-2" />}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm border border-emerald-200">
+                Thanks! Your feedback has been sent to our engineering team.
+              </div>
+            )}
+
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="text-left bg-slate-100 p-4 rounded-md mb-6 overflow-auto max-h-48 text-xs font-mono">
                 <p className="font-bold text-rose-600 mb-2">{this.state.error.toString()}</p>
@@ -58,3 +129,4 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
+

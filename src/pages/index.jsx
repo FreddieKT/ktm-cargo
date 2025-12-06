@@ -22,6 +22,7 @@ const VendorRegistration = lazy(() => import('./VendorRegistration'));
 const ClientPortal = lazy(() => import('./ClientPortal'));
 const Invoices = lazy(() => import('./Invoices'));
 const LandingPage = lazy(() => import('./LandingPage'));
+const NotFound = lazy(() => import('./NotFound'));
 
 const PAGES = {
   Dashboard,
@@ -42,6 +43,7 @@ const PAGES = {
   VendorRegistration,
   ClientPortal,
   Invoices,
+  NotFound,
 };
 
 function _getCurrentPage(url) {
@@ -196,14 +198,10 @@ function PagesContent() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/Invoices"
-            element={
-              <ProtectedRoute pageName="Invoices">
-                <Invoices />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/Invoices" element={<ProtectedRoute pageName="Invoices"><Invoices /></ProtectedRoute>} />
+
+          {/* Catch-all 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </Layout>
