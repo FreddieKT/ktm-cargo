@@ -517,11 +517,20 @@ export default function ShoppingOrders() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="orders-header">
+        <div
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          id="orders-header"
+        >
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Shopping Orders</h1>
-              <Button variant="ghost" size="icon" onClick={() => startTour('shoppingOrders')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => startTour('shoppingOrders')}
+                className="text-slate-400 hover:text-blue-600"
+                title="Take a Tour"
+              >
                 <HelpCircle className="w-5 h-5" />
               </Button>
             </div>
@@ -1086,9 +1095,9 @@ export default function ShoppingOrders() {
                               value={
                                 vendor.monthly_capacity_kg > 0
                                   ? ((vendor.monthly_capacity_kg -
-                                    (vendor.current_month_allocated_kg || 0)) /
-                                    vendor.monthly_capacity_kg) *
-                                  100
+                                      (vendor.current_month_allocated_kg || 0)) /
+                                      vendor.monthly_capacity_kg) *
+                                    100
                                   : 0
                               }
                               className="h-2"
@@ -1196,30 +1205,30 @@ export default function ShoppingOrders() {
                 form.actual_product_cost ||
                 form.estimated_weight ||
                 form.actual_weight) && (
-                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                    <p className="text-sm font-medium text-purple-700 mb-3">Price Calculation</p>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <span className="text-purple-600">Product Cost:</span>
-                      <span className="text-right font-medium">
-                        ฿{totals.productCost.toLocaleString()}
-                      </span>
-                      <span className="text-purple-600">Commission ({form.commission_rate}%):</span>
-                      <span className="text-right font-medium">
-                        ฿{totals.commission.toLocaleString()}
-                      </span>
-                      <span className="text-purple-600">Shipping (฿110/kg):</span>
-                      <span className="text-right font-medium">
-                        ฿{totals.shippingCost.toLocaleString()}
-                      </span>
-                      <span className="font-bold text-purple-800 pt-2 border-t border-purple-200">
-                        Total:
-                      </span>
-                      <span className="text-right font-bold text-purple-800 pt-2 border-t border-purple-200">
-                        ฿{totals.total.toLocaleString()}
-                      </span>
-                    </div>
+                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                  <p className="text-sm font-medium text-purple-700 mb-3">Price Calculation</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-purple-600">Product Cost:</span>
+                    <span className="text-right font-medium">
+                      ฿{totals.productCost.toLocaleString()}
+                    </span>
+                    <span className="text-purple-600">Commission ({form.commission_rate}%):</span>
+                    <span className="text-right font-medium">
+                      ฿{totals.commission.toLocaleString()}
+                    </span>
+                    <span className="text-purple-600">Shipping (฿110/kg):</span>
+                    <span className="text-right font-medium">
+                      ฿{totals.shippingCost.toLocaleString()}
+                    </span>
+                    <span className="font-bold text-purple-800 pt-2 border-t border-purple-200">
+                      Total:
+                    </span>
+                    <span className="text-right font-bold text-purple-800 pt-2 border-t border-purple-200">
+                      ฿{totals.total.toLocaleString()}
+                    </span>
                   </div>
-                )}
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <Button

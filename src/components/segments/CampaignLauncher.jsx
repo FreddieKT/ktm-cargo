@@ -86,16 +86,17 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
                   <p style="font-size: 16px; color: #334155; line-height: 1.6;">
                     ${personalizedMessage}
                   </p>
-                  ${form.discount_code
-                ? `
+                  ${
+                    form.discount_code
+                      ? `
                     <div style="background: #dbeafe; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
                       <p style="color: #1e40af; margin: 0 0 8px 0;">Your exclusive code:</p>
                       <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0; letter-spacing: 2px;">${form.discount_code}</p>
                       ${form.discount_percentage > 0 ? `<p style="color: #3b82f6; margin: 8px 0 0 0;">${form.discount_percentage}% OFF</p>` : ''}
                     </div>
                   `
-                : ''
-              }
+                      : ''
+                  }
                 </div>
                 <div style="background: #f1f5f9; padding: 20px; border-radius: 0 0 12px 12px; text-align: center;">
                   <p style="color: #64748b; margin: 0; font-size: 12px;">

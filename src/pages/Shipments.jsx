@@ -131,7 +131,7 @@ export default function Shipments() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => {
-      // Validate partial updates (using partial() for flexibility on updates if needed, 
+      // Validate partial updates (using partial() for flexibility on updates if needed,
       // but traditionally one might validate the whole object or just the fields being updated as per schema)
       // Since we are updating specific fields often, let's use partial validation for updates or just safe parse if we want to be strict.
       // However, standard pattern is usually:
@@ -281,11 +281,22 @@ export default function Shipments() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="shipments-header">
+        <div
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          id="shipments-header"
+        >
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Shipments</h1>
-              <Button variant="ghost" size="icon" onClick={() => startTour('shipments')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
+                Shipments
+              </h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => startTour('shipments')}
+                className="text-slate-400 hover:text-blue-600"
+                title="Take a Tour"
+              >
                 <HelpCircle className="w-5 h-5" />
               </Button>
             </div>
@@ -599,16 +610,13 @@ export default function Shipments() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the shipment
-                "{shipmentToDelete?.tracking_number}" and remove it from our servers.
+                This action cannot be undone. This will permanently delete the shipment "
+                {shipmentToDelete?.tracking_number}" and remove it from our servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -618,4 +626,3 @@ export default function Shipments() {
     </div>
   );
 }
-

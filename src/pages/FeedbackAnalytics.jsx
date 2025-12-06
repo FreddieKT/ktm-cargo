@@ -46,17 +46,17 @@ export default function FeedbackAnalytics() {
       submittedFeedbacks.reduce((s, f) => s + (f.rating || 0), 0) / submittedFeedbacks.length;
     const avgService =
       submittedFeedbacks.filter((f) => f.service_rating).reduce((s, f) => s + f.service_rating, 0) /
-      submittedFeedbacks.filter((f) => f.service_rating).length || 0;
+        submittedFeedbacks.filter((f) => f.service_rating).length || 0;
     const avgDelivery =
       submittedFeedbacks
         .filter((f) => f.delivery_rating)
         .reduce((s, f) => s + f.delivery_rating, 0) /
-      submittedFeedbacks.filter((f) => f.delivery_rating).length || 0;
+        submittedFeedbacks.filter((f) => f.delivery_rating).length || 0;
     const avgComm =
       submittedFeedbacks
         .filter((f) => f.communication_rating)
         .reduce((s, f) => s + f.communication_rating, 0) /
-      submittedFeedbacks.filter((f) => f.communication_rating).length || 0;
+        submittedFeedbacks.filter((f) => f.communication_rating).length || 0;
     const recommendRate =
       (submittedFeedbacks.filter((f) => f.would_recommend).length / submittedFeedbacks.length) *
       100;

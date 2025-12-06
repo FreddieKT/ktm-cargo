@@ -163,9 +163,9 @@ export default function PriceCalculator() {
   const volumetricWeight =
     dimensions.length && dimensions.width && dimensions.height
       ? (parseFloat(dimensions.length) *
-        parseFloat(dimensions.width) *
-        parseFloat(dimensions.height)) /
-      5000
+          parseFloat(dimensions.width) *
+          parseFloat(dimensions.height)) /
+        5000
       : 0;
 
   const actualWeight = parseFloat(weight) || 0;
@@ -339,10 +339,11 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                       <button
                         key={service.value}
                         onClick={() => setServiceType(service.value)}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${isSelected
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                          isSelected
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-slate-200 hover:border-blue-200'
-                          }`}
+                        }`}
                       >
                         <div className="flex items-center gap-2">
                           <Icon
@@ -707,10 +708,11 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                     <button
                       key={service.value}
                       onClick={() => setServiceType(service.value)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        isSelected
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Icon

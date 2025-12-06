@@ -115,13 +115,16 @@ export default function ShipmentForm({
         if (po && po.total_weight_kg) {
           const remaining = po.remaining_weight_kg || 0;
           const isOverLimit = weight > remaining;
-          const percentUsed = Math.min(100, ((po.allocated_weight_kg || 0) + weight) / po.total_weight_kg * 100);
+          const percentUsed = Math.min(
+            100,
+            (((po.allocated_weight_kg || 0) + weight) / po.total_weight_kg) * 100
+          );
 
           setPoWeightStatus({
             remaining,
             isOverLimit,
             percentUsed,
-            total: po.total_weight_kg
+            total: po.total_weight_kg,
           });
         } else {
           setPoWeightStatus(null);
@@ -139,7 +142,7 @@ export default function ShipmentForm({
     form.packaging_fee,
     form.vendor_cost_per_kg,
     form.vendor_po_id,
-    purchaseOrders
+    purchaseOrders,
   ]);
 
   const handlePOChange = (poId) => {
@@ -228,7 +231,7 @@ export default function ShipmentForm({
                     aria-expanded={openCombobox}
                     className="w-full justify-between"
                   >
-                    {form.customer_name || "Select customer..."}
+                    {form.customer_name || 'Select customer...'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -246,8 +249,8 @@ export default function ShipmentForm({
                           >
                             <Check
                               className={cn(
-                                "mr-2 h-4 w-4",
-                                form.customer_name === customer.name ? "opacity-100" : "opacity-0"
+                                'mr-2 h-4 w-4',
+                                form.customer_name === customer.name ? 'opacity-100' : 'opacity-0'
                               )}
                             />
                             {customer.name}
@@ -304,10 +307,12 @@ export default function ShipmentForm({
                       <span className="text-blue-600">Cost: ฿{form.vendor_cost_per_kg}/kg</span>
                     </div>
                     {poWeightStatus && (
-                      <span className={cn(
-                        "font-medium",
-                        poWeightStatus.isOverLimit ? "text-rose-600" : "text-slate-600"
-                      )}>
+                      <span
+                        className={cn(
+                          'font-medium',
+                          poWeightStatus.isOverLimit ? 'text-rose-600' : 'text-slate-600'
+                        )}
+                      >
                         {poWeightStatus.remaining}kg remaining
                       </span>
                     )}
@@ -315,7 +320,13 @@ export default function ShipmentForm({
 
                   {poWeightStatus && (
                     <div className="space-y-1">
-                      <Progress value={poWeightStatus.percentUsed} className={cn("h-2", poWeightStatus.isOverLimit ? "bg-rose-100" : "")} indicatorClassName={poWeightStatus.isOverLimit ? "bg-rose-500" : "bg-blue-500"} />
+                      <Progress
+                        value={poWeightStatus.percentUsed}
+                        className={cn('h-2', poWeightStatus.isOverLimit ? 'bg-rose-100' : '')}
+                        indicatorClassName={
+                          poWeightStatus.isOverLimit ? 'bg-rose-500' : 'bg-blue-500'
+                        }
+                      />
                       {poWeightStatus.isOverLimit && (
                         <div className="flex items-center gap-1 text-xs text-rose-600 font-medium">
                           <AlertCircle className="w-3 h-3" />
@@ -358,7 +369,9 @@ export default function ShipmentForm({
                 onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
                 placeholder="Enter weight"
                 required
-                className={cn(poWeightStatus?.isOverLimit && "border-rose-500 focus-visible:ring-rose-500")}
+                className={cn(
+                  poWeightStatus?.isOverLimit && 'border-rose-500 focus-visible:ring-rose-500'
+                )}
               />
             </div>
           </div>

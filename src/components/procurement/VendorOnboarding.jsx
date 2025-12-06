@@ -98,12 +98,13 @@ export default function VendorOnboarding({ onComplete, onCancel }) {
             <React.Fragment key={step.id}>
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                    currentStep > step.id
                       ? 'bg-emerald-500 text-white'
                       : currentStep === step.id
                         ? 'bg-blue-600 text-white'
                         : 'bg-slate-200 text-slate-500'
-                    }`}
+                  }`}
                 >
                   {currentStep > step.id ? (
                     <CheckCircle className="w-5 h-5" />

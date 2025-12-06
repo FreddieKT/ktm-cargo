@@ -38,11 +38,7 @@ export default function CustomerPortalDashboard({ customer, user }) {
       if (customer?.id) {
         return db.shipments.filter({ customer_id: customer.id }, '-created_date', 50);
       } else if (customer?.name) {
-        return db.shipments.filter(
-          { customer_name: customer.name },
-          '-created_date',
-          50
-        );
+        return db.shipments.filter({ customer_name: customer.name }, '-created_date', 50);
       }
       return [];
     },

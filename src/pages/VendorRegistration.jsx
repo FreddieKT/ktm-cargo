@@ -268,12 +268,13 @@ export default function VendorRegistration() {
               <div key={s.id} className="flex items-center">
                 <div className={`flex items-center gap-2 ${idx > 0 ? 'ml-4' : ''}`}>
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isComplete
-                      ? 'bg-emerald-500 text-white'
-                      : isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-200 text-slate-400'
-                      }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isComplete
+                        ? 'bg-emerald-500 text-white'
+                        : isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-200 text-slate-400'
+                    }`}
                   >
                     {isComplete ? (
                       <CheckCircle className="w-5 h-5" />

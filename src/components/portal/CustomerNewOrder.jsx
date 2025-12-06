@@ -140,8 +140,9 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
-                }`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
+                step >= s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
+              }`}
             >
               {step > s ? <CheckCircle className="w-5 h-5" /> : s}
             </div>
@@ -171,10 +172,11 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   <button
                     key={service.value}
                     onClick={() => updateForm('service_type', service.value)}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-blue-200'
-                      }`}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-200 hover:border-blue-200'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <div

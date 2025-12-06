@@ -185,9 +185,9 @@ export default function PricingManager() {
                 <p className="text-2xl font-bold text-emerald-900">
                   {profitMargins.length > 0
                     ? (
-                      profitMargins.reduce((sum, p) => sum + parseFloat(p.margin), 0) /
-                      profitMargins.length
-                    ).toFixed(1)
+                        profitMargins.reduce((sum, p) => sum + parseFloat(p.margin), 0) /
+                        profitMargins.length
+                      ).toFixed(1)
                     : 0}
                   %
                 </p>
@@ -233,9 +233,9 @@ export default function PricingManager() {
                     const margin =
                       pricing.price_per_kg > 0
                         ? (
-                          ((pricing.price_per_kg - pricing.cost_per_kg) / pricing.price_per_kg) *
-                          100
-                        ).toFixed(1)
+                            ((pricing.price_per_kg - pricing.cost_per_kg) / pricing.price_per_kg) *
+                            100
+                          ).toFixed(1)
                         : 0;
                     return (
                       <div

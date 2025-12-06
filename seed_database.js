@@ -448,13 +448,16 @@ async function seedInvoices(shipments, shoppingOrders) {
 
   const { data, error } = await supabase
     .from('customer_invoices')
-    .upsert(invoices.map(inv => ({
-      invoice_number: inv.invoice_number,
-      customer_id: inv.customer_id,
-      status: inv.status,
-      total_amount: inv.total_amount,
-      created_date: inv.invoice_date || new Date().toISOString()
-    })), { onConflict: 'invoice_number' })
+    .upsert(
+      invoices.map((inv) => ({
+        invoice_number: inv.invoice_number,
+        customer_id: inv.customer_id,
+        status: inv.status,
+        total_amount: inv.total_amount,
+        created_date: inv.invoice_date || new Date().toISOString(),
+      })),
+      { onConflict: 'invoice_number' }
+    )
     .select();
   if (error) console.error('Error seeding invoices:', error);
   else console.log(`Seeded ${data.length} invoices.`);

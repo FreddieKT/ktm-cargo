@@ -381,13 +381,22 @@ export default function Procurement() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="procurement-header">
+        <div
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          id="procurement-header"
+        >
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
                 Procurement Portal
               </h1>
-              <Button variant="ghost" size="icon" onClick={() => startTour('procurement')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => startTour('procurement')}
+                className="text-slate-400 hover:text-blue-600"
+                title="Take a Tour"
+              >
                 <HelpCircle className="w-5 h-5" />
               </Button>
             </div>

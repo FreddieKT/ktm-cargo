@@ -822,12 +822,13 @@ function TaskItem({ task, onToggle, onEdit, onDelete, showPhase = false }) {
 
   return (
     <div
-      className={`group flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${task.status === 'completed'
-        ? 'bg-slate-50 border-slate-100 opacity-70'
-        : isOverdue
-          ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
-          : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
-        }`}
+      className={`group flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
+        task.status === 'completed'
+          ? 'bg-slate-50 border-slate-100 opacity-70'
+          : isOverdue
+            ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
+            : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
+      }`}
       onClick={() => onEdit(task)}
     >
       <button

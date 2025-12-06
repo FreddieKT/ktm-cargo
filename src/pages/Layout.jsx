@@ -142,10 +142,11 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setSidebarOpen(false)}
                     className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive
+                    ${
+                      isActive
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                      }
+                    }
                   `}
                   >
                     <item.icon

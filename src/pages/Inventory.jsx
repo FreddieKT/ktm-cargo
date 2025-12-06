@@ -202,7 +202,7 @@ export default function Inventory() {
       // Process imports sequentially to avoid overwhelming the DB
       for (const item of importedItems) {
         // Check if item exists by SKU
-        const existing = items.find(i => i.sku === item.sku && item.sku);
+        const existing = items.find((i) => i.sku === item.sku && item.sku);
 
         if (existing) {
           await db.inventoryItems.update(existing.id, item);
@@ -235,17 +235,32 @@ export default function Inventory() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="inventory-header">
+        <div
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          id="inventory-header"
+        >
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Inventory Management</h1>
-              <Button variant="ghost" size="icon" onClick={startInventoryTour} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+                Inventory Management
+              </h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={startInventoryTour}
+                className="text-slate-400 hover:text-blue-600"
+                title="Take a Tour"
+              >
                 <HelpCircle className="w-5 h-5" />
               </Button>
             </div>
             <p className="text-slate-500 mt-1">Track stock levels and manage supplies</p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700" id="add-item-btn">
+          <Button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+            id="add-item-btn"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Item
           </Button>
@@ -485,12 +500,13 @@ export default function Inventory() {
                 {alerts.map(({ item, analytics }) => (
                   <Card
                     key={item.id}
-                    className={`border-l-4 ${analytics.urgency === 'critical'
-                      ? 'border-l-rose-500 bg-rose-50'
-                      : analytics.urgency === 'high'
-                        ? 'border-l-amber-500 bg-amber-50'
-                        : 'border-l-blue-500 bg-blue-50'
-                      }`}
+                    className={`border-l-4 ${
+                      analytics.urgency === 'critical'
+                        ? 'border-l-rose-500 bg-rose-50'
+                        : analytics.urgency === 'high'
+                          ? 'border-l-amber-500 bg-amber-50'
+                          : 'border-l-blue-500 bg-blue-50'
+                    }`}
                   >
                     <CardContent className="p-4">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -712,8 +728,10 @@ export default function Inventory() {
                       <SelectValue placeholder="Select a vendor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {vendors.map(v => (
-                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                      {vendors.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -823,16 +841,13 @@ export default function Inventory() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the item
-                "{itemToDelete?.name}" and remove it from our servers.
+                This action cannot be undone. This will permanently delete the item "
+                {itemToDelete?.name}" and remove it from our servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteItem}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogAction onClick={handleDeleteItem} className="bg-red-600 hover:bg-red-700">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

@@ -371,10 +371,11 @@ export default function ShipmentDocuments() {
                     return (
                       <div
                         key={shipment.id}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-blue-200'
-                          }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-blue-200'
+                        }`}
                       >
                         <div className="flex items-start gap-3">
                           <Checkbox
@@ -475,12 +476,13 @@ export default function ShipmentDocuments() {
                     return (
                       <Card
                         key={doc.id}
-                        className={`border-2 cursor-pointer transition-all ${isActive
-                          ? 'border-blue-500 bg-blue-50'
-                          : isGenerated
-                            ? 'border-emerald-300 bg-emerald-50'
-                            : 'border-slate-200 hover:border-blue-200'
-                          }`}
+                        className={`border-2 cursor-pointer transition-all ${
+                          isActive
+                            ? 'border-blue-500 bg-blue-50'
+                            : isGenerated
+                              ? 'border-emerald-300 bg-emerald-50'
+                              : 'border-slate-200 hover:border-blue-200'
+                        }`}
                         onClick={() => setActiveDoc(doc.id)}
                       >
                         <CardContent className="p-3">
@@ -593,5 +595,4 @@ function DocumentPreview({ type, shipment, companySettings }) {
     default:
       return null;
   }
-
 }

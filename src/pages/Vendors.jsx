@@ -777,8 +777,8 @@ export default function Vendors() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the vendor
-                "{vendorToDelete?.name}" and remove them from our servers.
+                This action cannot be undone. This will permanently delete the vendor "
+                {vendorToDelete?.name}" and remove them from our servers.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
