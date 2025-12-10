@@ -7,11 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "analyze": "vite-bundle-visualizer",
     "test": "jest",
-    "scan": "snyk test"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "scan": "snyk test",
+    "typecheck": "tsc --noEmit",
+    "prepare": "echo 'Ready for development'"
   },
   "dependencies": {
     "@datadog/browser-logs": "^6.24.1",
