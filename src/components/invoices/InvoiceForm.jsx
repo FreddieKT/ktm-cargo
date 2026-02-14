@@ -39,17 +39,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
-import { generateInvoiceNumber, calculateDueDate } from './InvoiceService';
+import { calculateDueDate } from './InvoiceService';
+import { SERVICE_TYPE_DEFAULTS } from '@/lib/defaults';
 
-const SERVICE_TYPES = [
-  { value: 'cargo_small', label: 'Cargo (1-5kg)', price: 120 },
-  { value: 'cargo_medium', label: 'Cargo (6-15kg)', price: 95 },
-  { value: 'cargo_large', label: 'Cargo (16-30kg)', price: 70 },
-  { value: 'shopping_small', label: 'Shopping + Small Items', price: 110 },
-  { value: 'shopping_fashion', label: 'Shopping + Fashion/Electronics', price: 115 },
-  { value: 'express', label: 'Express (1-2 days)', price: 150 },
-  { value: 'standard', label: 'Standard (3-5 days)', price: 95 },
-];
+// Derive a lighter SERVICE_TYPES list for the invoice form (no costBasis needed)
+const SERVICE_TYPES = SERVICE_TYPE_DEFAULTS.map(({ value, label, price }) => ({ value, label, price }));
 
 const PAYMENT_TERMS = [
   { value: 'immediate', label: 'Due Immediately', days: 0 },
@@ -79,7 +73,7 @@ export default function InvoiceForm({
     formState: { errors },
   } = useForm({
     defaultValues: {
-      invoice_number: invoice?.invoice_number || generateInvoiceNumber(),
+      invoice_number: invoice?.invoice_number || '',
       invoice_type: invoice?.invoice_type || 'shipment',
       customer_id: invoice?.customer_id || '',
       customer_name: invoice?.customer_name || '',
@@ -247,6 +241,7 @@ export default function InvoiceForm({
               <Input
                 {...register('invoice_number')}
                 readOnly
+                placeholder={invoice ? '' : 'Auto-generated on save'}
                 className="bg-slate-50 font-mono"
               />
             </div>

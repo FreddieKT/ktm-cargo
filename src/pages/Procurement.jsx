@@ -66,6 +66,10 @@ import {
   generateInvoiceFromReceipt,
   markInvoicePaid,
 } from '@/components/procurement/InvoiceService';
+import {
+  PROCUREMENT_INVOICE_QUERY_KEY,
+  invalidateProcurementInvoiceQueries,
+} from '@/pages/procurementQueryKeys';
 
 const PO_STATUS_CONFIG = {
   draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800', icon: FileText },
@@ -136,7 +140,7 @@ export default function Procurement() {
   });
 
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
-    queryKey: ['customer-invoices'],
+    queryKey: PROCUREMENT_INVOICE_QUERY_KEY,
     queryFn: () => db.customerInvoices.list('-created_date'),
   });
 
@@ -236,7 +240,7 @@ export default function Procurement() {
     onSuccess: ({ invoiceResult }) => {
       queryClient.invalidateQueries({ queryKey: ['goods-receipts'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      invalidateProcurementInvoiceQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       setShowReceiveForm(false);
       setSelectedPO(null);
@@ -357,7 +361,7 @@ export default function Procurement() {
   const markInvoicePaidMutation = useMutation({
     mutationFn: (id) => markInvoicePaid(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      invalidateProcurementInvoiceQueries(queryClient);
       toast.success('Invoice marked as paid');
     },
     onError: (error) => {

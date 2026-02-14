@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { supabase } from '@/api/supabaseClient';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,15 +51,20 @@ import VendorProfile from '@/components/portal/VendorProfile';
 import VendorPerformance from '@/components/portal/VendorPerformance';
 import { toast } from 'sonner';
 import ClientNotificationBell from '@/components/portal/ClientNotificationBell';
+import { resolvePortalDeepLink } from '@/pages/clientPortalDeepLink';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const [portalType, setPortalType] = useState(null); // 'customer' or 'vendor'
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [initialTrackingNumber, setInitialTrackingNumber] = useState('');
   const [user, setUser] = useState(null);
   const [clientData, setClientData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
+  const [portalSetupNotice, setPortalSetupNotice] = useState('');
 
   // Auth State
   const [email, setEmail] = useState('');
@@ -67,6 +72,7 @@ export default function ClientPortal() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const lastAppliedDeepLinkSearchRef = useRef('');
 
   const { data: companySettings } = useQuery({
     queryKey: ['company-settings'],
@@ -92,15 +98,87 @@ export default function ClientPortal() {
         setUser(null);
         setClientData(null);
         setPortalType(null);
+        setActiveTab('dashboard');
+        setInitialTrackingNumber('');
+        lastAppliedDeepLinkSearchRef.current = '';
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user || !portalType) return;
+    if (lastAppliedDeepLinkSearchRef.current === location.search) return;
+
+    const { tab, trackingNumber } = resolvePortalDeepLink({
+      search: location.search,
+      portalType,
+      defaultTab: 'dashboard',
+    });
+
+    setActiveTab(tab);
+    setInitialTrackingNumber(trackingNumber);
+    lastAppliedDeepLinkSearchRef.current = location.search;
+  }, [location.search, portalType, user]);
+
+  // Realtime: auto-refresh customer portal data when DB rows change
+  useEffect(() => {
+    if (!clientData?.id || portalType !== 'customer') return;
+
+    const channel = supabase
+      .channel(`portal-shipments-${clientData.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shipments',
+          filter: `customer_id=eq.${clientData.id}`,
+        },
+        () => {
+          // Invalidate all shipment-related queries so dashboard, tracker, and history auto-refresh
+          queryClient.invalidateQueries({ queryKey: ['customer-shipments'] });
+          queryClient.invalidateQueries({ queryKey: ['customer-shipments-track'] });
+          queryClient.invalidateQueries({ queryKey: ['customer-order-history'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'shopping_orders',
+          filter: `customer_id=eq.${clientData.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['customer-shopping-orders'] });
+          queryClient.invalidateQueries({ queryKey: ['customer-order-history'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'customer_invoices',
+          filter: `customer_id=eq.${clientData.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [clientData?.id, portalType, queryClient]);
+
   const loadUserAndDeterminePortal = async () => {
     setIsLoading(true);
     setAuthError(false);
+    setPortalSetupNotice('');
 
     try {
       // Check if authenticated
@@ -118,65 +196,197 @@ export default function ClientPortal() {
         throw new Error('User not found');
       }
 
-      // Admin users should not have customer records created - they use the admin dashboard
-      if (currentUser.role === 'admin') {
+      const currentUserId = currentUser.id;
+      const normalizedEmail = currentUser.email?.trim() || '';
+      const normalizedPhone = currentUser.phone?.trim() || '';
+
+      const buildTemporaryCustomer = () => ({
+        id: currentUserId || `temp-${Date.now()}`,
+        name: currentUser.full_name || normalizedEmail.split('@')[0] || 'Customer',
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        customer_type: 'individual',
+        is_temporary_profile: true,
+      });
+      let supportsAuthIdentityLink = true;
+
+      try {
+        const [{ error: customerHelperError }, { error: vendorHelperError }] = await Promise.all([
+          supabase.rpc('my_customer_id'),
+          supabase.rpc('my_vendor_id'),
+        ]);
+        const helperMissing = [customerHelperError, vendorHelperError]
+          .filter(Boolean)
+          .some((err) => /does not exist|not found|schema cache/i.test(err.message || ''));
+
+        if (helperMissing) {
+          supportsAuthIdentityLink = false;
+          console.warn(
+            'Portal auth identity helpers are missing. Falling back to legacy email/phone matching.'
+          );
+        }
+      } catch (helperProbeErr) {
+        console.warn('Could not verify portal auth identity helpers:', helperProbeErr.message);
+      }
+
+      const linkAuthIdentity = async (entityType, record) => {
+        if (!record?.id || !currentUserId || record.auth_user_id) {
+          return record;
+        }
+
+        try {
+          if (entityType === 'vendor') {
+            return await db.vendors.update(record.id, { auth_user_id: currentUserId });
+          }
+          return await db.customers.update(record.id, { auth_user_id: currentUserId });
+        } catch (linkErr) {
+          console.warn(
+            `Failed to link ${entityType} ${record.id} to auth user ${currentUserId}:`,
+            linkErr.message
+          );
+          return record;
+        }
+      };
+
+      const findVendorRecord = async () => {
+        try {
+          if (supportsAuthIdentityLink && currentUserId) {
+            const vendorsByUid = await db.vendors.filter({ auth_user_id: currentUserId });
+            if (vendorsByUid.length > 0) {
+              return vendorsByUid[0];
+            }
+          }
+        } catch (vendorUidErr) {
+          console.warn('Vendor UID lookup failed (RLS or network):', vendorUidErr.message);
+        }
+
+        try {
+          if (normalizedEmail) {
+            const vendorsByEmail = await db.vendors.filter({ email: normalizedEmail });
+            if (vendorsByEmail.length > 0) {
+              return await linkAuthIdentity('vendor', vendorsByEmail[0]);
+            }
+          }
+        } catch (vendorEmailErr) {
+          console.warn('Vendor email lookup failed (RLS or network):', vendorEmailErr.message);
+        }
+
+        return null;
+      };
+
+      const findCustomerRecord = async () => {
+        try {
+          if (supportsAuthIdentityLink && currentUserId) {
+            const customersByUid = await db.customers.filter({ auth_user_id: currentUserId });
+            if (customersByUid.length > 0) {
+              return customersByUid[0];
+            }
+          }
+        } catch (customerUidErr) {
+          console.warn('Customer UID lookup failed (RLS or network):', customerUidErr.message);
+        }
+
+        try {
+          if (normalizedEmail) {
+            const customersByEmail = await db.customers.filter({ email: normalizedEmail });
+            if (customersByEmail.length > 0) {
+              return await linkAuthIdentity('customer', customersByEmail[0]);
+            }
+          }
+        } catch (customerEmailErr) {
+          console.warn('Customer email lookup failed (RLS or network):', customerEmailErr.message);
+        }
+
+        if (normalizedPhone) {
+          try {
+            const customersByPhone = await db.customers.filter({ phone: normalizedPhone });
+            if (customersByPhone.length > 0) {
+              return await linkAuthIdentity('customer', customersByPhone[0]);
+            }
+          } catch (phoneErr) {
+            console.warn('Customer phone lookup failed (RLS or network):', phoneErr.message);
+          }
+        }
+
+        return null;
+      };
+
+      // Admin / staff users should use the admin dashboard
+      if (currentUser.role === 'admin' || currentUser.role === 'staff') {
         navigate('/Dashboard');
         return;
       }
 
-      // Check if user is a vendor
-      const vendors = await db.vendors.filter({ email: currentUser.email });
-      if (vendors.length > 0) {
+      // Prefer UID ownership checks; email/phone fallback will auto-link auth_user_id.
+      const vendor = await findVendorRecord();
+      if (vendor) {
         setPortalType('vendor');
-        setClientData(vendors[0]);
+        setClientData(vendor);
         setIsLoading(false);
         return;
       }
 
-      // Check if user is a customer
-      const customers = await db.customers.filter({ email: currentUser.email });
-      if (customers.length > 0) {
+      const customer = await findCustomerRecord();
+      if (customer) {
         setPortalType('customer');
-        setClientData(customers[0]);
+        setClientData(customer);
         setIsLoading(false);
         return;
       }
 
-      // Check by phone as fallback for customers
-      if (currentUser.phone) {
-        const customersByPhone = await db.customers.filter({
-          phone: currentUser.phone,
-        });
-        if (customersByPhone.length > 0) {
-          setPortalType('customer');
-          setClientData(customersByPhone[0]);
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // Default to customer portal for new users - create customer record only for non-admin users
+      // Default to customer portal for new users
       setPortalType('customer');
 
-      // Double-check no customer exists with this email before creating
-      const existingByEmail = await db.customers.filter({ email: currentUser.email });
-      if (existingByEmail.length > 0) {
-        setClientData(existingByEmail[0]);
+      const existingCustomer = await findCustomerRecord();
+      if (existingCustomer) {
+        setClientData(existingCustomer);
         setIsLoading(false);
         return;
       }
 
-      // Create a new customer record for this user (only non-admin users reach here)
+      // Create a new customer record for this user
       try {
-        const newCustomer = await db.customers.create({
-          name: currentUser.full_name || currentUser.email?.split('@')[0] || 'New Customer',
-          email: currentUser.email,
-          phone: currentUser.phone || '',
+        const newCustomerPayload = {
+          name: currentUser.full_name || normalizedEmail.split('@')[0] || 'New Customer',
+          email: normalizedEmail,
+          phone: normalizedPhone,
           customer_type: 'individual',
-        });
+        };
+
+        if (supportsAuthIdentityLink && currentUserId) {
+          newCustomerPayload.auth_user_id = currentUserId;
+        }
+
+        let newCustomer;
+        try {
+          newCustomer = await db.customers.create(newCustomerPayload);
+        } catch (createErr) {
+          const isForbiddenInsert =
+            /forbidden|permission denied|row-level|rls/i.test(createErr.message || '');
+          const missingAuthUserColumn =
+            /auth_user_id/i.test(createErr.message || '') &&
+            /does not exist|column/i.test(createErr.message || '');
+
+          if (missingAuthUserColumn && newCustomerPayload.auth_user_id) {
+            delete newCustomerPayload.auth_user_id;
+            supportsAuthIdentityLink = false;
+            newCustomer = await db.customers.create(newCustomerPayload);
+          } else if (isForbiddenInsert) {
+            // Older DB policy setups can block customer self-provisioning.
+            // Keep the user in portal with a temporary client profile instead of hard-failing.
+            setPortalSetupNotice(
+              'Your account is active, but customer provisioning is restricted by database policies. ' +
+              'Please ask support/admin to apply portal migrations.'
+            );
+            newCustomer = buildTemporaryCustomer();
+          } else {
+            throw createErr;
+          }
+        }
+
         setClientData(newCustomer);
       } catch (createErr) {
-        console.error('Failed to create customer', createErr);
+        console.error('Failed to create customer record:', createErr.message);
         setClientData(null);
       }
     } catch (e) {
@@ -294,6 +504,23 @@ export default function ClientPortal() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email || !email.trim()) {
+      toast.error('Please enter your email address first, then click Forgot Password.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/ClientPortal`,
+      });
+      if (error) throw error;
+      toast.success('Password reset email sent! Check your inbox.');
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      toast.error(error.message || 'Failed to send reset email. Please try again.');
+    }
+  };
+
   const handleLogout = () => {
     auth.logout();
   };
@@ -407,6 +634,15 @@ export default function ClientPortal() {
                   >
                     {isAuthLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
@@ -492,10 +728,62 @@ export default function ClientPortal() {
   }
 
   // PORTAL CONTENT (Authenticated)
+  // If portalType was never determined (e.g. all DB lookups failed due to RLS), show error
   if (!portalType) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-0 shadow-xl">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-7 h-7 text-amber-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Unable to load your portal</h2>
+            <p className="text-slate-500 text-sm">
+              We had trouble setting up your account. This is usually a temporary issue — please try again.
+            </p>
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                onClick={() => loadUserAndDeterminePortal()}
+                className="bg-blue-600 hover:bg-blue-700 w-full"
+              >
+                Try Again
+              </Button>
+              <Button variant="outline" onClick={handleLogout} className="w-full">
+                <LogOut className="w-4 h-4 mr-2" /> Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Guard: customer portal loaded but clientData creation failed
+  if (portalType === 'customer' && !clientData) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-0 shadow-xl">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-7 h-7 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900">Something went wrong</h2>
+            <p className="text-slate-500 text-sm">
+              We couldn't set up your customer profile. This may be a temporary issue.
+            </p>
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                onClick={() => loadUserAndDeterminePortal()}
+                className="bg-blue-600 hover:bg-blue-700 w-full"
+              >
+                Try Again
+              </Button>
+              <Button variant="outline" onClick={handleLogout} className="w-full">
+                <LogOut className="w-4 h-4 mr-2" /> Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -544,6 +832,15 @@ export default function ClientPortal() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {portalType === 'customer' && portalSetupNotice && (
+          <Card className="border-amber-300 bg-amber-50 shadow-sm mb-6">
+            <CardContent className="py-3 px-4 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-700 mt-0.5" />
+              <p className="text-sm text-amber-800">{portalSetupNotice}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {portalType === 'customer' ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-4 md:grid-cols-7 mb-6">
@@ -571,10 +868,13 @@ export default function ClientPortal() {
             </TabsList>
 
             <TabsContent value="dashboard">
-              <CustomerPortalDashboard customer={clientData} user={user} />
+              <CustomerPortalDashboard customer={clientData} user={user} onNavigate={setActiveTab} />
             </TabsContent>
             <TabsContent value="track">
-              <CustomerShipmentTracker customer={clientData} />
+              <CustomerShipmentTracker
+                customer={clientData}
+                initialTrackingNumber={initialTrackingNumber}
+              />
             </TabsContent>
             <TabsContent value="new-order">
               <CustomerNewOrder
@@ -587,7 +887,7 @@ export default function ClientPortal() {
               <CustomerOrderHistory customer={clientData} />
             </TabsContent>
             <TabsContent value="invoices">
-              <CustomerInvoices customer={clientData} />
+              <CustomerInvoices customer={clientData} companySettings={companySettings} />
             </TabsContent>
             <TabsContent value="support">
               <CustomerSupport customer={clientData} user={user} />

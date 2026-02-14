@@ -14,6 +14,18 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+/** Escape for safe insertion into HTML (prevents XSS in print documents). */
+function escapeHtml(str) {
+  if (str == null) return '';
+  const s = String(str);
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const documentTypes = [
   { id: 'commercial_invoice', label: 'Commercial Invoice', icon: FileText, required: true },
   { id: 'packing_list', label: 'Packing List', icon: ClipboardList, required: true },
@@ -125,7 +137,21 @@ export default function DocumentGenerator({ shipment, onGenerate }) {
 
 function generateDocumentHTML(docType, shipment) {
   const today = format(new Date(), 'MMMM d, yyyy');
-  const invoiceNumber = `INV-${shipment.tracking_number || Date.now()}`;
+  const track = escapeHtml(shipment?.tracking_number || 'Pending');
+  const invoiceNumber = track === 'Pending' ? `INV-${String(Date.now())}` : `INV-${track}`;
+  const customerName = escapeHtml(shipment?.customer_name || '');
+  const customerPhone = escapeHtml(shipment?.customer_phone || '');
+  const deliveryAddress = escapeHtml(shipment?.delivery_address || 'Yangon, Myanmar');
+  const itemsDesc = escapeHtml(shipment?.items_description || 'General Cargo');
+  const serviceType = escapeHtml(shipment?.service_type?.replace('_', ' ') || 'Standard');
+  const paymentStatus = escapeHtml(shipment?.payment_status?.toUpperCase() || 'PENDING');
+  const weightKg = shipment?.weight_kg != null ? String(shipment.weight_kg) : '';
+  const pricePerKg = shipment?.price_per_kg != null ? Number(shipment.price_per_kg) : 95;
+  const insuranceAmount = (shipment?.insurance_amount ?? 0);
+  const packagingFee = Number(shipment?.packaging_fee) || 0;
+  const totalAmount = (shipment?.total_amount ?? 0);
+  const pickupDateStr = shipment?.pickup_date ? format(new Date(shipment.pickup_date), 'MMM d, yyyy') : 'TBD';
+  const refNo = escapeHtml(shipment?.tracking_number ? `CD-${shipment.tracking_number}` : `CD-${Date.now()}`);
 
   const baseStyles = `
     <style>
@@ -152,21 +178,21 @@ function generateDocumentHTML(docType, shipment) {
       <!DOCTYPE html><html><head><title>Commercial Invoice</title>${baseStyles}</head><body>
         <div class="header">
           <h1>COMMERCIAL INVOICE</h1>
-          <p>Bangkok-Yangon Cargo & Shopping Services</p>
+          <p>Bangkok-Yangon Cargo &amp; Shopping Services</p>
           <p>Bangkok, Thailand</p>
         </div>
         <div class="info-grid">
           <div class="info-box">
             <h3>Invoice Details</h3>
-            <p><strong>Invoice No:</strong> ${invoiceNumber}</p>
+            <p><strong>Invoice No:</strong> ${escapeHtml(invoiceNumber)}</p>
             <p><strong>Date:</strong> ${today}</p>
-            <p><strong>Tracking:</strong> ${shipment.tracking_number || 'Pending'}</p>
+            <p><strong>Tracking:</strong> ${track}</p>
           </div>
           <div class="info-box">
             <h3>Consignee</h3>
-            <p><strong>${shipment.customer_name}</strong></p>
-            <p>${shipment.customer_phone || ''}</p>
-            <p>${shipment.delivery_address || 'Yangon, Myanmar'}</p>
+            <p><strong>${customerName}</strong></p>
+            <p>${customerPhone}</p>
+            <p>${deliveryAddress}</p>
           </div>
         </div>
         <table>
@@ -175,17 +201,17 @@ function generateDocumentHTML(docType, shipment) {
           </thead>
           <tbody>
             <tr>
-              <td>${shipment.items_description || 'General Cargo'}</td>
-              <td>${shipment.weight_kg}</td>
-              <td>฿${shipment.price_per_kg || 95}</td>
-              <td>฿${((shipment.weight_kg || 0) * (shipment.price_per_kg || 95)).toLocaleString()}</td>
+              <td>${itemsDesc}</td>
+              <td>${escapeHtml(weightKg)}</td>
+              <td>฿${Number(pricePerKg).toLocaleString()}</td>
+              <td>฿${((Number(shipment?.weight_kg) || 0) * (Number(shipment?.price_per_kg) || 95)).toLocaleString()}</td>
             </tr>
-            ${shipment.insurance_opted ? `<tr><td>Insurance (3%)</td><td>-</td><td>-</td><td>฿${(shipment.insurance_amount || 0).toLocaleString()}</td></tr>` : ''}
-            ${shipment.packaging_fee > 0 ? `<tr><td>Packaging</td><td>-</td><td>-</td><td>฿${shipment.packaging_fee}</td></tr>` : ''}
-            <tr class="total-row"><td colspan="3">TOTAL</td><td>฿${(shipment.total_amount || 0).toLocaleString()}</td></tr>
+            ${shipment?.insurance_opted ? `<tr><td>Insurance (3%)</td><td>-</td><td>-</td><td>฿${Number(insuranceAmount).toLocaleString()}</td></tr>` : ''}
+            ${packagingFee > 0 ? `<tr><td>Packaging</td><td>-</td><td>-</td><td>฿${packagingFee}</td></tr>` : ''}
+            <tr class="total-row"><td colspan="3">TOTAL</td><td>฿${Number(totalAmount).toLocaleString()}</td></tr>
           </tbody>
         </table>
-        <p><strong>Payment Status:</strong> ${shipment.payment_status?.toUpperCase() || 'PENDING'}</p>
+        <p><strong>Payment Status:</strong> ${paymentStatus}</p>
         <div class="footer">
           <p>This is a computer-generated document. For shipping from Bangkok to Yangon via air cargo.</p>
         </div>
@@ -195,19 +221,19 @@ function generateDocumentHTML(docType, shipment) {
       <!DOCTYPE html><html><head><title>Packing List</title>${baseStyles}</head><body>
         <div class="header">
           <h1>PACKING LIST</h1>
-          <p>Bangkok-Yangon Cargo & Shopping Services</p>
+          <p>Bangkok-Yangon Cargo &amp; Shopping Services</p>
         </div>
         <div class="info-grid">
           <div class="info-box">
             <h3>Shipment Details</h3>
-            <p><strong>Tracking No:</strong> ${shipment.tracking_number || 'Pending'}</p>
+            <p><strong>Tracking No:</strong> ${track}</p>
             <p><strong>Date:</strong> ${today}</p>
-            <p><strong>Service:</strong> ${shipment.service_type?.replace('_', ' ') || 'Standard'}</p>
+            <p><strong>Service:</strong> ${serviceType}</p>
           </div>
           <div class="info-box">
             <h3>Consignee</h3>
-            <p><strong>${shipment.customer_name}</strong></p>
-            <p>${shipment.delivery_address || 'Yangon, Myanmar'}</p>
+            <p><strong>${customerName}</strong></p>
+            <p>${deliveryAddress}</p>
           </div>
         </div>
         <table>
@@ -217,18 +243,18 @@ function generateDocumentHTML(docType, shipment) {
           <tbody>
             <tr>
               <td>1</td>
-              <td>${shipment.items_description || 'General Cargo'}</td>
+              <td>${itemsDesc}</td>
               <td>1 Package</td>
-              <td>${shipment.weight_kg} kg</td>
+              <td>${escapeHtml(weightKg)} kg</td>
             </tr>
             <tr class="total-row">
               <td colspan="3">TOTAL GROSS WEIGHT</td>
-              <td>${shipment.weight_kg} kg</td>
+              <td>${escapeHtml(weightKg)} kg</td>
             </tr>
           </tbody>
         </table>
         <p><strong>Number of Packages:</strong> 1</p>
-        <p><strong>Packaging Type:</strong> ${shipment.packaging_fee > 0 ? 'Professional Packaging' : 'Standard'}</p>
+        <p><strong>Packaging Type:</strong> ${packagingFee > 0 ? 'Professional Packaging' : 'Standard'}</p>
         <div class="footer">
           <p>Origin: Bangkok, Thailand | Destination: Yangon, Myanmar</p>
         </div>
@@ -238,7 +264,7 @@ function generateDocumentHTML(docType, shipment) {
       <!DOCTYPE html><html><head><title>Air Waybill</title>${baseStyles}</head><body>
         <div class="header">
           <h1>AIR WAYBILL</h1>
-          <p style="font-size: 18px; font-weight: bold;">${shipment.tracking_number || 'AWB-PENDING'}</p>
+          <p style="font-size: 18px; font-weight: bold;">${track === 'Pending' ? 'AWB-PENDING' : track}</p>
         </div>
         <div class="info-grid">
           <div class="info-box">
@@ -249,9 +275,9 @@ function generateDocumentHTML(docType, shipment) {
           </div>
           <div class="info-box">
             <h3>Consignee</h3>
-            <p><strong>${shipment.customer_name}</strong></p>
-            <p>${shipment.customer_phone || ''}</p>
-            <p>${shipment.delivery_address || 'Yangon, Myanmar'}</p>
+            <p><strong>${customerName}</strong></p>
+            <p>${customerPhone}</p>
+            <p>${deliveryAddress}</p>
           </div>
         </div>
         <div class="info-grid">
@@ -271,14 +297,14 @@ function generateDocumentHTML(docType, shipment) {
           <tbody>
             <tr>
               <td>1</td>
-              <td>${shipment.weight_kg} kg</td>
-              <td>${shipment.items_description || 'General Cargo'}</td>
-              <td>฿${(shipment.total_amount || 0).toLocaleString()}</td>
+              <td>${escapeHtml(weightKg)} kg</td>
+              <td>${itemsDesc}</td>
+              <td>฿${Number(totalAmount).toLocaleString()}</td>
             </tr>
           </tbody>
         </table>
-        <p><strong>Flight Date:</strong> ${shipment.pickup_date ? format(new Date(shipment.pickup_date), 'MMM d, yyyy') : 'TBD'}</p>
-        <p><strong>Service Type:</strong> ${shipment.service_type === 'express' ? 'EXPRESS (1-2 days)' : 'STANDARD (3-5 days)'}</p>
+        <p><strong>Flight Date:</strong> ${pickupDateStr}</p>
+        <p><strong>Service Type:</strong> ${shipment?.service_type === 'express' ? 'EXPRESS (1-2 days)' : 'STANDARD (3-5 days)'}</p>
         <div class="signature-box">
           <div><div class="signature-line">Shipper's Signature</div></div>
           <div><div class="signature-line">Carrier's Signature</div></div>
@@ -293,7 +319,7 @@ function generateDocumentHTML(docType, shipment) {
         </div>
         <div class="info-box" style="margin-bottom: 20px;">
           <h3>Declaration Reference</h3>
-          <p><strong>Reference No:</strong> CD-${shipment.tracking_number || Date.now()}</p>
+          <p><strong>Reference No:</strong> ${refNo}</p>
           <p><strong>Date:</strong> ${today}</p>
         </div>
         <div class="info-grid">
@@ -304,8 +330,8 @@ function generateDocumentHTML(docType, shipment) {
           </div>
           <div class="info-box">
             <h3>Importer/Consignee</h3>
-            <p><strong>${shipment.customer_name}</strong></p>
-            <p>${shipment.delivery_address || 'Yangon, Myanmar'}</p>
+            <p><strong>${customerName}</strong></p>
+            <p>${deliveryAddress}</p>
           </div>
         </div>
         <table>
@@ -315,10 +341,10 @@ function generateDocumentHTML(docType, shipment) {
           <tbody>
             <tr>
               <td>-</td>
-              <td>${shipment.items_description || 'Personal Effects / General Cargo'}</td>
+              <td>${itemsDesc === 'General Cargo' ? 'Personal Effects / General Cargo' : itemsDesc}</td>
               <td>1 pkg</td>
-              <td>${shipment.weight_kg} kg</td>
-              <td>฿${(shipment.total_amount || 0).toLocaleString()}</td>
+              <td>${escapeHtml(weightKg)} kg</td>
+              <td>฿${Number(totalAmount).toLocaleString()}</td>
             </tr>
           </tbody>
         </table>
@@ -328,7 +354,7 @@ function generateDocumentHTML(docType, shipment) {
           <p>The goods described are for personal use / commercial purposes and comply with all applicable export regulations.</p>
         </div>
         <div class="signature-box">
-          <div><div class="signature-line">Declarant Signature & Date</div></div>
+          <div><div class="signature-line">Declarant Signature &amp; Date</div></div>
           <div><div class="signature-line">Customs Officer Stamp</div></div>
         </div>
         <div class="footer">

@@ -71,6 +71,7 @@ describe('computeOrderTotals', () => {
       costPerKg: 75,
       productCost: 0,
       commissionRatePercent: 0,
+      includeInsurance: false,
       serviceType: 'cargo_medium',
     });
     expect(r.shippingCost).toBe(950);
@@ -88,12 +89,13 @@ describe('computeOrderTotals', () => {
       costPerKg: 80,
       productCost: 1000,
       commissionRatePercent: 10,
+      includeInsurance: false,
       serviceType: 'shopping_small',
     });
     expect(r.commission).toBe(100);
     expect(r.shippingCost).toBe(550);
-    expect(r.totalCustomer).toBe(1700); // 1000 + 100 + 550 + 50 packaging
-    expect(r.totalCost).toBe(1000 + 400 + 16.5); // product + cost*weight + insurance
+    expect(r.totalCustomer).toBe(1750); // 1000 + 100 + 550 + 100 packaging (5kg → 100)
+    expect(r.totalCost).toBe(1000 + 400); // product + cost*weight (no insurance when includeInsurance: false)
     expect(r.profit).toBeGreaterThan(0);
   });
 
@@ -121,6 +123,19 @@ describe('computeOrderTotals', () => {
     });
     expect(r.totalCustomer).toBe(0);
     expect(r.marginPercent).toBe(0);
+  });
+
+  test('negative inputs are clamped to 0 (no negative totals)', () => {
+    const r = computeOrderTotals({
+      chargeableWeightKg: -5,
+      pricePerKg: -10,
+      costPerKg: -20,
+      productCost: -100,
+      serviceType: 'cargo_medium',
+    });
+    expect(r.shippingCost).toBe(0);
+    expect(r.totalCustomer).toBeGreaterThanOrEqual(0);
+    expect(r.totalCost).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -159,6 +174,35 @@ describe('computeInvoiceTotals', () => {
     const r = computeInvoiceTotals({});
     expect(r.subtotal).toBe(0);
     expect(r.taxAmount).toBe(0);
+    expect(r.total).toBe(0);
+  });
+
+  test('total never negative when discount exceeds subtotal + tax', () => {
+    const r = computeInvoiceTotals({
+      shipping_amount: 100,
+      insurance_amount: 0,
+      packaging_fee: 0,
+      product_cost: 0,
+      commission_amount: 0,
+      tax_rate: 10,
+      discount_amount: 500,
+    });
+    expect(r.subtotal).toBe(100);
+    expect(r.taxAmount).toBe(10);
+    expect(r.total).toBe(0);
+  });
+
+  test('total is 0 for large discount, not negative', () => {
+    const r = computeInvoiceTotals({
+      shipping_amount: 50,
+      insurance_amount: 0,
+      packaging_fee: 0,
+      product_cost: 0,
+      commission_amount: 0,
+      tax_rate: 0,
+      discount_amount: 1000,
+    });
+    expect(r.total).toBeGreaterThanOrEqual(0);
     expect(r.total).toBe(0);
   });
 });

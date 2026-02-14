@@ -1,9 +1,9 @@
 /**
  * Invoice Service - Real-World Invoice Management
- * 
+ *
  * Customer Invoices (Accounts Receivable): We issue to customers for services
  * Vendor Bills (Accounts Payable): Vendors send to us for goods/services received
- * 
+ *
  * Real-World Invoice Flow:
  * 1. Create Draft Invoice
  * 2. Review & Issue Invoice
@@ -13,22 +13,101 @@
  */
 
 import { db } from '@/api/db';
+import { supabase } from '@/api/supabaseClient';
 import { format, addDays } from 'date-fns';
 
-// Invoice number sequences (in production, this should be database-managed)
-let invoiceSequence = 0;
+const IS_PROD =
+  typeof __APP_IS_PROD__ !== 'undefined'
+    ? __APP_IS_PROD__
+    : typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
 
 /**
- * Generate sequential invoice number
- * Format: INV-YYYYMM-XXXX
+ * In-memory fallback counter for invoice numbers.
+ *
+ * ⚠ RISK (documented per P0 audit):
+ *   - Resets to 0 on every page reload / app restart → duplicates possible.
+ *   - Not shared across browser tabs → concurrent users may collide.
+ *   - Acceptable ONLY during initial setup before `add_invoice_number_sequence.sql`
+ *     has been applied.  In production the DB-backed RPC must always succeed.
+ *
+ * To eliminate this risk, ensure `add_invoice_number_sequence.sql` is applied
+ * (see migrations/README.md or scripts/verify_p0_migrations.mjs).
  */
-export function generateInvoiceNumber() {
+let invoiceSequenceFallback = 0;
+
+/**
+ * Get next invoice number from the DB sequence via RPC.
+ * Format: INV-YYYYMM-XXXX.
+ *
+ * In production the RPC **must** succeed; if it fails a loud warning is
+ * emitted to the console and Sentry so operators know the migration is missing.
+ *
+ * @param {{ allowFallback?: boolean }} options
+ * @returns {Promise<string>}
+ */
+export async function getNextInvoiceNumber(options = {}) {
+  const { allowFallback = true } = options;
+  const { data, error } = await supabase.rpc('next_invoice_number');
+
+  if (!error && data) return data;
+
+  if (!allowFallback) {
+    const hardFailMessage =
+      '[InvoiceService] next_invoice_number RPC failed during invoice creation. ' +
+      'Creation is blocked to prevent duplicate invoice numbers. ' +
+      'Apply add_invoice_number_sequence.sql and retry.';
+
+    if (IS_PROD) {
+      console.error(hardFailMessage, error);
+      import('@sentry/react').then((Sentry) => {
+        Sentry.captureMessage(hardFailMessage, { level: 'error', extra: { rpcError: error } });
+      });
+    } else {
+      console.error(hardFailMessage, error);
+    }
+
+    throw new Error(
+      'Unable to generate a unique invoice number. Please verify invoice sequence migration and try again.'
+    );
+  }
+
+  // ── Fallback path — non-critical usage only ──────────────────────────
+  const warnMsg =
+    '[InvoiceService] next_invoice_number RPC failed – using in-memory fallback. ' +
+    'This means the add_invoice_number_sequence.sql migration has NOT been applied. ' +
+    'Invoice uniqueness is NOT guaranteed until the migration is run.';
+
+  if (IS_PROD) {
+    console.error(warnMsg, error);
+    // Report to Sentry so ops is alerted immediately
+    import('@sentry/react').then((Sentry) => {
+      Sentry.captureMessage(warnMsg, { level: 'error', extra: { rpcError: error } });
+    });
+  } else {
+    console.warn(warnMsg, error);
+  }
+
+  return generateInvoiceNumberFallback();
+}
+
+/**
+ * In-memory fallback when DB sequence is not available (e.g. before migration).
+ * Format: INV-YYYYMM-XXXX
+ *
+ * @see Documentation above for why this fallback is risky in production.
+ */
+export function generateInvoiceNumberFallback() {
   const date = new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  invoiceSequence++;
-  const seq = String(invoiceSequence).padStart(4, '0');
+  invoiceSequenceFallback += 1;
+  const seq = String(invoiceSequenceFallback).padStart(4, '0');
   return `INV-${year}${month}-${seq}`;
+}
+
+/** @deprecated Use getNextInvoiceNumber() for new code. Kept for backward compatibility. */
+export function generateInvoiceNumber() {
+  return generateInvoiceNumberFallback();
 }
 
 /**
@@ -43,7 +122,7 @@ const PAYMENT_TERMS_DAYS = {
 };
 
 export function calculateDueDate(invoiceDate, paymentTerms = 'net_7') {
-  const days = PAYMENT_TERMS_DAYS[paymentTerms] || 7;
+  const days = PAYMENT_TERMS_DAYS[paymentTerms] ?? 7;
   return format(addDays(new Date(invoiceDate), days), 'yyyy-MM-dd');
 }
 
@@ -54,9 +133,11 @@ export function calculateDueDate(invoiceDate, paymentTerms = 'net_7') {
 export async function createCustomerInvoice(invoiceData) {
   const invoiceDate = invoiceData.invoice_date || format(new Date(), 'yyyy-MM-dd');
   const paymentTerms = invoiceData.payment_terms || 'net_7';
-  
+  // Always use DB-backed sequence for new invoices.
+  const invoiceNumber = await getNextInvoiceNumber({ allowFallback: false });
+
   const invoice = await db.customerInvoices.create({
-    invoice_number: invoiceData.invoice_number || generateInvoiceNumber(),
+    invoice_number: invoiceNumber,
     invoice_type: invoiceData.invoice_type || 'shipment',
     
     // Source reference (either shipment or shopping order)
@@ -170,7 +251,8 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
   const shippingCost = parseFloat(order.shipping_cost) || 0;
   const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
   const totalAmount = parseFloat(order.total_amount) || (productCost + commissionAmount + shippingCost);
-  const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 110;
+  // Avoid hardcoded fallback: use derived rate or 0; prefer company_settings.default_shopping_price_per_kg when available
+  const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 0;
 
   const invoice = await createCustomerInvoice({
     invoice_type: 'shopping_order',
@@ -220,6 +302,49 @@ export async function markInvoiceSent(invoiceId) {
  * Record payment and mark invoice as paid
  */
 export async function recordPayment(invoiceId, paymentDetails = {}) {
+  const currentInvoice = await db.customerInvoices.get(invoiceId);
+  if (!currentInvoice) {
+    throw new Error('Invoice not found');
+  }
+
+  if (currentInvoice.status === 'paid') {
+    throw new Error('Invoice is already paid');
+  }
+
+  if (currentInvoice.status === 'void') {
+    throw new Error('Cannot record payment for a void invoice');
+  }
+
+  if (!['issued', 'sent'].includes(currentInvoice.status)) {
+    throw new Error('Payment can only be recorded for issued or sent invoices');
+  }
+
+  const invoiceTotal = Number(currentInvoice.total_amount) || 0;
+  const paymentAmountInput = paymentDetails.amount;
+  const paymentAmount =
+    paymentAmountInput === undefined || paymentAmountInput === null || paymentAmountInput === ''
+      ? invoiceTotal
+      : Number(paymentAmountInput);
+
+  if (!Number.isFinite(paymentAmount)) {
+    throw new Error('Payment amount must be a valid number');
+  }
+
+  if (paymentAmount < 0) {
+    throw new Error('Payment amount cannot be negative');
+  }
+
+  if (invoiceTotal > 0) {
+    if (paymentAmount > invoiceTotal + 0.01) {
+      throw new Error('Payment amount cannot exceed invoice total');
+    }
+
+    // This action marks the invoice as fully paid, so partial amounts are rejected.
+    if (paymentAmount < invoiceTotal - 0.01) {
+      throw new Error('Partial payments are not supported by this action');
+    }
+  }
+
   const invoice = await db.customerInvoices.update(invoiceId, {
     status: 'paid',
     payment_date: paymentDetails.payment_date || format(new Date(), 'yyyy-MM-dd'),

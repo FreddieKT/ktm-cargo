@@ -31,7 +31,7 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
 };
 
-export default function CustomerPortalDashboard({ customer, user }) {
+export default function CustomerPortalDashboard({ customer, user, onNavigate }) {
   const { data: shipments = [] } = useQuery({
     queryKey: ['customer-shipments', customer?.id, user?.email],
     queryFn: async () => {
@@ -79,8 +79,8 @@ export default function CustomerPortalDashboard({ customer, user }) {
               <p className="text-blue-100 mt-1">Track your shipments and manage your orders</p>
             </div>
             <div className="flex gap-3">
-              <Button className="bg-white text-blue-600 hover:bg-blue-50">
-                <Package className="w-4 h-4 mr-2" /> New Shipment
+              <Button className="bg-white text-blue-600 hover:bg-blue-50" onClick={() => onNavigate?.('new-order')}>
+                <Package className="w-4 h-4 mr-2" /> New Order
               </Button>
             </div>
           </div>
@@ -179,7 +179,7 @@ export default function CustomerPortalDashboard({ customer, user }) {
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Active Shipments</CardTitle>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={() => onNavigate?.('history')}>
             View All <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </CardHeader>
@@ -222,8 +222,8 @@ export default function CustomerPortalDashboard({ customer, user }) {
             <div className="text-center py-8 text-slate-500">
               <Package className="w-12 h-12 mx-auto mb-3 text-slate-300" />
               <p>No active shipments</p>
-              <Button variant="outline" className="mt-3">
-                Create New Shipment
+              <Button variant="outline" className="mt-3" onClick={() => onNavigate?.('new-order')}>
+                Create New Order
               </Button>
             </div>
           )}

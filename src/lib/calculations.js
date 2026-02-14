@@ -104,10 +104,10 @@ export function packagingFeeByWeight(weightKg, overrideFee) {
  * }}
  */
 export function computeOrderTotals(params) {
-  const w = safeNum(params.chargeableWeightKg);
-  const pricePerKg = safeNum(params.pricePerKg);
-  const costPerKg = safeNum(params.costPerKg);
-  const productCost = safeNum(params.productCost);
+  const w = Math.max(0, safeNum(params.chargeableWeightKg));
+  const pricePerKg = Math.max(0, safeNum(params.pricePerKg));
+  const costPerKg = Math.max(0, safeNum(params.costPerKg));
+  const productCost = Math.max(0, safeNum(params.productCost));
   const commissionRate = safeNum(params.commissionRatePercent, 0);
   const insuranceRate = safeNum(params.insuranceRatePercent, 3);
   const includeInsurance = params.includeInsurance !== false;
@@ -172,17 +172,17 @@ export function computeOrderTotals(params) {
  * @returns {{ subtotal: number, taxAmount: number, total: number }}
  */
 export function computeInvoiceTotals(params) {
-  const shipping = safeNum(params.shipping_amount);
-  const insurance = safeNum(params.insurance_amount);
-  const packaging = safeNum(params.packaging_fee);
-  const product = safeNum(params.product_cost);
-  const commission = safeNum(params.commission_amount);
-  const taxRate = safeNum(params.tax_rate);
-  const discount = safeNum(params.discount_amount);
+  const shipping = Math.max(0, safeNum(params.shipping_amount));
+  const insurance = Math.max(0, safeNum(params.insurance_amount));
+  const packaging = Math.max(0, safeNum(params.packaging_fee));
+  const product = Math.max(0, safeNum(params.product_cost));
+  const commission = Math.max(0, safeNum(params.commission_amount));
+  const taxRate = Math.max(0, safeNum(params.tax_rate));
+  const discount = Math.max(0, safeNum(params.discount_amount));
 
   const subtotal = roundMoney(shipping + insurance + packaging + product + commission);
   const taxAmount = Math.round(roundMoney((subtotal * taxRate) / 100));
-  const total = roundMoney(subtotal + taxAmount - discount);
+  const total = roundMoney(Math.max(0, subtotal + taxAmount - discount));
 
   return { subtotal, taxAmount, total };
 }
@@ -201,10 +201,10 @@ export function computeInvoiceTotals(params) {
  * @returns {{ productCost: number, commission: number, shippingCost: number, total: number, vendorCost: number, profit: number, marginPercent: number }}
  */
 export function computeShoppingOrderTotals(params) {
-  const productCost = safeNum(params.productCost);
-  const weight = safeNum(params.weightKg);
-  const pricePerKg = safeNum(params.pricePerKg);
-  const vendorCostPerKg = safeNum(params.vendorCostPerKg);
+  const productCost = Math.max(0, safeNum(params.productCost));
+  const weight = Math.max(0, safeNum(params.weightKg));
+  const pricePerKg = Math.max(0, safeNum(params.pricePerKg));
+  const vendorCostPerKg = Math.max(0, safeNum(params.vendorCostPerKg));
   const commissionRate = safeNum(params.commissionRatePercent, 0);
 
   const commission = roundMoney(productCost * (commissionRate / 100));

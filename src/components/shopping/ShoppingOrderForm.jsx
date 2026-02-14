@@ -69,7 +69,7 @@ const paymentStatusOptions = [
     { value: 'paid', label: 'Paid', color: 'bg-emerald-100 text-emerald-700' },
 ];
 
-const DEFAULT_SHOPPING_RATE = 110;
+import { DEFAULT_SHOPPING_PRICE_PER_KG } from '@/lib/defaults';
 
 export default function ShoppingOrderForm({
     order,
@@ -93,7 +93,7 @@ export default function ShoppingOrderForm({
     const shoppingPricePerKg = (() => {
         const fromPricing = servicePricing.find((p) => String(p.service_type).startsWith('shopping_'));
         if (fromPricing?.price_per_kg != null && fromPricing.price_per_kg > 0) return fromPricing.price_per_kg;
-        return user?.business_settings?.default_shopping_price_per_kg ?? DEFAULT_SHOPPING_RATE;
+        return user?.business_settings?.default_shopping_price_per_kg ?? DEFAULT_SHOPPING_PRICE_PER_KG;
     })();
 
     const {

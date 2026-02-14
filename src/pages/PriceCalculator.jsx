@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -15,7 +15,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Calculator,
   Package,
@@ -28,7 +27,6 @@ import {
   DollarSign,
   ArrowRightLeft,
   TrendingUp,
-  Share2,
   Copy,
   Printer,
   RotateCcw,
@@ -38,74 +36,9 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { SERVICE_TYPE_DEFAULTS } from '@/lib/defaults';
 
-const DEFAULT_SERVICE_TYPES = [
-  {
-    value: 'cargo_small',
-    label: 'Cargo (1-5kg)',
-    costBasis: 90,
-    price: 120,
-    icon: Package,
-    description: 'Small packages',
-  },
-  {
-    value: 'cargo_medium',
-    label: 'Cargo (6-15kg)',
-    costBasis: 75,
-    price: 95,
-    icon: Package,
-    description: 'Medium packages',
-  },
-  {
-    value: 'cargo_large',
-    label: 'Cargo (16-30kg)',
-    costBasis: 55,
-    price: 70,
-    icon: Package,
-    description: 'Large shipments',
-  },
-  {
-    value: 'shopping_small',
-    label: 'Shopping + Small Items',
-    costBasis: 80,
-    price: 110,
-    icon: ShoppingBag,
-    description: 'Personal shopping',
-  },
-  {
-    value: 'shopping_fashion',
-    label: 'Shopping + Fashion',
-    costBasis: 85,
-    price: 115,
-    icon: ShoppingBag,
-    description: 'Fashion & Electronics',
-  },
-  {
-    value: 'shopping_bulk',
-    label: 'Shopping + Bulk',
-    costBasis: 70,
-    price: 90,
-    icon: ShoppingBag,
-    description: 'Bulk orders',
-  },
-  {
-    value: 'express',
-    label: 'Express (1-2 days)',
-    costBasis: 100,
-    price: 150,
-    icon: Zap,
-    description: 'Fastest delivery',
-  },
-  {
-    value: 'standard',
-    label: 'Standard (3-5 days)',
-    costBasis: 75,
-    price: 95,
-    icon: Truck,
-    description: 'Regular service',
-  },
-];
-
+// Map icon + description for PriceCalculator display
 const ICON_MAP = {
   cargo_small: Package,
   cargo_medium: Package,
@@ -116,6 +49,23 @@ const ICON_MAP = {
   express: Zap,
   standard: Truck,
 };
+
+const DESCRIPTION_MAP = {
+  cargo_small: 'Small packages',
+  cargo_medium: 'Medium packages',
+  cargo_large: 'Large shipments',
+  shopping_small: 'Personal shopping',
+  shopping_fashion: 'Fashion & Electronics',
+  shopping_bulk: 'Bulk orders',
+  express: 'Fastest delivery',
+  standard: 'Regular service',
+};
+
+const DEFAULT_SERVICE_TYPES = SERVICE_TYPE_DEFAULTS.map((st) => ({
+  ...st,
+  icon: ICON_MAP[st.value] || Package,
+  description: DESCRIPTION_MAP[st.value] || '',
+}));
 
 export default function PriceCalculator() {
   const [weight, setWeight] = useState('');

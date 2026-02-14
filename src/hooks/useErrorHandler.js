@@ -47,15 +47,11 @@ export const useErrorHandler = () => {
 
     // Extract user-friendly message
     let message = customMessage;
+    const isDev = import.meta.env.DEV;
     
     // Handle Supabase/PostgREST errors (they have code, details, hint, message structure)
     if (error?.code && error?.message) {
-      // This is a Supabase error
-      const supabaseMessage = error.message;
-      const supabaseDetails = error.details;
-      const supabaseHint = error.hint;
-      
-      // Common Supabase error codes and user-friendly messages
+      // Common Supabase error codes → safe, user-friendly messages
       const errorMessages = {
         '23505': 'This record already exists. Please check for duplicates.',
         '23503': 'Cannot create this record. Related data is missing or invalid.',
@@ -65,36 +61,37 @@ export const useErrorHandler = () => {
         'PGRST301': 'Invalid request. Please check your input data.',
       };
       
-      // Use specific error message if available
       if (errorMessages[error.code]) {
+        // Known code → always safe to show
         message = errorMessages[error.code];
-      } else if (supabaseDetails) {
-        // Use details if available (often more descriptive)
-        message = supabaseDetails;
-      } else if (supabaseMessage && supabaseMessage.length < 150) {
-        // Use message if it's reasonable length
-        message = supabaseMessage;
-      } else if (supabaseHint) {
-        // Fall back to hint
-        message = supabaseHint;
+      } else if (isDev) {
+        // DEV only: expose details/hint/message for debugging convenience
+        message = error.details || error.hint || error.message || customMessage;
       }
+      // PROD: keep the generic customMessage — never leak details/hint
       
-      // Add context for debugging
-      if (import.meta.env.DEV && supabaseHint) {
-        console.warn('[Supabase Error Hint]', supabaseHint);
+      // Log full details to console in dev for quick debugging
+      if (isDev) {
+        console.warn('[Supabase Error]', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
       }
     } else if (error?.message) {
-      // Handle regular errors
+      // Handle regular errors — only surface safe, recognisable patterns
       if (error.message.includes('validation') || error.message.includes('required')) {
         message = error.message;
       } else if (error.message.includes('permission') || error.message.includes('unauthorized')) {
         message = 'You do not have permission to perform this action';
       } else if (error.message.includes('network') || error.message.includes('fetch')) {
         message = 'Network error. Please check your connection and try again.';
-      } else if (error.message.length < 100) {
-        // Use error message if it's short and user-friendly
+      } else if (isDev && error.message.length < 100) {
+        // DEV only: short messages are useful for debugging
         message = error.message;
       }
+      // PROD: keep generic customMessage for unrecognised errors
     }
 
     // Show user-friendly toast

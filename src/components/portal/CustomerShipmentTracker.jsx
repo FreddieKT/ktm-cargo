@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -39,9 +39,10 @@ const STATUS_INDEX = {
   cancelled: -1,
 };
 
-export default function CustomerShipmentTracker({ customer }) {
+export default function CustomerShipmentTracker({ customer, initialTrackingNumber = '' }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedShipment, setSelectedShipment] = useState(null);
+  const lastAutoTrackedRef = useRef('');
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['customer-shipments-track', customer?.id, customer?.name],
@@ -56,35 +57,59 @@ export default function CustomerShipmentTracker({ customer }) {
     enabled: !!(customer?.id || customer?.name),
   });
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const runSearch = useCallback(
+    async (rawQuery, options = {}) => {
+      const query = rawQuery?.trim();
+      if (!query) return;
+      const { silent = false } = options;
 
-    try {
-      // Search by tracking number
-      const results = await db.shipments.filter({ tracking_number: searchQuery.trim() });
-      if (results.length > 0) {
-        setSelectedShipment(results[0]);
-        toast.success('Shipment found');
-      } else {
-        // Try partial match in existing shipments
-        const found = shipments.find(
-          (s) =>
-            s.tracking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.id?.includes(searchQuery)
-        );
-        if (found) {
-          setSelectedShipment(found);
-          toast.success('Shipment found');
+      try {
+        // Search by tracking number
+        const results = await db.shipments.filter({ tracking_number: query });
+        if (results.length > 0) {
+          setSelectedShipment(results[0]);
+          if (!silent) {
+            toast.success('Shipment found');
+          }
         } else {
-          setSelectedShipment(null);
-          toast.error('No shipment found with that tracking number');
+          // Try partial match in existing shipments
+          const found = shipments.find(
+            (s) =>
+              s.tracking_number?.toLowerCase().includes(query.toLowerCase()) ||
+              s.id?.includes(query)
+          );
+          if (found) {
+            setSelectedShipment(found);
+            if (!silent) {
+              toast.success('Shipment found');
+            }
+          } else {
+            setSelectedShipment(null);
+            if (!silent) {
+              toast.error('No shipment found with that tracking number');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to search shipment:', error);
+        if (!silent) {
+          toast.error('Failed to search. Please try again.');
         }
       }
-    } catch (error) {
-      console.error('Failed to search shipment:', error);
-      toast.error('Failed to search. Please try again.');
-    }
-  };
+    },
+    [shipments]
+  );
+
+  const handleSearch = async () => runSearch(searchQuery);
+
+  useEffect(() => {
+    const tracking = initialTrackingNumber.trim();
+    if (!tracking || tracking === lastAutoTrackedRef.current) return;
+
+    setSearchQuery(tracking);
+    lastAutoTrackedRef.current = tracking;
+    runSearch(tracking, { silent: true });
+  }, [initialTrackingNumber, runSearch]);
 
   const activeShipments = shipments.filter((s) => !['delivered', 'cancelled'].includes(s.status));
 
@@ -212,7 +237,7 @@ export default function CustomerShipmentTracker({ customer }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium">Bangkok</span>
+                      <span className="text-sm font-medium">{selectedShipment.origin || 'Bangkok'}</span>
                     </div>
                     <p className="text-xs text-slate-500 ml-6">
                       {selectedShipment.pickup_address || 'Pickup location'}
@@ -222,7 +247,7 @@ export default function CustomerShipmentTracker({ customer }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin className="w-4 h-4 text-emerald-600" />
-                      <span className="text-sm font-medium">Yangon</span>
+                      <span className="text-sm font-medium">{selectedShipment.destination || 'Yangon'}</span>
                     </div>
                     <p className="text-xs text-slate-500 ml-6">
                       {selectedShipment.delivery_address || 'Delivery location'}

@@ -31,8 +31,8 @@ export const auth = {
         id: user.id,
         email: user.email,
         full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-        role: 'staff',
-        staff_role: 'marketing_manager', // Default role
+        role: 'customer',
+        staff_role: null, // Customers have no staff role; must be explicitly promoted by admin
         created_date: new Date().toISOString(),
         updated_date: new Date().toISOString(),
       };
@@ -47,9 +47,8 @@ export const auth = {
         profile = created;
       } else {
         console.error('Error creating profile:', error);
-        // Fallback - but note: users without staff_role will be denied access
-        // This is intentional for security - staff_role must be explicitly assigned
-        profile = { role: 'staff' }; // No staff_role - will require explicit assignment
+        // Fallback — customer role with no staff access
+        profile = { role: 'customer', staff_role: null };
       }
     }
 
@@ -59,10 +58,50 @@ export const auth = {
       // Map Supabase user fields to expected app fields
       email: user.email,
       id: user.id,
-      // Ensure staff_role is present for RBAC
-      staff_role: profile?.staff_role || 'marketing_manager',
-      role: profile?.role || 'staff',
+      // Preserve actual roles from profile; default to customer (safe)
+      staff_role: profile?.staff_role || null,
+      role: profile?.role || 'customer',
     };
+  },
+
+  /**
+   * Update current user's profile. Only allowed fields are written (mass-assignment safe).
+   * Used by Settings (profile, notification_settings, business_settings) and NotificationPreferences.
+   */
+  updateMe: async (data) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const allowed = [
+      'full_name',
+      'phone',
+      'company_name',
+      'default_currency',
+      'timezone',
+      'notification_settings',
+      'notification_preferences',
+      'business_settings',
+    ];
+    const payload = {};
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        payload[key] = data[key];
+      }
+    }
+    if (Object.keys(payload).length === 0) return (await supabase.from('profiles').select('*').eq('id', user.id).single()).data;
+
+    payload.updated_date = new Date().toISOString();
+
+    const { data: updated, error } = await supabase
+      .from('profiles')
+      .update(payload)
+      .eq('id', user.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return updated;
   },
 
   login: async (email, password) => {

@@ -14,10 +14,9 @@ export default [
       ecmaVersion: 2020,
       globals: {
         ...globals.browser,
+        ...globals.jest,
         process: 'readonly',
-        jest: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
+        __APP_IS_PROD__: 'readonly',
       },
       parserOptions: {
         ecmaVersion: 'latest',

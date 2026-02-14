@@ -58,6 +58,7 @@ import CompanyBranding from '@/components/settings/CompanyBranding';
 import NotificationPreferences from '@/components/settings/NotificationPreferences';
 import NotificationTemplateManager from '@/components/settings/NotificationTemplateManager';
 import { hasPermission } from '@/components/auth/RolePermissions';
+import { DEFAULT_SHOPPING_PRICE_PER_KG } from '@/lib/defaults';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -135,7 +136,7 @@ export default function Settings() {
     tax_id: '',
     default_insurance_rate: 2,
     default_commission_rate: 10,
-    default_shopping_price_per_kg: 110,
+    default_shopping_price_per_kg: DEFAULT_SHOPPING_PRICE_PER_KG,
     invoice_prefix: 'INV',
     tracking_prefix: 'BKK',
     auto_send_receipts: true,
@@ -615,11 +616,11 @@ export default function Settings() {
                       type="number"
                       min="0"
                       step="1"
-                      value={businessSettings.default_shopping_price_per_kg ?? 110}
+                      value={businessSettings.default_shopping_price_per_kg ?? DEFAULT_SHOPPING_PRICE_PER_KG}
                       onChange={(e) =>
                         setBusinessSettings({
                           ...businessSettings,
-                          default_shopping_price_per_kg: parseFloat(e.target.value) || 110,
+                          default_shopping_price_per_kg: parseFloat(e.target.value) || DEFAULT_SHOPPING_PRICE_PER_KG,
                         })
                       }
                     />

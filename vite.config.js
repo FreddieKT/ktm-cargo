@@ -7,8 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  define: {
+    __APP_IS_PROD__: mode === 'production',
+  },
   server: {
     allowedHosts: true,
   },
@@ -25,4 +28,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

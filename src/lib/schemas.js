@@ -26,7 +26,7 @@ export const customerSchema = z.object({
 export const shipmentSchema = z.object({
   customer_id: z.string().optional(),
   customer_name: z.string().min(1, 'Customer name is required'),
-  customer_phone: z.string().min(1, 'Phone number is required'),
+  customer_phone: z.string().optional().default(''),
   service_type: z.string().min(1, 'Service type is required'),
   weight_kg: z.preprocess(numberPreprocess, z.number({ invalid_type_error: "Weight must be a number" }).min(0.1, 'Weight must be at least 0.1')),
   items_description: z.string().min(1, 'Description is required'),

@@ -72,7 +72,24 @@ Edit `.env` and set:
 
 > This app uses **Vite**, so env vars must be prefixed with `VITE_`. If the dashboard shows Next.js names (e.g. `NEXT_PUBLIC_SUPABASE_URL`), use the same values but with the `VITE_` names above. See [docs/SUPABASE_VITE_SETUP.md](docs/SUPABASE_VITE_SETUP.md) for details.
 
-### 3. Run the app
+### 3. Apply database migrations
+
+Apply the SQL migrations to your Supabase project in order. See [`migrations/README.md`](migrations/README.md) for the full runbook. At minimum, apply the **Phase 3 (P0)** migrations to enable RLS, profile security, and invoice numbering:
+
+1. `fix_rls_policies.sql`
+2. `fix_profiles_allow_self_insert.sql`
+3. `fix_profiles_prevent_self_escalation.sql`
+4. `add_invoice_number_sequence.sql`
+5. `add_portal_auth_identity_links.sql`
+6. `add_client_portal_rls.sql`
+
+Then verify:
+
+```bash
+node scripts/verify_p0_migrations.mjs
+```
+
+### 4. Run the app
 
 ```bash
 npm run dev
@@ -80,7 +97,7 @@ npm run dev
 
 Open the URL shown in the terminal (e.g. `http://localhost:5173`). If Supabase credentials are missing, the app will show setup instructions.
 
-### 4. Production build
+### 5. Production build
 
 ```bash
 npm run build

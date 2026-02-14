@@ -66,6 +66,7 @@ import { sendShoppingOrderNotification } from '@/components/notifications/Shippi
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
 
@@ -135,9 +136,7 @@ export default function ShoppingOrders() {
     const totalCommission = orders
       .filter((o) => o.status === 'delivered')
       .reduce((sum, o) => sum + (o.commission_amount || 0), 0);
-    const unpaidOrders = orders.filter(
-      (o) => o.payment_status === 'unpaid' && o.status !== 'cancelled'
-    ).length;
+    const unpaidOrders = orders.filter(isUnpaidShoppingOrder).length;
     const totalWeight = orders.reduce(
       (sum, o) => sum + (o.actual_weight || o.estimated_weight || 0),
       0
@@ -291,29 +290,7 @@ export default function ShoppingOrders() {
 
   // Filter orders based on tab and search
   const filteredOrders = useMemo(() => {
-    return orders.filter((o) => {
-      // Tab filter
-      if (activeTab === 'pending' && !['pending', 'purchasing'].includes(o.status)) return false;
-      if (activeTab === 'in_transit' && !['purchased', 'received', 'shipping'].includes(o.status))
-        return false;
-      if (activeTab === 'completed' && o.status !== 'delivered') return false;
-      if (activeTab === 'unpaid' && (o.payment_status === 'paid' || o.status === 'cancelled'))
-        return false;
-
-      // Status filter
-      if (statusFilter !== 'all' && o.status !== statusFilter) return false;
-
-      // Search
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          (o.customer_name || '').toLowerCase().includes(query) ||
-          (o.order_number || '').toLowerCase().includes(query) ||
-          (o.product_details || '').toLowerCase().includes(query)
-        );
-      }
-      return true;
-    });
+    return filterShoppingOrders(orders, { activeTab, statusFilter, searchQuery });
   }, [orders, activeTab, statusFilter, searchQuery]);
 
   // Get linked PO info

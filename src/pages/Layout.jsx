@@ -27,6 +27,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { canAccessPage, getUserRoleLabel, ROLE_COLORS } from '@/components/auth/RolePermissions';
+import { shouldBypassAppLayout } from '@/pages/layoutRouteGuards';
 
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
@@ -61,11 +62,7 @@ export default function Layout({ children, currentPageName }) {
   });
 
   // Bypass Layout (Sidebar/Header) for Public Pages
-  if (
-    location.pathname === '/' ||
-    location.pathname.startsWith('/ClientPortal') ||
-    location.pathname === '/PriceCalculator'
-  ) {
+  if (shouldBypassAppLayout(location.pathname)) {
     return <>{children}</>;
   }
 
