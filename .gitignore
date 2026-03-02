@@ -29,5 +29,5 @@ docs
 *.njsproj
 *.sln
 *.sw?
-
+.docs
 .env
