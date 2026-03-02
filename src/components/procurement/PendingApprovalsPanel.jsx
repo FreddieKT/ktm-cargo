@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +25,6 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function PendingApprovalsPanel({
   pendingPOs = [],
   currentUserEmail,
@@ -50,7 +49,7 @@ export default function PendingApprovalsPanel({
         await onReject?.(selectedPO, comments);
         toast.success('Purchase order rejected');
       }
-    } catch (e) {
+    } catch (_e) {
       toast.error('Failed to process approval');
     }
 

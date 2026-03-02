@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -23,7 +23,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import SegmentCard from '@/components/customers/SegmentCard';
 import CustomerSegmentTable from '@/components/customers/CustomerSegmentTable';
@@ -34,27 +33,19 @@ import { segmentCustomers } from '@/components/customers/CustomerSegmentationEng
 import {
   Users,
   Search,
-  Filter,
   Megaphone,
   Plus,
   Target,
-  TrendingUp,
   TrendingDown,
   Star,
-  Clock,
   UserPlus,
-  Mail,
   Send,
-  BarChart3,
-  Eye,
-  CheckCircle,
   Pencil,
   Trash2,
   Zap,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { format, subDays, differenceInDays } from 'date-fns';
 import { useUser } from '@/components/auth/UserContext';
 import { hasPermission } from '@/components/auth/RolePermissions';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -98,7 +89,7 @@ export default function CustomerSegments() {
   const createCampaignMutation = useMutation({
     mutationFn: async (data) => {
       // Validate campaign data before creating
-      const { campaignSchema } = await import('@/lib/schemas');
+      const { campaignSchema } = await import('@/domains/core/schemas');
       const validatedData = campaignSchema.parse(data);
       return db.campaigns.create(validatedData);
     },
@@ -214,7 +205,7 @@ export default function CustomerSegments() {
           try {
             const criteria = JSON.parse(segment.criteria);
             return evaluateCustomerCriteria(c, criteria);
-          } catch (e) {
+          } catch (_e) {
             return true;
           }
         }
@@ -283,7 +274,7 @@ export default function CustomerSegments() {
           counts[segment.id] = customersWithMetrics.filter((c) =>
             evaluateCustomerCriteria(c, criteria)
           ).length;
-        } catch (e) {
+        } catch (_e) {
           counts[segment.id] = 0;
         }
       } else {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,9 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   Building2,
   User,
-  Phone,
-  Mail,
-  MapPin,
   FileText,
   CreditCard,
   CheckCircle,
@@ -105,7 +102,7 @@ export default function VendorRegistration() {
         name: inv.company_name || '',
         email: inv.email || '',
       }));
-    } catch (e) {
+    } catch (_e) {
       setError('Failed to load invitation');
     } finally {
       setLoading(false);
@@ -175,14 +172,14 @@ export default function VendorRegistration() {
           message: `New Vendor Registration: ${form.name}\n\nVendor ${form.name} (${form.vendor_type}) has completed registration.\nContact: ${form.contact_name} (${form.email})`,
           platform: 'Telegram'
         });
-      } catch (e) {
-        console.error('Failed to notify admin', e);
+      } catch (_e) {
+        console.error('Failed to notify admin', _e);
       }
 
       setCompleted(true);
       toast.success('Registration completed successfully!');
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
+      console.error(_e);
       toast.error('Failed to complete registration');
     } finally {
       setSubmitting(false);

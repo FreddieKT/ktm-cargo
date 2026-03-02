@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { db } from '@/api/db';
@@ -23,11 +23,13 @@ import {
   FileText,
   Star,
   Settings,
+  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { canAccessPage, getUserRoleLabel, ROLE_COLORS } from '@/components/auth/RolePermissions';
 import { shouldBypassAppLayout } from '@/pages/layoutRouteGuards';
+import { startTour, hasTour } from '@/components/common/TourGuide';
 
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
@@ -38,10 +40,10 @@ const navItems = [
   { name: 'Customers', icon: Users, page: 'Customers' },
   { name: 'Segments & Campaigns', icon: Target, page: 'CustomerSegments' },
   { name: 'Feedback', icon: Star, page: 'FeedbackAnalytics' },
-  { name: 'Inventory', icon: ClipboardList, page: 'Inventory' },
-  { name: 'Procurement', icon: Package, page: 'Procurement' },
+  { name: 'Inventory', icon: ClipboardList, page: 'Inventory', feature: 'enableInventory' },
+  { name: 'Procurement', icon: Package, page: 'Procurement', feature: 'enableProcurement' },
   { name: 'Vendors', icon: Users, page: 'Vendors' },
-  { name: 'Tasks', icon: ClipboardList, page: 'Tasks' },
+  { name: 'Tasks', icon: ClipboardList, page: 'Tasks', feature: 'enableTasks' },
   { name: 'Reports', icon: BarChart3, page: 'Reports' },
   { name: 'Calculator', icon: Calculator, page: 'PriceCalculator' },
   { name: 'Client Portal', icon: Users, page: 'ClientPortal' },
@@ -81,7 +83,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {companyLogo ? (
-              <img src={companyLogo} alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
+              <img src={companyLogo} alt={`${companyName} logo`} className="w-10 h-10 object-contain rounded-lg" />
             ) : (
               <div className="p-2 bg-blue-600 rounded-lg">
                 <Plane className="w-5 h-5 text-white" />
@@ -112,7 +114,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="hidden lg:flex items-center justify-between px-6 py-5 border-b border-slate-100">
             <div className="flex items-center gap-3">
               {companyLogo ? (
-                <img src={companyLogo} alt="Logo" className="w-12 h-12 object-contain rounded-xl" />
+                <img src={companyLogo} alt={`${companyName} logo`} className="w-12 h-12 object-contain rounded-xl" />
               ) : (
                 <div className="p-2 bg-blue-600 rounded-xl">
                   <Plane className="w-6 h-6 text-white" />
@@ -130,6 +132,7 @@ export default function Layout({ children, currentPageName }) {
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto mt-16 lg:mt-0">
             {navItems
               .filter((item) => canAccessPage(user, item.page))
+              .filter((item) => !item.feature || user?.features?.[item.feature])
               .map((item) => {
                 const isActive = currentPageName === item.page;
                 return (
@@ -139,11 +142,10 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setSidebarOpen(false)}
                     className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${
-                      isActive
+                    ${isActive
                         ? 'bg-blue-50 text-blue-700 font-medium'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }
+                      }
                   `}
                   >
                     <item.icon
@@ -158,6 +160,16 @@ export default function Layout({ children, currentPageName }) {
 
           {/* User Section */}
           <div className="p-4 border-t border-slate-100">
+            {hasTour(currentPageName) && (
+              <Button
+                variant="outline"
+                onClick={() => startTour(currentPageName)}
+                className="w-full justify-start mb-3 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
+              >
+                <Sparkles className="w-4 h-4 mr-3" />
+                Page Tour
+              </Button>
+            )}
             {user && (
               <div className="flex items-center gap-3 px-2 mb-3">
                 <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">

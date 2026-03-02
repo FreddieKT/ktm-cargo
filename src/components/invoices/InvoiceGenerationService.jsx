@@ -5,7 +5,7 @@
  * Invoices should be created manually by staff, not auto-generated.
  */
 
-import { createInvoiceFromShipment, createInvoiceFromShoppingOrder } from './InvoiceService';
+import { createInvoiceFromShipment } from './InvoiceService';
 
 /**
  * Create invoice from a shipment (called manually)
@@ -19,10 +19,8 @@ export async function generateCustomerInvoice(shipment, customer) {
  * Create vendor payout record
  * This is now a separate concern from invoicing
  */
-export async function generateVendorPayout(shipment, invoice, vendorOrder, vendor) {
-  // Vendor payouts should be managed separately in the vendor payment module
-  // This function is kept for backward compatibility but should be phased out
-  console.warn('generateVendorPayout is deprecated. Use vendor payment management instead.');
+/** @deprecated Use vendor payment management instead. */
+export async function generateVendorPayout(_shipment, _invoice, _vendorOrder, _vendor) {
   return null;
 }
 

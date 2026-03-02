@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/api/logger';
 import { useNavigate, useLocation } from 'react-router-dom';

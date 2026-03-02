@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import {
   CheckCircle,
-  Circle,
   Package,
   Calculator,
   Users,
@@ -24,7 +23,6 @@ import {
   Gem,
   Crown,
   Zap,
-  ChevronRight,
 } from 'lucide-react';
 
 const onboardingSteps = [
@@ -88,6 +86,13 @@ export default function CustomerOnboarding({ customer, onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [isAnimating, setIsAnimating] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const progress = ((completedSteps.length + 1) / onboardingSteps.length) * 100;
   const currentStepData = onboardingSteps[currentStep];
@@ -95,8 +100,8 @@ export default function CustomerOnboarding({ customer, onComplete }) {
 
   const handleNext = () => {
     setIsAnimating(true);
-
-    setTimeout(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
       if (!completedSteps.includes(currentStep)) {
         setCompletedSteps([...completedSteps, currentStep]);
       }
@@ -112,7 +117,8 @@ export default function CustomerOnboarding({ customer, onComplete }) {
   const handleBack = () => {
     if (currentStep > 0) {
       setIsAnimating(true);
-      setTimeout(() => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
         setCurrentStep(currentStep - 1);
         setIsAnimating(false);
       }, 150);
@@ -126,7 +132,8 @@ export default function CustomerOnboarding({ customer, onComplete }) {
   const goToStep = (idx) => {
     if (completedSteps.includes(idx) || idx < currentStep) {
       setIsAnimating(true);
-      setTimeout(() => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
         setCurrentStep(idx);
         setIsAnimating(false);
       }, 150);

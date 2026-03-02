@@ -61,7 +61,7 @@ const scanDirectory = (dir, pattern) => {
                 files.push(fullPath);
             }
         }
-    } catch (e) {
+    } catch (_e) {
         // Directory doesn't exist
     }
     return files;
@@ -106,7 +106,7 @@ try {
     const content = readFileSync(shipmentFormPath, 'utf-8');
     expectedSchemas.shipments = extractFieldsFromCode(content, 'shipments');
     console.log(`✅ shipments (from ShipmentForm): ${expectedSchemas.shipments.length} fields`);
-} catch (e) {
+} catch (_e) {
     console.log('⚠️  Could not read ShipmentForm.jsx');
 }
 
@@ -128,7 +128,7 @@ try {
             expectedSchemas.shipments = fields;
         }
     }
-} catch (e) {
+} catch (_e) {
     console.log('⚠️  Could not read schemas.js');
 }
 

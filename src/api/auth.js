@@ -24,9 +24,8 @@ export const auth = {
       .eq('id', user.id)
       .single();
 
-    // If profile doesn't exist, create it (Self-healing)
+    // If profile doesn't exist, create it (Self-healing for new sign-ups)
     if (!profile) {
-      console.log('Profile missing, creating default profile...');
       const newProfile = {
         id: user.id,
         email: user.email,
@@ -43,13 +42,12 @@ export const auth = {
         .select()
         .single();
 
-      if (!error) {
-        profile = created;
-      } else {
-        console.error('Error creating profile:', error);
-        // Fallback — customer role with no staff access
-        profile = { role: 'customer', staff_role: null };
+      if (error) {
+        // Do not silently fallback to a customer profile — fail explicitly so
+        // callers can handle the unauthenticated state safely.
+        throw new Error(`Profile creation failed: ${error.message}`);
       }
+      profile = created;
     }
 
     return {

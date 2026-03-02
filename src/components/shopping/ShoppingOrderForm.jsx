@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { shoppingOrderSchema } from '@/lib/schemas';
+import { shoppingOrderSchema } from '@/domains/core/schemas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,8 +19,6 @@ import {
     ChevronsUpDown,
     Check,
     Truck,
-    Package,
-    AlertTriangle,
     User,
     Phone,
     MapPin,
@@ -46,12 +44,11 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import VendorCapacityAlert from '@/components/shared/VendorCapacityAlert';
 import { useQuery } from '@tanstack/react-query';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
-import { computeShoppingOrderTotals } from '@/lib/calculations';
+import { computeShoppingOrderTotals } from '@/domains/shipments/calculations';
 
 const statusOptions = [
     { value: 'pending', label: 'Pending', color: 'bg-slate-100 text-slate-700' },

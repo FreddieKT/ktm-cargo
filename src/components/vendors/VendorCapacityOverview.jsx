@@ -1,8 +1,7 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Scale, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react';
+import { Scale, AlertTriangle } from 'lucide-react';
 
 export default function VendorCapacityOverview({ vendors = [], purchaseOrders = [] }) {
   // Filter cargo carriers with capacity set

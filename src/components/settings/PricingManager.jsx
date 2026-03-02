@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -34,9 +34,7 @@ import {
   Package,
   Percent,
   TrendingUp,
-  Calculator,
   Loader2,
-  Sparkles,
   Shield,
   Box,
   Zap,
@@ -46,7 +44,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useErrorHandler } from '@/hooks/useErrorHandler';

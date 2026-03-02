@@ -5,7 +5,8 @@
  */
 
 // In a real app, this would be your Sentry/LogRocket DSN
-const LOGGING_ENABLED = process.env.NODE_ENV === 'production' || true; // Enabled for demo
+// true in development/test; false in production builds
+const LOGGING_ENABLED = process.env.NODE_ENV !== 'production';
 
 export const logger = {
     /**

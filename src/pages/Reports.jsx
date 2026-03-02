@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -27,14 +27,11 @@ import {
   Package,
   Users,
   ArrowUpRight,
-  ArrowDownRight,
-  PieChart,
   BarChart3,
   Calendar as CalendarIcon,
   Receipt,
   Download,
   FileSpreadsheet,
-  Target,
   Megaphone,
   Crown,
   Star,
@@ -75,7 +72,6 @@ import {
   segmentCustomers,
   getSegmentSummary,
   getMarketingRecommendations,
-  VALUE_TIERS,
 } from '@/components/customers/CustomerSegmentationEngine';
 import { generateForecast, analyzeServiceTrends } from '@/components/reports/ShipmentForecasting';
 import ReportBuilder from '@/components/reports/ReportBuilder';
@@ -306,7 +302,8 @@ export default function Reports() {
     filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
   const totalProfit =
     filteredShipments.reduce((sum, s) => sum + (s.profit || 0), 0) +
-    filteredOrders.reduce((sum, o) => sum + (o.commission_amount || 0), 0);
+    // Use stored profit if available; fall back to commission_amount as a conservative estimate
+    filteredOrders.reduce((sum, o) => sum + (o.profit ?? o.commission_amount ?? 0), 0);
   const totalExpensesAmount = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const netProfit = totalProfit - totalExpensesAmount;
   const totalWeight = filteredShipments.reduce((sum, s) => sum + (s.weight_kg || 0), 0);
@@ -940,7 +937,7 @@ export default function Reports() {
                     </thead>
                     <tbody>
                       {forecast.forecasts.map((f, i) => (
-                        <tr key={i} className="border-t">
+                        <tr key={f.month || i} className="border-t">
                           <td className="p-3 font-medium">{f.month}</td>
                           <td className="p-3 text-right">{f.predictedVolume} shipments</td>
                           <td className="p-3 text-right font-semibold text-blue-600">
@@ -978,7 +975,7 @@ export default function Reports() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {serviceTrends.slice(0, 4).map((service, i) => (
-                    <div key={i} className="p-4 bg-slate-50 rounded-xl">
+                    <div key={service.type || i} className="p-4 bg-slate-50 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium capitalize">{service.type}</span>
                         <Badge>{service.percentage}%</Badge>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -149,7 +149,7 @@ export default function AuditLogViewer({ logs = [] }) {
               let details = {};
               try {
                 details = JSON.parse(log.details || '{}');
-              } catch (e) {
+              } catch (_e) {
                 // Ignore
               }
 

@@ -268,7 +268,7 @@ async function auditCodeQuality() {
       }
 
       // Check for empty catch blocks
-      if (content.includes('catch') && content.includes('catch ()') || content.includes('catch (e) {}') || content.includes('catch (err) {}')) {
+      if (content.includes('catch') && content.includes('catch ()') || content.includes('catch (_e) {}') || content.includes('catch (err) {}')) {
         const emptyCatchPattern = /catch\s*\([^)]*\)\s*\{\s*\}/;
         if (emptyCatchPattern.test(content)) {
           warnings.push({

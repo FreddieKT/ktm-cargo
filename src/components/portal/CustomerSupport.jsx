@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { feedbackSchema } from '@/lib/schemas';
+import { feedbackSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
@@ -105,8 +105,8 @@ export default function CustomerSupport({ customer, user }) {
           message: `Support Ticket Created: ${ticketNumber}\n\nWe received your request.\nIssue: ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}\nSubject: ${subject}\n\nWe will respond within 24 hours.`,
           platform: 'line'
         });
-      } catch (e) {
-        console.error('Failed to send confirmation email', e);
+      } catch (_e) {
+        console.error('Failed to send confirmation email', _e);
       }
 
         return ticketNumber;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +7,7 @@ import {
   Plane,
   Package,
   ShoppingBag,
-  ArrowRight,
   CheckCircle,
-  MapPin,
-  Clock,
   Shield,
   Globe,
   Menu,
@@ -19,8 +16,6 @@ import {
   Truck,
   Star,
   Users,
-  HelpCircle,
-  ChevronDown,
 } from 'lucide-react';
 import { db } from '@/api/db';
 import {

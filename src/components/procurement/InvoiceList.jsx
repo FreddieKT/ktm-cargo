@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -323,7 +323,7 @@ function InvoiceDetail({ invoice, onMarkPaid, onClose }) {
   let items = [];
   try {
     items = JSON.parse(invoice.items || '[]');
-  } catch (e) {
+  } catch (_e) {
     items = [];
   }
 

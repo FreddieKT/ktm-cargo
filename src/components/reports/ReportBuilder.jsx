@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -127,7 +127,7 @@ const FILTER_OPTIONS = {
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { reportSchema } from '@/lib/schemas';
+import { reportSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 export default function ReportBuilder({ report, onSubmit, onCancel }) {
@@ -157,14 +157,14 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
       if (report.columns) {
         try {
           setSelectedColumns(JSON.parse(report.columns));
-        } catch (e) {
+        } catch (_e) {
           setSelectedColumns([]);
         }
       }
       if (report.filters) {
         try {
           setFilters(JSON.parse(report.filters));
-        } catch (e) {
+        } catch (_e) {
           setFilters([]);
         }
       }

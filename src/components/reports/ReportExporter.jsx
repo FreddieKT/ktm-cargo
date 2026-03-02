@@ -172,12 +172,12 @@ export async function exportReport(report, allData) {
 
   try {
     columns = JSON.parse(columnsStr);
-  } catch (e) {
+  } catch (_e) {
     columns = [];
   }
   try {
     filters = JSON.parse(filtersStr);
-  } catch (e) {
+  } catch (_e) {
     filters = [];
   }
 

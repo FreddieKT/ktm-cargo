@@ -98,13 +98,15 @@ export async function processUnpaidOrders(vendorOrders, vendors) {
  */
 export async function checkOverduePayments() {
   const payments = await db.vendorPayments.filter({ status: 'pending' });
-  const today = new Date();
+  // Use a date-only string comparison to avoid timezone off-by-one errors.
+  // due_date is stored as 'YYYY-MM-DD'; today is formatted the same way.
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
   const overduePayments = [];
 
   for (const payment of payments) {
     if (!payment.due_date) continue;
 
-    if (new Date(payment.due_date) < today) {
+    if (payment.due_date < todayStr) {
       await db.vendorPayments.update(payment.id, { status: 'overdue' });
       await triggerPaymentOverdueAlert(payment);
       overduePayments.push(payment);

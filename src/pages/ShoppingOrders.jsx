@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -64,8 +65,6 @@ import { startTour } from '@/components/common/TourGuide';
 import { toast } from 'sonner';
 import { sendShoppingOrderNotification } from '@/components/notifications/ShippingNotificationService';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -95,6 +94,7 @@ export default function ShoppingOrders() {
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, order: null });
   const [editConfirm, setEditConfirm] = useState({ open: false, order: null });
 
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: orders = [], isLoading } = useQuery({
@@ -138,7 +138,8 @@ export default function ShoppingOrders() {
       .reduce((sum, o) => sum + (o.commission_amount || 0), 0);
     const unpaidOrders = orders.filter(isUnpaidShoppingOrder).length;
     const totalWeight = orders.reduce(
-      (sum, o) => sum + (o.actual_weight || o.estimated_weight || 0),
+      // Use actual_weight when it is a positive number; fall back to estimated_weight
+      (sum, o) => sum + ((o.actual_weight > 0 ? o.actual_weight : o.estimated_weight) || 0),
       0
     );
 
@@ -805,6 +806,19 @@ export default function ShoppingOrders() {
                         <Receipt className="w-4 h-4 mr-2" /> Create Invoice
                       </Button>
                     )}
+                  {selectedOrder.status !== 'cancelled' && (
+                    <Button
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => {
+                        setShowDetails(false);
+                        navigate('/shipments', {
+                          state: { createFromShoppingOrder: selectedOrder }
+                        });
+                      }}
+                    >
+                      <Truck className="w-4 h-4 mr-2" /> Convert to Shipment
+                    </Button>
+                  )}
                 </div>
               </div>
             )}

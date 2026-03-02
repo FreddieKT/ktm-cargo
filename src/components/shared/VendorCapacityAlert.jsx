@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -23,11 +23,10 @@ export default function VendorCapacityAlert({
     requestedWeight = 0,
     className,
 }) {
-    if (!purchaseOrder || !purchaseOrder.total_weight_kg) {
-        return null;
-    }
-
     const capacityData = useMemo(() => {
+        if (!purchaseOrder || !purchaseOrder.total_weight_kg) {
+            return null;
+        }
         const total = purchaseOrder.total_weight_kg || 0;
         const allocated = purchaseOrder.allocated_weight_kg || 0;
         const remaining = purchaseOrder.remaining_weight_kg || (total - allocated);
@@ -67,6 +66,10 @@ export default function VendorCapacityAlert({
             isOverCapacity: requestedWeight > remaining,
         };
     }, [purchaseOrder, requestedWeight]);
+
+    if (!capacityData) {
+        return null;
+    }
 
     const StatusIcon = capacityData.status === 'over_capacity'
         ? XCircle

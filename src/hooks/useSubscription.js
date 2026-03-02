@@ -11,11 +11,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getSubscriptionStatus } from '@/lib/stripe';
-import { resolveTier, checkLimit } from '@/lib/subscriptionTiers';
+import { resolveTier, checkLimit } from '@/domains/core/subscriptionTiers';
 
 /**
  * @returns {{
- *   tier: import('@/lib/subscriptionTiers').TIERS['free'],
+ *   tier: import('@/domains/core/subscriptionTiers').TIERS['free'],
  *   tierName: string,
  *   status: string,
  *   currentPeriodEnd: string|null,

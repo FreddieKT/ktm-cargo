@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '@/api/db';
 import { uploadLogo } from '@/api/integrations/storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -48,8 +48,6 @@ export default function CompanyBranding() {
 
   useEffect(() => {
     if (settings) {
-      console.log('Loaded company settings:', settings);
-      console.log('Logo URL from DB:', settings.logo_url);
       setForm({
         company_name: settings.company_name || 'BKK-YGN Cargo',
         logo_url: settings.logo_url || '',
@@ -114,15 +112,10 @@ export default function CompanyBranding() {
     }
 
     setUploading(true);
-    setLogoError(false); // Reset error state before upload
+    setLogoError(false);
     try {
-      console.log('Uploading logo...');
       const result = await uploadLogo(file);
-      console.log('Upload result:', result);
-      
       const logoUrl = result.url || result.file_url;
-      console.log('Logo URL to save:', logoUrl);
-      
       if (!logoUrl) {
         throw new Error('No URL returned from upload');
       }
@@ -132,10 +125,8 @@ export default function CompanyBranding() {
       
       // Auto-save to database immediately
       if (settings?.id) {
-        console.log('Updating existing settings with logo:', settings.id);
         await db.companySettings.update(settings.id, { logo_url: logoUrl });
       } else {
-        console.log('Creating new settings with logo');
         await db.companySettings.create({ ...form, logo_url: logoUrl });
       }
       

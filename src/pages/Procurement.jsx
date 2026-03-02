@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,7 +32,6 @@ import {
   PackageCheck,
   Pencil,
   Trash2,
-  Eye,
   Send,
   Shield,
   History,
@@ -59,8 +58,6 @@ import {
   submitPOForApproval,
   approvePO,
   rejectPO,
-  getPendingApprovals,
-  getApprovalHistory,
 } from '@/components/procurement/ApprovalWorkflowService';
 import {
   generateInvoiceFromReceipt,
@@ -223,11 +220,14 @@ export default function Procurement() {
   const createReceiptMutation = useMutation({
     mutationFn: async (data) => {
       const receipt = await db.goodsReceipts.create(data);
-      // Update PO status
-      const allReceived = true;
-      await db.purchaseOrders.update(data.po_id, {
-        status: allReceived ? 'received' : 'partial_received',
-      });
+      // Determine if all ordered items were fully received
+      const receivedItems = JSON.parse(data.items_received || '[]');
+      const allReceived =
+        receivedItems.length > 0 &&
+        receivedItems.every((item) => (item.received_qty || 0) >= (item.ordered_qty || 0));
+      const anyReceived = receivedItems.some((item) => (item.received_qty || 0) > 0);
+      const newPoStatus = allReceived ? 'received' : anyReceived ? 'partial_received' : 'pending';
+      await db.purchaseOrders.update(data.po_id, { status: newPoStatus });
       // Auto-generate invoice
       const po = purchaseOrders.find((p) => p.id === data.po_id);
       const vendor = vendors.find((v) => v.id === data.vendor_id);

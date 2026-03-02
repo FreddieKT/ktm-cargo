@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { vendorSchema } from '@/lib/schemas';
+import { vendorSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { useMutation } from '@tanstack/react-query';

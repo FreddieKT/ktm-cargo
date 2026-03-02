@@ -11,20 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   Building2,
   User,
-  Phone,
-  Mail,
-  MapPin,
   FileText,
   CheckCircle,
-  Circle,
   ArrowRight,
   ArrowLeft,
-  Upload,
 } from 'lucide-react';
 import { db } from '@/api/db';
 import { toast } from 'sonner';

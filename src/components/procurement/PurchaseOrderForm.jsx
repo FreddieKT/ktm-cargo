@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,20 +22,12 @@ import {
   Package,
   Truck,
   CalendarDays,
-  DollarSign,
   Scale,
-  Calculator,
-  Info,
   Loader2,
   CheckCircle,
-  AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { purchaseOrderSchema } from '@/lib/schemas';
+import { purchaseOrderSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, onCancel }) {

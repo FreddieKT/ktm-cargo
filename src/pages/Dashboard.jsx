@@ -1,9 +1,8 @@
-import React, { useMemo, useEffect, useRef } from 'react';
-import { db } from '@/api/db';
+import { useMemo, useEffect, useRef } from 'react';
 import { auth } from '@/api/auth';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useDashboardData } from '@/services/dashboard.service';
 import StatsCard from '@/components/dashboard/StatsCard';
 import ShipmentCard from '@/components/shipments/ShipmentCard';
 import {
@@ -23,7 +22,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   segmentCustomers,
@@ -35,27 +33,23 @@ import { checkSegmentHealth } from '@/components/notifications/NotificationServi
 import { startTour } from '@/components/common/TourGuide';
 
 export default function Dashboard() {
-  const { data: shipments = [], isLoading: shipmentsLoading } = useQuery({
-    queryKey: ['shipments'],
-    queryFn: () => db.shipments.list('-created_date', 100),
-  });
+  const {
+    shipments,
+    customers,
+    shoppingOrders,
+    expenses,
+    financials,
+    shipmentCategories,
+    isLoading
+  } = useDashboardData();
 
-  const { data: customers = [], isLoading: customersLoading } = useQuery({
-    queryKey: ['customers'],
-    queryFn: () => db.customers.list(),
-  });
-
-  const { data: shoppingOrders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['shopping-orders'],
-    queryFn: () => db.shoppingOrders.list('-created_date', 50),
-  });
-
-  const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => db.expenses.list(),
-  });
-
-  const isLoading = shipmentsLoading || customersLoading || ordersLoading;
+  const { totalRevenue, totalProfit, totalWeight, totalExpenses } = financials;
+  const {
+    pending: pendingShipments,
+    inTransit: inTransitShipments,
+    delivered: deliveredShipments,
+    recent: recentShipments
+  } = shipmentCategories;
 
   // AI-powered customer segmentation
   const analyzedCustomers = useMemo(() => {
@@ -86,23 +80,9 @@ export default function Dashboard() {
             checkSegmentHealth(segmentSummary, user.email);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [customers.length, segmentSummary]);
-
-  // Calculate stats
-  const totalRevenue = shipments.reduce((sum, s) => sum + (s.total_amount || 0), 0);
-  const totalProfit = shipments.reduce((sum, s) => sum + (s.profit || 0), 0);
-  const totalWeight = shipments.reduce((sum, s) => sum + (s.weight_kg || 0), 0);
-  const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-
-  const pendingShipments = shipments.filter((s) =>
-    ['pending', 'confirmed', 'picked_up'].includes(s.status)
-  );
-  const inTransitShipments = shipments.filter((s) => ['in_transit', 'customs'].includes(s.status));
-  const deliveredShipments = shipments.filter((s) => s.status === 'delivered');
-
-  const recentShipments = shipments.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
@@ -149,7 +129,7 @@ export default function Dashboard() {
             Array(4)
               .fill(0)
               .map((_, i) => (
-                <Card key={i} className="p-6">
+                <Card key={`skeleton-stat-${i}`} className="p-6">
                   <Skeleton className="h-4 w-24 mb-2" />
                   <Skeleton className="h-8 w-32" />
                 </Card>

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { db } from '@/api/db';
-import { shipmentSchema } from '@/lib/schemas';
+import { shipmentSchema } from '@/domains/core/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ShipmentCard from '@/components/shipments/ShipmentCard';
 import ShipmentForm from '@/components/shipments/ShipmentForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -20,16 +21,34 @@ import {
   Plus,
   Search,
   Package,
-  Filter,
-  X,
   Truck,
   Clock,
   CheckCircle,
-  AlertCircle,
   Star,
   HelpCircle,
   Trash2,
+  Plane,
+  AlertTriangle,
 } from 'lucide-react';
+
+const TRACKING_STEPS = [
+  { status: 'pending', label: 'Placed', icon: Clock },
+  { status: 'confirmed', label: 'Confirmed', icon: CheckCircle },
+  { status: 'picked_up', label: 'Picked Up', icon: Package },
+  { status: 'in_transit', label: 'In Transit', icon: Plane },
+  { status: 'customs', label: 'Customs', icon: AlertTriangle },
+  { status: 'delivered', label: 'Delivered', icon: CheckCircle },
+];
+
+const STATUS_INDEX = {
+  pending: 0,
+  confirmed: 1,
+  picked_up: 2,
+  in_transit: 3,
+  customs: 4,
+  delivered: 5,
+  cancelled: -1,
+};
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -40,7 +59,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -60,8 +78,6 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useUser } from '@/components/auth/UserContext';
 import { hasPermission } from '@/components/auth/RolePermissions';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 export default function Shipments() {
   const [showForm, setShowForm] = useState(false);
   const [editingShipment, setEditingShipment] = useState(null);
@@ -73,6 +89,30 @@ export default function Shipments() {
   const queryClient = useQueryClient();
   const { handleError } = useErrorHandler();
   const { user } = useUser();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.createFromShoppingOrder) {
+      const order = location.state.createFromShoppingOrder;
+      setEditingShipment({
+        customer_name: order.customer_name || '',
+        customer_phone: order.customer_phone || '',
+        customer_id: order.customer_id || '',
+        delivery_address: order.delivery_address || '',
+        items_description: order.product_details || order.product_links || '',
+        weight_kg: order.actual_weight || order.estimated_weight || '',
+        vendor_po_id: order.vendor_po_id || '',
+        vendor_po_number: order.vendor_po_number || '',
+        vendor_id: order.vendor_id || '',
+        vendor_name: order.vendor_name || '',
+        vendor_cost_per_kg: order.vendor_cost_per_kg || 0,
+      });
+      setShowForm(true);
+
+      // Clear the state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
@@ -129,7 +169,10 @@ export default function Shipments() {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowForm(false);
       // Trigger notification for new shipment
-      triggerShipmentCreatedAlert(newShipment).catch(console.error);
+      triggerShipmentCreatedAlert(newShipment).catch((err) => {
+        console.error('Shipment created notification failed:', err);
+        toast.error('Shipment created, but notification could not be sent.');
+      });
     },
     onError: (err) => handleError(err, 'Failed to create shipment', {
       component: 'Shipments',
@@ -139,17 +182,57 @@ export default function Shipments() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => {
-      // Validate partial updates (using partial() for flexibility on updates if needed,
-      // but traditionally one might validate the whole object or just the fields being updated as per schema)
-      // Since we are updating specific fields often, let's use partial validation for updates or just safe parse if we want to be strict.
-      // However, standard pattern is usually:
+    mutationFn: async ({ id, data }) => {
       const validatedData = shipmentSchema.partial().parse(data);
-      return db.shipments.update(id, validatedData);
+      const result = await db.shipments.update(id, validatedData);
+
+      // Rebalance PO weight allocation when PO link or weight changes
+      const oldShipment = shipments.find((s) => s.id === id);
+      const oldPoId = oldShipment?.vendor_po_id ?? null;
+      const newPoId = 'vendor_po_id' in data ? (data.vendor_po_id ?? null) : oldPoId;
+      const oldWeight = parseFloat(oldShipment?.weight_kg) || 0;
+      const newWeight = 'weight_kg' in data ? (parseFloat(data.weight_kg) || 0) : oldWeight;
+
+      if (oldPoId === newPoId && oldPoId && oldWeight !== newWeight) {
+        // Same PO, only weight changed — net adjustment
+        const po = purchaseOrders.find((p) => p.id === oldPoId);
+        if (po) {
+          const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - oldWeight + newWeight);
+          await db.purchaseOrders.update(oldPoId, {
+            allocated_weight_kg: newAllocated,
+            remaining_weight_kg: Math.max(0, (po.total_weight_kg || 0) - newAllocated),
+          });
+        }
+      } else if (oldPoId !== newPoId) {
+        // PO changed — subtract from old, add to new
+        if (oldPoId) {
+          const oldPo = purchaseOrders.find((p) => p.id === oldPoId);
+          if (oldPo) {
+            const newAllocated = Math.max(0, (oldPo.allocated_weight_kg || 0) - oldWeight);
+            await db.purchaseOrders.update(oldPoId, {
+              allocated_weight_kg: newAllocated,
+              remaining_weight_kg: Math.max(0, (oldPo.total_weight_kg || 0) - newAllocated),
+            });
+          }
+        }
+        if (newPoId) {
+          const newPo = purchaseOrders.find((p) => p.id === newPoId);
+          if (newPo) {
+            const newAllocated = (newPo.allocated_weight_kg || 0) + newWeight;
+            await db.purchaseOrders.update(newPoId, {
+              allocated_weight_kg: newAllocated,
+              remaining_weight_kg: Math.max(0, (newPo.total_weight_kg || 0) - newAllocated),
+            });
+          }
+        }
+      }
+
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
       queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowForm(false);
       setEditingShipment(null);
       setSelectedShipment(null);
@@ -196,7 +279,6 @@ export default function Shipments() {
 
   const handleStatusChange = async (shipment, newStatus) => {
     const oldStatus = shipment.status;
-    const updatedShipment = { ...shipment, status: newStatus };
 
     // Update shipment first
     await db.shipments.update(shipment.id, { status: newStatus });
@@ -204,7 +286,9 @@ export default function Shipments() {
 
     // Trigger status change notification
     if (oldStatus !== newStatus) {
-      triggerShipmentStatusAlert(shipment, oldStatus, newStatus).catch(console.error);
+      triggerShipmentStatusAlert(shipment, oldStatus, newStatus).catch((err) => {
+        console.error('Shipment status notification failed:', err);
+      });
     }
 
     // Send feedback request when marked as delivered
@@ -248,8 +332,10 @@ export default function Shipments() {
 
     // Trigger payment received notification
     if (newPaymentStatus === 'paid' && shipment.payment_status !== 'paid') {
-      triggerPaymentReceivedAlert(shipment).catch(console.error);
-      
+      triggerPaymentReceivedAlert(shipment).catch((err) => {
+        console.error('Payment received notification failed:', err);
+      });
+
       // Remind to create invoice when shipment is delivered and paid
       if (shipment.status === 'delivered') {
         toast.info('Payment received. Remember to create an invoice from the Invoices page.');
@@ -366,7 +452,7 @@ export default function Shipments() {
             {Array(6)
               .fill(0)
               .map((_, i) => (
-                <Skeleton key={i} className="h-48" />
+                <Skeleton key={`skeleton-shipment-${i}`} className="h-48" />
               ))}
           </div>
         ) : filteredShipments.length > 0 ? (
@@ -445,6 +531,48 @@ export default function Shipments() {
                   >
                     {selectedShipment.status?.replace('_', ' ')}
                   </Badge>
+                </div>
+
+                {/* Tracking Progress Bar */}
+                <div className="relative pt-2 pb-4 sm:px-4">
+                  <div className="flex items-center justify-between mb-8 relative z-10">
+                    {TRACKING_STEPS.map((step, idx) => {
+                      const currentIdx = STATUS_INDEX[selectedShipment.status] || 0;
+                      const isComplete = idx <= currentIdx;
+                      const isCurrent = idx === currentIdx;
+                      const StepIcon = step.icon;
+
+                      return (
+                        <div key={step.status} className="flex flex-col items-center bg-white cursor-default">
+                          <div
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
+                              } ${isCurrent ? 'ring-4 ring-blue-100' : ''}`}
+                          >
+                            <StepIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <span
+                            className={`text-[9px] sm:text-[10px] mt-2 text-center leading-tight ${isComplete ? 'text-blue-600 font-medium' : 'text-slate-400'}`}
+                            style={{ maxWidth: '60px' }}
+                          >
+                            {step.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Progress Line */}
+                  <div className="absolute top-6 sm:top-7 left-8 right-8 h-0.5 bg-slate-200 z-0 hidden sm:block">
+                    <div
+                      className="h-full bg-blue-600 transition-all"
+                      style={{ width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%` }}
+                    />
+                  </div>
+                  <div className="absolute top-[1.125rem] left-6 right-6 h-0.5 bg-slate-200 z-0 sm:hidden">
+                    <div
+                      className="h-full bg-blue-600 transition-all"
+                      style={{ width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%` }}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">

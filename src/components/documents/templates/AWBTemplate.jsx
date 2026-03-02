@@ -1,4 +1,3 @@
-import React from 'react';
 import { format } from 'date-fns';
 
 export default function AWBTemplate({ data, settings }) {
@@ -11,7 +10,7 @@ export default function AWBTemplate({ data, settings }) {
     if (!dateString) return '-';
     try {
       return format(new Date(dateString), 'dd MMM yyyy');
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };

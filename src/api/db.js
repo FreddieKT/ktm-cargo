@@ -15,40 +15,34 @@ const IS_PROD =
  *
  * In **development** the detailed message is preserved for convenience.
  */
-function toSafeError(error, operation, tableName, extraContext = {}) {
+function createSafeErrorResponse(error, operation, tableName, extraContext = {}) {
   // Always send full details to Sentry
   Sentry.captureException(error instanceof Error ? error : new Error(error?.message || 'Unknown DB error'), {
     tags: {
       component: 'db',
       operation,
       table: tableName,
-      supabaseCode: error.code,
+      supabaseCode: error?.code,
     },
     extra: {
-      supabaseCode: error.code,
-      supabaseDetails: error.details,
-      supabaseHint: error.hint,
-      supabaseMessage: error.message,
+      supabaseCode: error?.code,
+      supabaseDetails: error?.details,
+      supabaseHint: error?.hint,
+      supabaseMessage: error?.message,
       ...extraContext,
     },
   });
 
-  // Build the Error that will be thrown to the caller / UI
-  const devMessage = error.details || error.hint || error.message || `Failed to ${operation} ${tableName}`;
+  // Build the user-friendly response that will be returned
+  const devMessage = error?.details || error?.hint || error?.message || `Failed to ${operation} ${tableName}`;
   const prodMessage = `Failed to ${operation} record. Please try again or contact support.`;
 
-  const safeError = new Error(IS_PROD ? prodMessage : devMessage);
-  safeError.name = 'SupabaseError';
-  safeError.code = error.code;
-
-  // Keep details/hint accessible for programmatic handling but NOT in .message
-  if (!IS_PROD) {
-    safeError.details = error.details;
-    safeError.hint = error.hint;
-    safeError.originalMessage = error.message;
-  }
-
-  return safeError;
+  return {
+    success: false,
+    data: null,
+    code: error?.code || 'DB_ERROR',
+    message: IS_PROD ? prodMessage : devMessage
+  };
 }
 
 // Helper to parse sort string (e.g. "-created_date" -> { column: "created_date", ascending: false })
@@ -59,7 +53,7 @@ const parseSort = (sortString) => {
   return { column, ascending: !isDesc };
 };
 
-// Read-Only Entity Client Factory
+// Read-Only Entity Client Factory (Legacy - throws errors)
 export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
   list: async (sortString, limit) => {
     let query = supabase.from(tableName).select(selectFields);
@@ -74,7 +68,7 @@ export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
     }
 
     const { data, error } = await query;
-    if (error) throw toSafeError(error, 'list', tableName);
+    if (error) throw createSafeErrorResponse(error, 'list', tableName);
     return data || [];
   },
 
@@ -84,7 +78,7 @@ export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
       .select(selectFields)
       .eq('id', id)
       .single();
-    if (error) throw toSafeError(error, 'get', tableName, { id });
+    if (error) throw createSafeErrorResponse(error, 'get', tableName, { id });
     return data;
   },
 
@@ -94,15 +88,12 @@ export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
     // Apply filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value && typeof value === 'object' && value.operator) {
-        // Handle complex filter: { operator: 'gt', value: 10 }
-        // operators: eq, neq, gt, gte, lt, lte, like, ilike, is, in
         if (typeof query[value.operator] === 'function') {
           query = query[value.operator](key, value.value);
         } else {
           console.warn(`Unknown filter operator: ${value.operator}`);
         }
       } else {
-        // Default to equality for backward compatibility
         query = query.eq(key, value);
       }
     });
@@ -117,12 +108,12 @@ export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
     }
 
     const { data, error } = await query;
-    if (error) throw toSafeError(error, 'filter', tableName, { filters });
+    if (error) throw createSafeErrorResponse(error, 'filter', tableName, { filters });
     return data || [];
   },
 });
 
-// Full Entity Client Factory (Read + Write)
+// Full Entity Client Factory (Legacy - throws errors)
 export const createEntityClient = (tableName, selectFields = '*') => ({
   ...createReadOnlyEntityClient(tableName, selectFields),
 
@@ -132,7 +123,7 @@ export const createEntityClient = (tableName, selectFields = '*') => ({
       .insert(data)
       .select(selectFields)
       .single();
-    if (error) throw toSafeError(error, 'create', tableName, { data });
+    if (error) throw createSafeErrorResponse(error, 'create', tableName, { data });
     return created;
   },
 
@@ -143,16 +134,40 @@ export const createEntityClient = (tableName, selectFields = '*') => ({
       .eq('id', id)
       .select(selectFields)
       .single();
-    if (error) throw toSafeError(error, 'update', tableName, { id, updates });
+    if (error) throw createSafeErrorResponse(error, 'update', tableName, { id, updates });
     return updated;
   },
 
   delete: async (id) => {
     const { error } = await supabase.from(tableName).delete().eq('id', id);
-    if (error) throw toSafeError(error, 'delete', tableName, { id });
+    if (error) throw createSafeErrorResponse(error, 'delete', tableName, { id });
     return true;
   },
 });
+
+// Factory for New Global Pattern
+export const createSafeEntityClient = (tableName, selectFields = '*') => {
+  const legacy = createEntityClient(tableName, selectFields);
+
+  const wrap = async (promiseObj) => {
+    try {
+      const data = await promiseObj;
+      return { success: true, data, code: null, message: null };
+    } catch (safeError) {
+      // safeError is already the JSON object created by createSafeErrorResponse
+      return safeError;
+    }
+  };
+
+  return {
+    list: (...args) => wrap(legacy.list(...args)),
+    get: (...args) => wrap(legacy.get(...args)),
+    filter: (...args) => wrap(legacy.filter(...args)),
+    create: (...args) => wrap(legacy.create(...args)),
+    update: (...args) => wrap(legacy.update(...args)),
+    delete: (...args) => wrap(legacy.delete(...args)),
+  };
+};
 
 export const db = {
   profiles: createEntityClient('profiles', '*'),
@@ -184,4 +199,36 @@ export const db = {
   vendorPayouts: createEntityClient('vendor_payouts', '*'),
   companySettings: createEntityClient('company_settings', '*'),
   notificationTemplates: createEntityClient('notification_templates', '*'),
+};
+
+export const api = {
+  profiles: createSafeEntityClient('profiles', '*'),
+  customers: createSafeEntityClient('customers', '*'),
+  shipments: createSafeEntityClient('shipments', '*'),
+  shoppingOrders: createSafeEntityClient('shopping_orders', '*'),
+  tasks: createSafeEntityClient('tasks', '*'),
+  expenses: createSafeEntityClient('expenses', '*'),
+  campaigns: createSafeEntityClient('campaigns', '*'),
+  feedback: createSafeEntityClient('feedback', '*'),
+  inventoryItems: createSafeEntityClient('inventory_items', '*'),
+  stockMovements: createSafeEntityClient('stock_movements', '*'),
+  notifications: createSafeEntityClient('notifications', '*'),
+  vendors: createSafeEntityClient('vendors', '*'),
+  vendorOrders: createSafeEntityClient('vendor_orders', '*'),
+  vendorPayments: createSafeEntityClient('vendor_payments', '*'),
+  servicePricing: createSafeEntityClient('service_pricing', '*'),
+  surcharges: createSafeEntityClient('surcharges', '*'),
+  customSegments: createSafeEntityClient('custom_segments', '*'),
+  scheduledReports: createSafeEntityClient('scheduled_reports', '*'),
+  purchaseOrders: createSafeEntityClient('purchase_orders', '*'),
+  goodsReceipts: createSafeEntityClient('goods_receipts', '*'),
+  vendorContracts: createSafeEntityClient('vendor_contracts', '*'),
+  approvalRules: createSafeEntityClient('approval_rules', '*'),
+  approvalHistory: createSafeEntityClient('approval_history', '*'),
+  auditLogs: createSafeEntityClient('audit_logs', '*'), // Assuming read only is fine to map
+  vendorInvitations: createSafeEntityClient('vendor_invitations', '*'),
+  customerInvoices: createSafeEntityClient('customer_invoices', '*'),
+  vendorPayouts: createSafeEntityClient('vendor_payouts', '*'),
+  companySettings: createSafeEntityClient('company_settings', '*'),
+  notificationTemplates: createSafeEntityClient('notification_templates', '*'),
 };

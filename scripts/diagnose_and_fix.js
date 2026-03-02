@@ -39,8 +39,8 @@ async function runFile(filename) {
     try {
       await client.query(sql);
       console.log(`Successfully ran ${filename}`);
-    } catch (e) {
-      console.error(`Error running ${filename}:`, e.message);
+    } catch (_e) {
+      console.error(`Error running ${filename}:`, _e.message);
     }
   } else {
     console.error(`File not found: ${filePath}`);

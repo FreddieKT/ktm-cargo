@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { campaignSchema } from '@/lib/schemas';
+import { campaignSchema } from '@/domains/core/schemas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -164,10 +164,11 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
     switch (segment) {
       case 'new':
         return customers.filter((c) => (c.total_shipments || 0) < 3).length;
-      case 'inactive':
+      case 'inactive': {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         return customers.filter((c) => !c.last_order_date || new Date(c.last_order_date) < thirtyDaysAgo).length;
+      }
       case 'vip':
         return customers.filter((c) => (c.total_shipments || 0) >= 10 || (c.total_spent || 0) > 50000).length;
       case 'online_shoppers':

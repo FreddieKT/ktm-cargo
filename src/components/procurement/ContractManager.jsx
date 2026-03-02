@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,18 +41,15 @@ import {
   Upload,
   Download,
   FileUp,
-  Eye,
-  Scale,
   Target,
   Bell,
   Search,
   Filter,
+  Eye,
 } from 'lucide-react';
-import { differenceInDays, format, addDays } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import { toast } from 'sonner';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 const STATUS_CONFIG = {
   draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800', icon: FileText },
   active: { label: 'Active', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
@@ -209,7 +206,7 @@ export default function ContractManager({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { vendorContractSchema } = await import('@/lib/schemas');
+      const { vendorContractSchema } = await import('@/domains/core/schemas');
       const contractNumber =
         editingContract?.contract_number || `CON-${Date.now().toString(36).toUpperCase()}`;
       const data = {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,6 @@ import {
   CreditCard,
   Calendar,
   Loader2,
-  ArrowRight,
 } from 'lucide-react';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { toast } from 'sonner';

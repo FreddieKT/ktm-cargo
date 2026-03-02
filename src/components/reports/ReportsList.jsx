@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,14 +8,10 @@ import {
   Download,
   Pencil,
   Trash2,
-  Play,
-  Clock,
-  CheckCircle,
   Send,
   Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 
 const SCHEDULE_LABELS = {
   none: 'Manual',

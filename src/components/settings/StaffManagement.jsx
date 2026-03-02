@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -29,8 +29,6 @@ import {
   Users,
   UserPlus,
   Mail,
-  Shield,
-  Pencil,
   Trash2,
   CheckCircle,
   XCircle,
@@ -40,13 +38,12 @@ import {
   Building2,
   Search,
   Filter,
-  MoreVertical,
   Send,
   Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { ROLE_LABELS, ROLE_COLORS, ROLES } from '@/components/auth/RolePermissions';
+import { ROLE_LABELS, ROLE_COLORS } from '@/components/auth/RolePermissions';
 import { AuditActions } from '@/components/audit/AuditService';
 
 import { useForm } from 'react-hook-form';

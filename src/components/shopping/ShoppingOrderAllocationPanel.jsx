@@ -1,5 +1,33 @@
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-// ... existing imports ...
+import {
+  Package,
+  Link,
+  AlertTriangle,
+  TrendingUp,
+  Scale,
+  CheckCircle,
+  Unlink,
+  Save,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ShoppingOrderAllocationPanel({
   orders = [],

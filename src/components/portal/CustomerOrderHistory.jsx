@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +26,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { buildCustomerOrderHistory } from '@/lib/customerOrderHistory';
+import { buildCustomerOrderHistory } from '@/domains/customers/customerOrderHistory';
 
 const PAGE_SIZE = 20;
 

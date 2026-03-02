@@ -74,21 +74,28 @@ const DEFAULT_TEMPLATES = {
   },
 };
 
+/** Escapes special regex characters in a string to prevent ReDoS. */
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Replace template placeholders with actual values
  */
 function processTemplate(template, data) {
   let result = template;
 
-  // Simple placeholder replacement
+  // Simple placeholder replacement — keys are escaped to prevent ReDoS
   Object.keys(data).forEach((key) => {
     const value = data[key] || '';
-    result = result.replace(new RegExp(`{{${key}}}`, 'g'), value);
+    const safeKey = escapeRegex(key);
+    result = result.replace(new RegExp(`\\{\\{${safeKey}\\}\\}`, 'g'), value);
   });
 
   // Handle conditional blocks {{#field}}...{{/field}}
   Object.keys(data).forEach((key) => {
-    const conditionalRegex = new RegExp(`{{#${key}}}([\\s\\S]*?){{/${key}}}`, 'g');
+    const safeKey = escapeRegex(key);
+    const conditionalRegex = new RegExp(`\\{\\{#${safeKey}\\}\\}([\\s\\S]*?)\\{\\{/${safeKey}\\}\\}`, 'g');
     if (data[key]) {
       result = result.replace(conditionalRegex, '$1');
     } else {
@@ -118,7 +125,7 @@ async function getTemplate(templateType) {
         body: templates[0].body,
       };
     }
-  } catch (e) {
+  } catch (_e) {
     console.log('Using default template for:', templateType);
   }
 

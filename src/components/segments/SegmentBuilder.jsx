@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,8 +30,6 @@ const CRITERIA_TYPES = [
   { value: 'has_email', label: 'Has Email', type: 'boolean' },
 ];
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 const OPERATORS = {
   number: [
     { value: 'gte', label: '>=' },
@@ -72,7 +70,7 @@ export default function SegmentBuilder({ segment, onSubmit, onCancel, previewCou
       if (segment.criteria) {
         try {
           setCriteria(JSON.parse(segment.criteria));
-        } catch (e) {
+        } catch (_e) {
           setCriteria([]);
         }
       }

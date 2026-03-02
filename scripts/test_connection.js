@@ -16,8 +16,8 @@ function loadEnv() {
         if (key && value) process.env[key.trim()] = value.trim();
       });
     }
-  } catch (e) {
-    console.error(e);
+  } catch (_e) {
+    console.error(_e);
   }
 }
 loadEnv();

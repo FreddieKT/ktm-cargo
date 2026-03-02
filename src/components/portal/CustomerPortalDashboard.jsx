@@ -1,4 +1,3 @@
-import React from 'react';
 import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,15 +10,10 @@ import {
   CheckCircle,
   AlertTriangle,
   TrendingUp,
-  Calendar,
-  MapPin,
   ArrowRight,
   Bell,
-  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-slate-100 text-slate-700', icon: Clock },

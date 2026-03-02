@@ -1,4 +1,3 @@
-import React from 'react';
 import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +8,7 @@ import {
   Truck,
   DollarSign,
   Star,
-  TrendingUp,
   Clock,
-  CheckCircle,
-  AlertTriangle,
   ArrowRight,
   Calendar,
 } from 'lucide-react';

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { db } from '@/api/db';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   FileText,
   Printer,
-  Download,
   Package,
   Search,
   CheckCircle,
@@ -29,8 +27,6 @@ import {
   ClipboardList,
   AlertTriangle,
   RefreshCw,
-  Eye,
-  ChevronRight,
   Truck,
   Calendar,
   DollarSign,
@@ -39,7 +35,7 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
-import { printDocument } from '@/utils/documentPrinter';
+import { printDocument } from '@/domains/documents/documentPrinter';
 import CommercialInvoiceTemplate from '@/components/documents/templates/CommercialInvoiceTemplate';
 import PackingListTemplate from '@/components/documents/templates/PackingListTemplate';
 import AWBTemplate from '@/components/documents/templates/AWBTemplate';

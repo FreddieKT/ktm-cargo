@@ -217,7 +217,7 @@ try {
       if (content.includes('useErrorHandler') || content.includes('handleError')) {
         errorHandlerUsage++;
       }
-    } catch (e) {
+    } catch (_e) {
       // Skip files that can't be read
     }
   });
@@ -245,7 +245,7 @@ try {
     if (sentryVersion) {
       successes.push(`✅ Sentry package available: ${sentryVersion}`);
     }
-  } catch (e) {
+  } catch (_e) {
     warnings.push('⚠️  Could not verify Sentry package');
   }
 } catch (error) {
@@ -292,7 +292,7 @@ function getAllFiles(dirPath, extensions = ['.jsx', '.js', '.tsx', '.ts'], array
         }
       }
     });
-  } catch (e) {
+  } catch (_e) {
     // Skip directories that can't be read
   }
 

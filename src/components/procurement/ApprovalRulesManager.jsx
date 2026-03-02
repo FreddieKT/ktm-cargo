@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,7 +85,7 @@ export default function ApprovalRulesManager({ rules = [], onAdd, onUpdate, onDe
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { approvalRuleSchema } = await import('@/lib/schemas');
+      const { approvalRuleSchema } = await import('@/domains/core/schemas');
       const data = {
         ...formData,
         max_amount: formData.max_amount ? parseFloat(formData.max_amount) : null,

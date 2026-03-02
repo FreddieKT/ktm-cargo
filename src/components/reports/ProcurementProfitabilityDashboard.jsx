@@ -1,9 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -17,22 +15,13 @@ import {
   DollarSign,
   Package,
   TrendingUp,
-  TrendingDown,
   Scale,
-  Users,
   Truck,
-  AlertTriangle,
-  CheckCircle,
   BarChart3,
-  PieChart,
-  ArrowUpRight,
-  ArrowDownRight,
   Filter,
   Download,
 } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,

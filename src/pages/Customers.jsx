@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { db } from '@/api/db';
-import { customerSchema } from '@/lib/schemas';
+import { customerSchema } from '@/domains/core/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -25,20 +25,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Plus,
   Search,
   Users,
   Phone,
   Mail,
-  MapPin,
   Package,
   DollarSign,
   UserPlus,
-  X,
   Sparkles,
   Crown,
   AlertTriangle,
@@ -53,8 +49,6 @@ import CustomerOnboarding from '@/components/onboarding/CustomerOnboarding';
 import {
   segmentCustomers,
   getSegmentSummary,
-  VALUE_TIERS,
-  BEHAVIORAL_SEGMENTS,
 } from '@/components/customers/CustomerSegmentationEngine';
 import CustomerSegmentBadges from '@/components/customers/CustomerSegmentBadges';
 

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { shipmentSchema } from '@/lib/schemas';
+import { shipmentSchema } from '@/domains/core/schemas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,13 +22,11 @@ import {
   Truck,
   Check,
   ChevronsUpDown,
-  AlertCircle,
   User,
   Phone,
   MapPin,
   CalendarDays,
   Shield,
-  DollarSign,
   TrendingUp,
   Info,
   Loader2,
@@ -45,10 +43,10 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import VendorCapacityAlert from '@/components/shared/VendorCapacityAlert';
+import { useUser } from '@/components/auth/UserContext';
 import { SERVICE_TYPE_DEFAULTS } from '@/lib/defaults';
 
 // Map icon for each service type (icons can't live in defaults.js — they're React components)
@@ -67,12 +65,13 @@ export default function ShipmentForm({
   onSubmit,
   onCancel,
   purchaseOrders = [],
-  vendors = [],
   customers = [],
 }) {
   const [openCombobox, setOpenCombobox] = useState(false);
   const [poWeightStatus, setPoWeightStatus] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
+  const enableAdvancedCosting = user?.features?.enableAdvancedCosting;
 
   const {
     register,
@@ -80,7 +79,6 @@ export default function ShipmentForm({
     control,
     setValue,
     watch,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(shipmentSchema),
@@ -129,7 +127,8 @@ export default function ShipmentForm({
       const price = service.price * weight;
       const insurance = watchedValues.insurance_opted ? price * 0.03 : 0;
       const total = price + insurance + packaging;
-      const profit = total - vendorCost - insurance;
+      // insurance is part of total revenue charged to customer — not a separate cost
+      const profit = total - vendorCost;
       const margin = total > 0 ? ((profit / total) * 100).toFixed(1) : 0;
 
       return {
@@ -536,19 +535,21 @@ export default function ShipmentForm({
                 className="h-11"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Box className="w-4 h-4 text-slate-400" />
-                Packaging Fee (THB)
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                {...register('packaging_fee')}
-                placeholder="0"
-                className="h-11"
-              />
-            </div>
+            {enableAdvancedCosting && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Box className="w-4 h-4 text-slate-400" />
+                  Packaging Fee (THB)
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  {...register('packaging_fee')}
+                  placeholder="0"
+                  className="h-11"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-slate-400" />
@@ -615,12 +616,14 @@ export default function ShipmentForm({
                   <p className="font-bold text-lg">฿{(calculated.insurance || 0).toLocaleString()}</p>
                 </div>
 
-                <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
-                  <p className="text-slate-500 text-xs mb-1">Packaging</p>
-                  <p className="font-bold text-lg">
-                    ฿{parseFloat(watchedValues.packaging_fee || 0).toLocaleString()}
-                  </p>
-                </div>
+                {enableAdvancedCosting && (
+                  <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
+                    <p className="text-slate-500 text-xs mb-1">Packaging</p>
+                    <p className="font-bold text-lg">
+                      ฿{parseFloat(watchedValues.packaging_fee || 0).toLocaleString()}
+                    </p>
+                  </div>
+                )}
 
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
                   <p className="text-blue-100 text-xs mb-1">Total</p>

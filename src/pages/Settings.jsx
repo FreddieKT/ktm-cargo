@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -23,22 +23,16 @@ import {
   User,
   Bell,
   Shield,
-  Palette,
-  Globe,
   Mail,
-  Phone,
   Save,
   Settings as SettingsIcon,
   Zap,
   Database,
-  Clock,
   DollarSign,
   Package,
   Truck,
   FileText,
   Users,
-  Target,
-  RefreshCw,
   CheckCircle,
   AlertTriangle,
   Loader2,
@@ -57,6 +51,10 @@ import AuditLogViewer from '@/components/audit/AuditLogViewer';
 import CompanyBranding from '@/components/settings/CompanyBranding';
 import NotificationPreferences from '@/components/settings/NotificationPreferences';
 import NotificationTemplateManager from '@/components/settings/NotificationTemplateManager';
+import ProfileTab from '@/components/settings/ProfileTab';
+import BusinessSettingsTab from '@/components/settings/BusinessSettingsTab';
+import DocumentSettingsTab from '@/components/settings/DocumentSettingsTab';
+import SystemFeaturesTab from '@/components/settings/SystemFeaturesTab';
 import { hasPermission } from '@/components/auth/RolePermissions';
 import { DEFAULT_SHOPPING_PRICE_PER_KG } from '@/lib/defaults';
 
@@ -145,6 +143,13 @@ export default function Settings() {
     default_delivery_city: 'Yangon',
   });
 
+  const [features, setFeatures] = useState({
+    enableInventory: false,
+    enableProcurement: false,
+    enableTasks: false,
+    enableAdvancedCosting: false,
+  });
+
   useEffect(() => {
     if (user) {
       setProfile({
@@ -154,8 +159,9 @@ export default function Settings() {
         default_currency: user.default_currency || 'THB',
         timezone: user.timezone || 'Asia/Bangkok',
       });
-      setNotifications(user.notification_settings || notifications);
-      setBusinessSettings(user.business_settings || businessSettings);
+      setNotifications(user.notification_settings || {});
+      setBusinessSettings(user.business_settings || {});
+      setFeatures(user.features || {});
     }
   }, [user]);
 
@@ -172,12 +178,14 @@ export default function Settings() {
     updateProfileMutation.mutate(profile);
   };
 
-  const handleSaveNotifications = () => {
-    updateProfileMutation.mutate({ notification_settings: notifications });
-  };
+
 
   const handleSaveBusinessSettings = () => {
     updateProfileMutation.mutate({ business_settings: businessSettings });
+  };
+
+  const handleSaveFeatures = () => {
+    updateProfileMutation.mutate({ features });
   };
 
   // Quick action handlers
@@ -281,6 +289,12 @@ export default function Settings() {
               <SettingsIcon className="w-4 h-4" />
               <span className="hidden sm:inline">Control</span>
             </TabsTrigger>
+            {user?.role === 'admin' && (
+              <TabsTrigger value="features" className="gap-2">
+                <SettingsIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Features</span>
+              </TabsTrigger>
+            )}
             {(user?.role === 'admin' || hasPermission(user, 'invite_staff')) && (
               <TabsTrigger value="staff" className="gap-2">
                 <Users className="w-4 h-4" />
@@ -302,102 +316,13 @@ export default function Settings() {
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="mt-6 space-y-6">
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-500" />
-                  Personal Information
-                </CardTitle>
-                <CardDescription>Update your personal details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input
-                      value={profile.full_name}
-                      onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                      placeholder="Your name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number</Label>
-                    <Input
-                      value={profile.phone}
-                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      placeholder="+66..."
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Company Name</Label>
-                  <Input
-                    value={profile.company_name}
-                    onChange={(e) => setProfile({ ...profile, company_name: e.target.value })}
-                    placeholder="Your company"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Default Currency</Label>
-                    <Select
-                      value={profile.default_currency}
-                      onValueChange={(v) => setProfile({ ...profile, default_currency: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="THB">Thai Baht (฿)</SelectItem>
-                        <SelectItem value="USD">US Dollar ($)</SelectItem>
-                        <SelectItem value="MMK">Myanmar Kyat (K)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Timezone</Label>
-                    <Select
-                      value={profile.timezone}
-                      onValueChange={(v) => setProfile({ ...profile, timezone: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Asia/Bangkok">Bangkok (GMT+7)</SelectItem>
-                        <SelectItem value="Asia/Yangon">Yangon (GMT+6:30)</SelectItem>
-                        <SelectItem value="UTC">UTC</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="pt-4">
-                  <Button onClick={handleSaveProfile} className="bg-blue-600 hover:bg-blue-700">
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-500" />
-                  Account Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <p className="text-sm text-slate-500">Email Address</p>
-                    <p className="font-medium">{user?.email || 'Loading...'}</p>
-                  </div>
-                  <Badge className="bg-emerald-100 text-emerald-800">Verified</Badge>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="profile" className="mt-6">
+            <ProfileTab
+              profile={profile}
+              setProfile={setProfile}
+              user={user}
+              handleSaveProfile={handleSaveProfile}
+            />
           </TabsContent>
 
           {/* Notifications Tab */}
@@ -417,344 +342,16 @@ export default function Settings() {
 
           {/* Business Settings Tab */}
           <TabsContent value="business" className="mt-6 space-y-6">
-            {/* Company Information */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-blue-500" />
-                  Company Information
-                </CardTitle>
-                <CardDescription>Your business details for invoices and documents</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tax ID / Registration Number</Label>
-                    <Input
-                      value={businessSettings.tax_id}
-                      onChange={(e) =>
-                        setBusinessSettings({ ...businessSettings, tax_id: e.target.value })
-                      }
-                      placeholder="e.g., 1234567890123"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Currency Symbol</Label>
-                    <Select
-                      value={businessSettings.currency_symbol}
-                      onValueChange={(v) =>
-                        setBusinessSettings({ ...businessSettings, currency_symbol: v })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="฿">Thai Baht (฿)</SelectItem>
-                        <SelectItem value="$">US Dollar ($)</SelectItem>
-                        <SelectItem value="K">Myanmar Kyat (K)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Company Address</Label>
-                  <Textarea
-                    value={businessSettings.company_address}
-                    onChange={(e) =>
-                      setBusinessSettings({ ...businessSettings, company_address: e.target.value })
-                    }
-                    placeholder="Enter your business address for invoices..."
-                    rows={2}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <BusinessSettingsTab
+              businessSettings={businessSettings}
+              setBusinessSettings={setBusinessSettings}
+              handleSaveBusinessSettings={handleSaveBusinessSettings}
+            />
 
-            {/* Shipping Defaults */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Package className="w-5 h-5 text-emerald-500" />
-                  Shipping Defaults
-                </CardTitle>
-                <CardDescription>Default values for new shipments</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Default Service Type</Label>
-                    <Select
-                      value={businessSettings.default_service_type}
-                      onValueChange={(v) =>
-                        setBusinessSettings({ ...businessSettings, default_service_type: v })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cargo_small">Cargo Small</SelectItem>
-                        <SelectItem value="cargo_medium">Cargo Medium</SelectItem>
-                        <SelectItem value="cargo_large">Cargo Large</SelectItem>
-                        <SelectItem value="express">Express</SelectItem>
-                        <SelectItem value="standard">Standard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Weight Unit</Label>
-                    <Select
-                      value={businessSettings.weight_unit}
-                      onValueChange={(v) =>
-                        setBusinessSettings({ ...businessSettings, weight_unit: v })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                        <SelectItem value="lb">Pounds (lb)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-slate-400" />
-                      Default Pickup City
-                    </Label>
-                    <Input
-                      value={businessSettings.default_pickup_city}
-                      onChange={(e) =>
-                        setBusinessSettings({
-                          ...businessSettings,
-                          default_pickup_city: e.target.value,
-                        })
-                      }
-                      placeholder="Bangkok"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-slate-400" />
-                      Default Delivery City
-                    </Label>
-                    <Input
-                      value={businessSettings.default_delivery_city}
-                      onChange={(e) =>
-                        setBusinessSettings({
-                          ...businessSettings,
-                          default_delivery_city: e.target.value,
-                        })
-                      }
-                      placeholder="Yangon"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Rates & Fees */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Percent className="w-5 h-5 text-amber-500" />
-                  Rates & Fees
-                </CardTitle>
-                <CardDescription>Default rates for pricing calculations</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Default Insurance Rate (%)</Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.5"
-                        value={businessSettings.default_insurance_rate}
-                        onChange={(e) =>
-                          setBusinessSettings({
-                            ...businessSettings,
-                            default_insurance_rate: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Default Commission Rate (%)</Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.5"
-                        value={businessSettings.default_commission_rate}
-                        onChange={(e) =>
-                          setBusinessSettings({
-                            ...businessSettings,
-                            default_commission_rate: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Default Shopping Price (฿/kg)</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={businessSettings.default_shopping_price_per_kg ?? DEFAULT_SHOPPING_PRICE_PER_KG}
-                      onChange={(e) =>
-                        setBusinessSettings({
-                          ...businessSettings,
-                          default_shopping_price_per_kg: parseFloat(e.target.value) || DEFAULT_SHOPPING_PRICE_PER_KG,
-                        })
-                      }
-                    />
-                    <p className="text-xs text-slate-500">Used for shopping orders when no service pricing is set</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Default Payment Terms</Label>
-                  <Select
-                    value={businessSettings.default_payment_terms}
-                    onValueChange={(v) =>
-                      setBusinessSettings({ ...businessSettings, default_payment_terms: v })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="immediate">Immediate (COD)</SelectItem>
-                      <SelectItem value="net_15">Net 15 Days</SelectItem>
-                      <SelectItem value="net_30">Net 30 Days</SelectItem>
-                      <SelectItem value="net_60">Net 60 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Documents & Automation */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileCheck className="w-5 h-5 text-purple-500" />
-                  Documents & Automation
-                </CardTitle>
-                <CardDescription>Configure document generation and automation</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Invoice Number Prefix</Label>
-                    <Input
-                      value={businessSettings.invoice_prefix}
-                      onChange={(e) =>
-                        setBusinessSettings({
-                          ...businessSettings,
-                          invoice_prefix: e.target.value.toUpperCase(),
-                        })
-                      }
-                      placeholder="INV"
-                      maxLength={5}
-                    />
-                    <p className="text-xs text-slate-500">
-                      e.g., {businessSettings.invoice_prefix}-2024-0001
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Tracking Number Prefix</Label>
-                    <Input
-                      value={businessSettings.tracking_prefix}
-                      onChange={(e) =>
-                        setBusinessSettings({
-                          ...businessSettings,
-                          tracking_prefix: e.target.value.toUpperCase(),
-                        })
-                      }
-                      placeholder="BKK"
-                      maxLength={5}
-                    />
-                    <p className="text-xs text-slate-500">
-                      e.g., {businessSettings.tracking_prefix}1234567890
-                    </p>
-                  </div>
-                </div>
-
-                <Separator className="my-4" />
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="flex items-center gap-2">
-                        <Calculator className="w-4 h-4 text-slate-400" />
-                        Auto-generate Tracking Numbers
-                      </Label>
-                      <p className="text-sm text-slate-500">
-                        Automatically create tracking IDs for new shipments
-                      </p>
-                    </div>
-                    <Switch
-                      checked={businessSettings.auto_generate_tracking}
-                      onCheckedChange={(v) =>
-                        setBusinessSettings({ ...businessSettings, auto_generate_tracking: v })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="flex items-center gap-2">
-                        <Receipt className="w-4 h-4 text-slate-400" />
-                        Auto-send Receipts
-                      </Label>
-                      <p className="text-sm text-slate-500">
-                        Email receipts to customers when payment is received
-                      </p>
-                    </div>
-                    <Switch
-                      checked={businessSettings.auto_send_receipts}
-                      onCheckedChange={(v) =>
-                        setBusinessSettings({ ...businessSettings, auto_send_receipts: v })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="flex items-center gap-2">
-                        <FileCheck className="w-4 h-4 text-slate-400" />
-                        Require Delivery Signature
-                      </Label>
-                      <p className="text-sm text-slate-500">
-                        Require customer signature on delivery confirmation
-                      </p>
-                    </div>
-                    <Switch
-                      checked={businessSettings.require_signature}
-                      onCheckedChange={(v) =>
-                        setBusinessSettings({ ...businessSettings, require_signature: v })
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <DocumentSettingsTab
+              businessSettings={businessSettings}
+              setBusinessSettings={setBusinessSettings}
+            />
 
             {/* Save Button */}
             <div className="flex justify-end">
@@ -955,6 +552,17 @@ export default function Settings() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Features Toggle Tab - Admin Only */}
+          {user?.role === 'admin' && (
+            <TabsContent value="features" className="mt-6">
+              <SystemFeaturesTab
+                features={features}
+                setFeatures={setFeatures}
+                handleSaveFeatures={handleSaveFeatures}
+              />
+            </TabsContent>
+          )}
 
           {/* Staff Management Tab - Admin Only */}
           {(user?.role === 'admin' || hasPermission(user, 'invite_staff')) && (

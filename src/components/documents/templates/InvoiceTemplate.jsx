@@ -1,4 +1,3 @@
-import React from 'react';
 import { format } from 'date-fns';
 
 export default function InvoiceTemplate({ data, settings }) {
@@ -13,7 +12,7 @@ export default function InvoiceTemplate({ data, settings }) {
     if (!dateString) return '-';
     try {
       return format(new Date(dateString), 'MMM d, yyyy');
-    } catch (e) {
+    } catch (_e) {
       return dateString;
     }
   };

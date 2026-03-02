@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -26,14 +26,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search,
   FileText,
   Package,
   ShoppingBag,
   Calendar as CalendarIcon,
-  DollarSign,
   User,
   Printer,
   Eye,
@@ -49,16 +47,16 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isWithinInterval, subDays } from 'date-fns';
 import { toast } from 'sonner';
-import { printDocument } from '@/utils/documentPrinter';
+import { printDocument } from '@/domains/documents/documentPrinter';
 import InvoiceTemplate from '@/components/documents/templates/InvoiceTemplate';
 import InvoiceForm from '@/components/invoices/InvoiceForm';
+import InvoiceDetailsDialog from '@/components/invoices/InvoiceDetailsDialog';
 import {
   createCustomerInvoice,
   issueInvoice,
   markInvoiceSent,
   recordPayment,
   voidInvoice,
-  getInvoiceStats,
 } from '@/components/invoices/InvoiceService';
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -67,6 +65,7 @@ const STATUS_CONFIG = {
   draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800', icon: FileText },
   issued: { label: 'Issued', color: 'bg-blue-100 text-blue-800', icon: FileText },
   sent: { label: 'Sent', color: 'bg-purple-100 text-purple-800', icon: Send },
+  partially_paid: { label: 'Partial', color: 'bg-amber-100 text-amber-800', icon: Clock },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800', icon: CheckCircle },
   void: { label: 'Void', color: 'bg-rose-100 text-rose-800', icon: XCircle },
 };
@@ -96,6 +95,7 @@ export default function Invoices() {
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [actionDialog, setActionDialog] = useState({ open: false, action: null, invoice: null });
+  const [paymentDialog, setPaymentDialog] = useState({ open: false, invoice: null, amount: '' });
 
   // Data fetching
   const { data: invoices = [], isLoading } = useQuery({
@@ -170,6 +170,7 @@ export default function Invoices() {
     mutationFn: ({ id, details }) => recordPayment(id, details),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
+      setPaymentDialog({ open: false, invoice: null, amount: '' });
       toast.success('Payment recorded');
     },
     onError: (err) => handleError(err, 'Failed to record payment'),
@@ -187,44 +188,51 @@ export default function Invoices() {
   // Stats
   const stats = useMemo(() => {
     const today = new Date();
-    let draft = 0, issued = 0, sent = 0, paid = 0, overdue = 0;
+    let draft = 0, issued = 0, sent = 0, partially_paid = 0, paid = 0, overdue = 0;
     let pendingAmount = 0, paidAmount = 0, overdueAmount = 0;
 
     invoices.forEach((inv) => {
       const amount = inv.total_amount || 0;
-      const isOverdue = inv.due_date && new Date(inv.due_date) < today && 
-        inv.status !== 'paid' && inv.status !== 'void';
+      const isOverdue = inv.due_date && new Date(inv.due_date) < today &&
+        inv.status !== 'draft' && inv.status !== 'paid' && inv.status !== 'void';
 
       switch (inv.status) {
         case 'draft': draft++; break;
-        case 'issued': 
-          issued++; 
+        case 'issued':
+          issued++;
           pendingAmount += amount;
           if (isOverdue) { overdue++; overdueAmount += amount; }
           break;
-        case 'sent': 
-          sent++; 
+        case 'sent':
+          sent++;
           pendingAmount += amount;
           if (isOverdue) { overdue++; overdueAmount += amount; }
+          break;
+        case 'partially_paid':
+          partially_paid++;
+          paidAmount += (inv.amount_paid || 0);
+          pendingAmount += (inv.balance_due || (amount - (inv.amount_paid || 0)));
+          if (isOverdue) { overdue++; overdueAmount += (inv.balance_due || (amount - (inv.amount_paid || 0))); }
           break;
         case 'paid': paid++; paidAmount += amount; break;
       }
     });
 
-    return { 
-      total: invoices.length, 
-      draft, issued, sent, paid, overdue,
-      pendingAmount, paidAmount, overdueAmount 
+    return {
+      total: invoices.length,
+      draft, issued, sent, partially_paid, paid, overdue,
+      pendingAmount, paidAmount, overdueAmount
     };
   }, [invoices]);
 
   // Filtered invoices
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
-      // Type filter
+      // Type filter — treat null/undefined invoice_type as 'shipment'
       if (typeFilter !== 'all') {
-        if (typeFilter === 'shipment' && invoice.invoice_type === 'shopping_order') return false;
-        if (typeFilter === 'shopping_order' && invoice.invoice_type !== 'shopping_order') return false;
+        const isShoppingOrder = invoice.invoice_type === 'shopping_order';
+        if (typeFilter === 'shipment' && isShoppingOrder) return false;
+        if (typeFilter === 'shopping_order' && !isShoppingOrder) return false;
       }
 
       // Status filter
@@ -265,6 +273,11 @@ export default function Invoices() {
   };
 
   const handleAction = (action, invoice) => {
+    if (action === 'pay') {
+      const balance = invoice.balance_due ?? invoice.total_amount;
+      setPaymentDialog({ open: true, invoice, amount: balance });
+      return;
+    }
     setActionDialog({ open: true, action, invoice });
   };
 
@@ -276,9 +289,6 @@ export default function Invoices() {
         break;
       case 'send':
         sendMutation.mutate(invoice.id);
-        break;
-      case 'pay':
-        payMutation.mutate({ id: invoice.id, details: {} });
         break;
       case 'void':
         voidMutation.mutate({ id: invoice.id, reason: '' });
@@ -518,7 +528,7 @@ export default function Invoices() {
         {isLoading ? (
           <div className="space-y-4">
             {Array(5).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-24" />
+              <Skeleton key={`skeleton-invoice-${i}`} className="h-24" />
             ))}
           </div>
         ) : filteredInvoices.length > 0 ? (
@@ -528,8 +538,8 @@ export default function Invoices() {
               const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;
               const StatusIcon = statusConfig.icon;
               const TypeIcon = typeConfig.icon;
-              const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && 
-                invoice.status !== 'paid' && invoice.status !== 'void';
+              const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() &&
+                invoice.status !== 'draft' && invoice.status !== 'paid' && invoice.status !== 'void';
 
               return (
                 <Card
@@ -575,7 +585,7 @@ export default function Invoices() {
                             Due: {invoice.due_date ? format(parseISO(invoice.due_date), 'MMM d, yyyy') : '-'}
                           </p>
                         </div>
-                        
+
                         {/* Action Buttons based on status */}
                         <div className="flex gap-1">
                           {invoice.status === 'draft' && (
@@ -588,17 +598,7 @@ export default function Invoices() {
                               </Button>
                             </>
                           )}
-                          {invoice.status === 'issued' && (
-                            <>
-                              <Button size="sm" variant="ghost" className="text-purple-600" onClick={() => handleAction('send', invoice)} title="Mark Sent">
-                                <Send className="w-4 h-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => handleAction('pay', invoice)} title="Record Payment">
-                                <CreditCard className="w-4 h-4" />
-                              </Button>
-                            </>
-                          )}
-                          {invoice.status === 'sent' && (
+                          {['issued', 'sent', 'partially_paid'].includes(invoice.status) && (
                             <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => handleAction('pay', invoice)} title="Record Payment">
                               <CreditCard className="w-4 h-4" />
                             </Button>
@@ -671,7 +671,7 @@ export default function Invoices() {
               </DialogTitle>
             </DialogHeader>
             {selectedInvoice && (
-              <InvoiceDetailsView
+              <InvoiceDetailsDialog
                 invoice={selectedInvoice}
                 companySettings={companySettings}
                 onPrint={() => handlePrintInvoice(selectedInvoice)}
@@ -696,213 +696,48 @@ export default function Invoices() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Payment Input Dialog */}
+        <Dialog open={paymentDialog.open} onOpenChange={(open) => setPaymentDialog({ ...paymentDialog, open })}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Record Payment</DialogTitle>
+              <DialogDescription>
+                Enter the payment amount received for invoice {paymentDialog.invoice?.invoice_number}.
+                <br />
+                Total amount: ฿{paymentDialog.invoice?.total_amount?.toLocaleString()}
+                <br />
+                Balance due: ฿{(paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount)?.toLocaleString()}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <label className="text-sm font-medium mb-1 block">Payment Amount (฿)</label>
+              <Input
+                type="number"
+                value={paymentDialog.amount}
+                onChange={(e) => setPaymentDialog(prev => ({ ...prev, amount: e.target.value }))}
+                placeholder="Amount received"
+                max={paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount}
+                min="0.01"
+                step="0.01"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setPaymentDialog({ open: false, invoice: null, amount: '' })}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => payMutation.mutate({ id: paymentDialog.invoice.id, details: { amount: paymentDialog.amount } })}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={!paymentDialog.amount || Number(paymentDialog.amount) <= 0 || Number(paymentDialog.amount) > (paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount)}
+              >
+                Confirm Payment
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
 }
 
-function InvoiceDetailsView({ invoice, companySettings, onPrint, onAction }) {
-  const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;
-  const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.draft;
-  const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && 
-    invoice.status !== 'paid' && invoice.status !== 'void';
-
-  return (
-    <div className="space-y-6 mt-4">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-2xl font-bold text-slate-900">{invoice.invoice_number}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge className={typeConfig.color}>{typeConfig.label}</Badge>
-            <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
-            {isOverdue && (
-              <Badge className="bg-rose-100 text-rose-800">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                Overdue
-              </Badge>
-            )}
-          </div>
-        </div>
-        <Button onClick={onPrint} variant="outline" className="gap-2">
-          <Printer className="w-4 h-4" />
-          Print
-        </Button>
-      </div>
-
-      {/* Company & Customer Info */}
-      <div className="grid grid-cols-2 gap-6">
-        <div className="p-4 bg-slate-50 rounded-lg">
-          <p className="text-xs text-slate-500 mb-2">From</p>
-          <p className="font-semibold">{companySettings?.company_name || 'BKK-YGN Cargo'}</p>
-          <p className="text-sm text-slate-600">{companySettings?.address || ''}</p>
-          <p className="text-sm text-slate-600">{companySettings?.phone || ''}</p>
-        </div>
-        <div className="p-4 bg-slate-50 rounded-lg">
-          <p className="text-xs text-slate-500 mb-2">Bill To</p>
-          <p className="font-semibold">{invoice.customer_name}</p>
-          <p className="text-sm text-slate-600">{invoice.customer_email || ''}</p>
-          <p className="text-sm text-slate-600">{invoice.customer_phone || ''}</p>
-        </div>
-      </div>
-
-      {/* Invoice Details */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div>
-          <p className="text-xs text-slate-500">Invoice Date</p>
-          <p className="font-medium">
-            {invoice.invoice_date ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy') : '-'}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">Due Date</p>
-          <p className={`font-medium ${isOverdue ? 'text-rose-600' : ''}`}>
-            {invoice.due_date ? format(parseISO(invoice.due_date), 'MMM d, yyyy') : '-'}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500">Payment Terms</p>
-          <p className="font-medium capitalize">{invoice.payment_terms?.replace('_', ' ') || 'Net 7'}</p>
-        </div>
-        {invoice.tracking_number && (
-          <div>
-            <p className="text-xs text-slate-500">Tracking #</p>
-            <p className="font-medium">{invoice.tracking_number}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Pricing Breakdown */}
-      <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="text-left p-3 font-medium">Description</th>
-              <th className="text-right p-3 font-medium">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoice.shipping_amount > 0 && (
-              <tr className="border-t">
-                <td className="p-3">
-                  Shipping
-                  {invoice.weight_kg > 0 && invoice.price_per_kg > 0 && (
-                    <span className="text-slate-500 ml-2">
-                      ({invoice.weight_kg} kg × ฿{invoice.price_per_kg})
-                    </span>
-                  )}
-                </td>
-                <td className="p-3 text-right">฿{invoice.shipping_amount.toLocaleString()}</td>
-              </tr>
-            )}
-            {invoice.product_cost > 0 && (
-              <tr className="border-t">
-                <td className="p-3">Product Cost</td>
-                <td className="p-3 text-right">฿{invoice.product_cost.toLocaleString()}</td>
-              </tr>
-            )}
-            {invoice.commission_amount > 0 && (
-              <tr className="border-t">
-                <td className="p-3">Commission</td>
-                <td className="p-3 text-right">฿{invoice.commission_amount.toLocaleString()}</td>
-              </tr>
-            )}
-            {invoice.insurance_amount > 0 && (
-              <tr className="border-t">
-                <td className="p-3">Insurance</td>
-                <td className="p-3 text-right">฿{invoice.insurance_amount.toLocaleString()}</td>
-              </tr>
-            )}
-            {invoice.packaging_fee > 0 && (
-              <tr className="border-t">
-                <td className="p-3">Packaging Fee</td>
-                <td className="p-3 text-right">฿{invoice.packaging_fee.toLocaleString()}</td>
-              </tr>
-            )}
-            <tr className="border-t">
-              <td className="p-3">Subtotal</td>
-              <td className="p-3 text-right">฿{(invoice.subtotal || 0).toLocaleString()}</td>
-            </tr>
-            {invoice.tax_amount > 0 && (
-              <tr className="border-t">
-                <td className="p-3">Tax ({invoice.tax_rate}%)</td>
-                <td className="p-3 text-right">฿{invoice.tax_amount.toLocaleString()}</td>
-              </tr>
-            )}
-            {invoice.discount_amount > 0 && (
-              <tr className="border-t text-rose-600">
-                <td className="p-3">Discount</td>
-                <td className="p-3 text-right">-฿{invoice.discount_amount.toLocaleString()}</td>
-              </tr>
-            )}
-            <tr className="border-t bg-slate-50">
-              <td className="p-3 font-bold">Total Due</td>
-              <td className="p-3 text-right font-bold text-lg text-blue-600">
-                ฿{(invoice.total_amount || 0).toLocaleString()}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Payment Info */}
-      {invoice.status === 'paid' && invoice.payment_date && (
-        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-          <div className="flex items-center gap-2 text-emerald-700">
-            <CheckCircle className="w-5 h-5" />
-            <span className="font-medium">
-              Paid on {format(parseISO(invoice.payment_date), 'MMM d, yyyy')}
-            </span>
-          </div>
-          {invoice.payment_method && (
-            <p className="text-sm text-emerald-600 mt-1 capitalize">
-              Payment Method: {invoice.payment_method.replace('_', ' ')}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Notes */}
-      {invoice.notes && (
-        <div className="p-4 bg-slate-50 rounded-lg">
-          <p className="text-xs text-slate-500 mb-1">Notes</p>
-          <p className="text-sm text-slate-700 whitespace-pre-wrap">{invoice.notes}</p>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2 pt-4 border-t">
-        {invoice.status === 'draft' && (
-          <Button onClick={() => onAction('issue', invoice)} className="bg-blue-600 hover:bg-blue-700">
-            <FileText className="w-4 h-4 mr-2" />
-            Issue Invoice
-          </Button>
-        )}
-        {invoice.status === 'issued' && (
-          <>
-            <Button onClick={() => onAction('send', invoice)} className="bg-purple-600 hover:bg-purple-700">
-              <Send className="w-4 h-4 mr-2" />
-              Mark as Sent
-            </Button>
-            <Button onClick={() => onAction('pay', invoice)} className="bg-emerald-600 hover:bg-emerald-700">
-              <CreditCard className="w-4 h-4 mr-2" />
-              Record Payment
-            </Button>
-          </>
-        )}
-        {invoice.status === 'sent' && (
-          <Button onClick={() => onAction('pay', invoice)} className="bg-emerald-600 hover:bg-emerald-700">
-            <CreditCard className="w-4 h-4 mr-2" />
-            Record Payment
-          </Button>
-        )}
-        {invoice.status !== 'paid' && invoice.status !== 'void' && (
-          <Button variant="outline" className="text-rose-600 border-rose-200" onClick={() => onAction('void', invoice)}>
-            <Ban className="w-4 h-4 mr-2" />
-            Void Invoice
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}

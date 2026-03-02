@@ -21,8 +21,8 @@ function loadEnv() {
         process.env[key.trim()] = value.trim();
       }
     });
-  } catch (e) {
-    console.error('Error loading .env:', e);
+  } catch (_e) {
+    console.error('Error loading .env:', _e);
   }
 }
 

@@ -1,8 +1,7 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import {
   Star,
   Scale,
@@ -14,7 +13,6 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 /**
  * Calculates vendor score for selection based on multiple factors
  */

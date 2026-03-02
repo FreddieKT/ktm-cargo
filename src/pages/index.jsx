@@ -1,6 +1,6 @@
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import Layout from './Layout.jsx';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
 const Dashboard = lazy(() => import('./Dashboard'));
@@ -69,6 +69,17 @@ const PageLoader = () => (
 );
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useUser } from '@/components/auth/UserContext';
+
+// Redirects already-authenticated staff/admin users away from login/registration pages
+function GuestOnlyRoute({ children }) {
+  const { user, loading } = useUser();
+  if (loading) return null;
+  if (user && (user.role === 'staff' || user.role === 'admin')) {
+    return <Navigate to="/Dashboard" replace />;
+  }
+  return children;
+}
 
 // Create a wrapper component that uses useLocation inside the Router context
 function PagesContent() {
@@ -81,8 +92,8 @@ function PagesContent() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/ClientPortal" element={<ClientPortal />} />
-          <Route path="/VendorRegistration" element={<VendorRegistration />} />
+          <Route path="/ClientPortal" element={<GuestOnlyRoute><ClientPortal /></GuestOnlyRoute>} />
+          <Route path="/VendorRegistration" element={<GuestOnlyRoute><VendorRegistration /></GuestOnlyRoute>} />
           <Route path="/PriceCalculator" element={<PriceCalculator />} />
 
           {/* Protected Routes */}

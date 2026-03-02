@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { sendMessengerNotification } from '@/api/integrations';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +11,7 @@ import { toast } from 'sonner';
 import { addDays, format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { vendorInviteSchema } from '@/lib/schemas';
+import { vendorInviteSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 function generateToken() {
@@ -50,7 +49,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
       let currentUser = null;
       try {
         currentUser = await auth.me();
-      } catch (e) {
+      } catch (_e) {
         // Ignore
       }
 

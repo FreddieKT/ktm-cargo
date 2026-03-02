@@ -59,7 +59,7 @@ try {
     // In Sentry v10, we check if client exists differently
     const client = Sentry.getClient();
     isInitialized = client !== undefined;
-  } catch (e) {
+  } catch (_e) {
     // Fallback: check if DSN is configured
     isInitialized = process.env.VITE_SENTRY_DSN && !process.env.VITE_SENTRY_DSN.includes('your_sentry_dsn');
   }
@@ -197,12 +197,12 @@ try {
             if (content.includes('useErrorHandler') || content.includes('handleError')) {
               componentsWithErrorHandler++;
             }
-          } catch (e) {
+          } catch (_e) {
             // Skip files that can't be read
           }
         }
       });
-    } catch (e) {
+    } catch (_e) {
       // Skip directories that can't be read
     }
   }

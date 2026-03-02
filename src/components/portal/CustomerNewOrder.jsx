@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { db } from '@/api/db';
-import { shipmentSchema } from '@/lib/schemas';
+import { shipmentSchema } from '@/domains/core/schemas';
 import { SERVICE_TYPE_DEFAULTS, DEFAULT_SHOPPING_PRICE_PER_KG } from '@/lib/defaults';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -190,8 +190,8 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
             total_shipments: (customer.total_shipments || 0) + 1,
             total_spent: (customer.total_spent || 0) + cargoCalc.totalAmount,
           });
-        } catch (e) {
-          console.error('Failed to update customer stats', e);
+        } catch (_e) {
+          console.error('Failed to update customer stats', _e);
         }
       }
       return shipment;

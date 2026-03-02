@@ -18,7 +18,7 @@ export async function logAuditEvent({
   let user = null;
   try {
     user = await auth.me();
-  } catch (e) {
+  } catch (_e) {
     // User not logged in
   }
 

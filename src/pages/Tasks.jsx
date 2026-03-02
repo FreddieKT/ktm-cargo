@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -34,7 +34,6 @@ import {
   Target,
   TrendingUp,
   Flag,
-  ChevronRight,
   Users,
   Search,
 } from 'lucide-react';
@@ -43,9 +42,6 @@ import { toast } from 'sonner';
 import { format, isPast, isToday, addDays } from 'date-fns';
 import { triggerTaskAssignedAlert } from '@/components/notifications/NotificationService';
 
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 const phaseConfig = {
   pre_launch: {
     label: 'Pre-Launch',
@@ -568,7 +564,7 @@ export default function Tasks() {
             {Array(3)
               .fill(0)
               .map((_, i) => (
-                <Skeleton key={i} className="h-32" />
+                <Skeleton key={`skeleton-task-${i}`} className="h-32" />
               ))}
           </div>
         ) : filteredTasks.length === 0 ? (

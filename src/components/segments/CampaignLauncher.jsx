@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,10 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Mail, Send, Megaphone, Percent, Gift, Users, Loader2, CheckCircle } from 'lucide-react';
+import { Send, Megaphone, Users, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CampaignLauncher({ targetCustomers, segment, onClose, onSuccess }) {
@@ -48,7 +46,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
     try {
       // Create campaign record
       // Validate campaign data before creating
-      const { campaignSchema } = await import('@/lib/schemas');
+      const { campaignSchema } = await import('@/domains/core/schemas');
       const campaignData = {
         name: form.name,
         description: form.description,
@@ -78,7 +76,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
           });
           sent++;
           setSentCount(sent);
-        } catch (e) {
+        } catch (_e) {
           console.error('Failed to send to', customer.email);
         }
       }

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { db } from '@/api/db';
-import { vendorSchema } from '@/lib/schemas';
+import { vendorSchema } from '@/domains/core/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,16 +33,11 @@ import {
   Truck,
   Package,
   Star,
-  TrendingUp,
   AlertTriangle,
   Phone,
-  Mail,
-  Calendar,
   DollarSign,
   Clock,
   CheckCircle,
-  XCircle,
-  BarChart3,
   FileText,
   Trash2,
 } from 'lucide-react';
@@ -102,7 +97,6 @@ export default function Vendors() {
   const [showForm, setShowForm] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [editingVendor, setEditingVendor] = useState(null);
-  const [selectedVendor, setSelectedVendor] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('vendors');
@@ -246,7 +240,7 @@ export default function Vendors() {
       checkVendorContractAlerts(vendors);
       checkVendorPerformanceAlerts(vendors, vendorOrders);
     }
-  }, [vendors.length, vendorOrders.length]);
+  }, [vendors, vendorOrders]);
 
   // Check for payment alerts
   React.useEffect(() => {
@@ -703,8 +697,8 @@ export default function Vendors() {
                           dataKey="amount"
                           label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
                         >
-                          {spendingByType.map((_, i) => (
-                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          {spendingByType.map((entry, i) => (
+                            <Cell key={entry.type || i} fill={COLORS[i % COLORS.length]} />
                           ))}
                         </Pie>
                         <Tooltip formatter={(v) => `฿${v.toLocaleString()}`} />

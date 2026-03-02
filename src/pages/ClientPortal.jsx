@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { supabase } from '@/api/supabaseClient';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,26 +13,15 @@ import {
   Package,
   Truck,
   FileText,
-  CreditCard,
   MessageSquare,
-  Bell,
   User,
   LogOut,
   Plane,
-  Search,
   Plus,
-  Clock,
-  CheckCircle,
   AlertTriangle,
   MapPin,
-  Calendar,
-  Download,
-  Eye,
-  Send,
-  Upload,
   History,
   Star,
-  HelpCircle,
   Mail,
   Lock,
   Phone,
@@ -389,8 +378,8 @@ export default function ClientPortal() {
         console.error('Failed to create customer record:', createErr.message);
         setClientData(null);
       }
-    } catch (e) {
-      console.error('Failed to load user data', e);
+    } catch (_e) {
+      console.error('Failed to load user data', _e);
       setAuthError(true);
     } finally {
       setIsLoading(false);
@@ -796,7 +785,7 @@ export default function ClientPortal() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               {companyLogo ? (
-                <img src={companyLogo} alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
+                <img src={companyLogo} alt={`${companyName} logo`} className="w-10 h-10 object-contain rounded-lg" />
               ) : (
                 <div className="p-2 bg-blue-600 rounded-xl">
                   <Plane className="w-5 h-5 text-white" />

@@ -139,51 +139,53 @@ export async function createCustomerInvoice(invoiceData) {
   const invoice = await db.customerInvoices.create({
     invoice_number: invoiceNumber,
     invoice_type: invoiceData.invoice_type || 'shipment',
-    
+
     // Source reference (either shipment or shopping order)
     shipment_id: invoiceData.shipment_id || null,
     tracking_number: invoiceData.tracking_number || '',
     order_id: invoiceData.order_id || null,
     order_number: invoiceData.order_number || '',
-    
+
     // Customer details
     customer_id: invoiceData.customer_id || '',
     customer_name: invoiceData.customer_name,
     customer_email: invoiceData.customer_email || '',
     customer_phone: invoiceData.customer_phone || '',
     customer_address: invoiceData.customer_address || '',
-    
+
     // Dates
     invoice_date: invoiceDate,
     due_date: invoiceData.due_date || calculateDueDate(invoiceDate, paymentTerms),
-    
+
     // Service details
     service_type: invoiceData.service_type || '',
     weight_kg: invoiceData.weight_kg || 0,
     price_per_kg: invoiceData.price_per_kg || 0,
-    
+
     // Line items breakdown
     shipping_amount: invoiceData.shipping_amount || 0,
     insurance_amount: invoiceData.insurance_amount || 0,
     packaging_fee: invoiceData.packaging_fee || 0,
     product_cost: invoiceData.product_cost || 0,
     commission_amount: invoiceData.commission_amount || 0,
-    
+
     // Totals
     subtotal: invoiceData.subtotal || 0,
     tax_rate: invoiceData.tax_rate || 0,
     tax_amount: invoiceData.tax_amount || 0,
     discount_amount: invoiceData.discount_amount || 0,
     total_amount: invoiceData.total_amount || 0,
-    
+    amount_paid: invoiceData.amount_paid || 0,
+    balance_due: invoiceData.total_amount || 0,
+
     // Payment info
     payment_terms: paymentTerms,
     payment_method: invoiceData.payment_method || '',
     payment_date: null,
-    
+
     // Status: draft -> issued -> sent -> paid -> void
     status: 'draft',
-    
+
     notes: invoiceData.notes || '',
   });
 
@@ -315,15 +317,18 @@ export async function recordPayment(invoiceId, paymentDetails = {}) {
     throw new Error('Cannot record payment for a void invoice');
   }
 
-  if (!['issued', 'sent'].includes(currentInvoice.status)) {
-    throw new Error('Payment can only be recorded for issued or sent invoices');
+  if (!['issued', 'sent', 'partially_paid'].includes(currentInvoice.status)) {
+    throw new Error('Payment can only be recorded for issued, sent, or partially paid invoices');
   }
 
   const invoiceTotal = Number(currentInvoice.total_amount) || 0;
+  const currentAmountPaid = Number(currentInvoice.amount_paid) || 0;
+  const currentBalance = currentInvoice.balance_due ?? invoiceTotal;
+
   const paymentAmountInput = paymentDetails.amount;
   const paymentAmount =
     paymentAmountInput === undefined || paymentAmountInput === null || paymentAmountInput === ''
-      ? invoiceTotal
+      ? currentBalance
       : Number(paymentAmountInput);
 
   if (!Number.isFinite(paymentAmount)) {
@@ -335,18 +340,23 @@ export async function recordPayment(invoiceId, paymentDetails = {}) {
   }
 
   if (invoiceTotal > 0) {
-    if (paymentAmount > invoiceTotal + 0.01) {
-      throw new Error('Payment amount cannot exceed invoice total');
-    }
-
-    // This action marks the invoice as fully paid, so partial amounts are rejected.
-    if (paymentAmount < invoiceTotal - 0.01) {
-      throw new Error('Partial payments are not supported by this action');
+    // Allow ±0.01 tolerance for floating-point rounding on both sides
+    const TOLERANCE = 0.01;
+    if (paymentAmount > currentBalance + TOLERANCE) {
+      throw new Error(`Payment amount cannot exceed balance due (฿${currentBalance.toLocaleString()})`);
     }
   }
 
+  const newAmountPaid = currentAmountPaid + paymentAmount;
+  const newBalanceDue = Math.max(0, invoiceTotal - newAmountPaid);
+
+  const isFullyPaid = newBalanceDue <= 0.01; // tolerance
+  const newStatus = isFullyPaid ? 'paid' : 'partially_paid';
+
   const invoice = await db.customerInvoices.update(invoiceId, {
-    status: 'paid',
+    status: newStatus,
+    amount_paid: newAmountPaid,
+    balance_due: newBalanceDue,
     payment_date: paymentDetails.payment_date || format(new Date(), 'yyyy-MM-dd'),
     payment_method: paymentDetails.payment_method || 'bank_transfer',
     payment_reference: paymentDetails.reference || '',
@@ -375,6 +385,7 @@ export async function getInvoiceStats(invoices) {
     issued: 0,
     sent: 0,
     paid: 0,
+    partially_paid: 0,
     overdue: 0,
     void: 0,
     totalAmount: 0,
@@ -410,6 +421,15 @@ export async function getInvoiceStats(invoices) {
           stats.overdueAmount += amount;
         }
         break;
+      case 'partially_paid':
+        stats.partially_paid++;
+        stats.paidAmount += (inv.amount_paid || 0);
+        stats.pendingAmount += (inv.balance_due || (amount - (inv.amount_paid || 0)));
+        if (inv.due_date && new Date(inv.due_date) < today) {
+          stats.overdue++;
+          stats.overdueAmount += (inv.balance_due || (amount - (inv.amount_paid || 0)));
+        }
+        break;
       case 'paid':
         stats.paid++;
         stats.paidAmount += amount;
@@ -429,7 +449,7 @@ export async function getInvoiceStats(invoices) {
 export async function getOverdueInvoices() {
   const allInvoices = await db.customerInvoices.list();
   const today = new Date();
-  
+
   return allInvoices.filter((inv) => {
     if (inv.status === 'paid' || inv.status === 'void' || inv.status === 'draft') {
       return false;
