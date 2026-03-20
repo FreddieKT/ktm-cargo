@@ -49,7 +49,7 @@ import { useQuery } from '@tanstack/react-query';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { computeShoppingOrderTotals } from '@/domains/shipments/calculations';
-import { canAllocateToPO, getShoppingOrderAllocationWeight } from '@/lib/poAllocation';
+import { getShoppingOrderAllocationWeight } from '@/lib/poAllocation';
 
 const statusOptions = [
   { value: 'pending', label: 'Pending', color: 'bg-slate-100 text-slate-700' },

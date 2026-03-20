@@ -41,7 +41,7 @@ describe('poAllocation helpers', () => {
     expect(
       buildPORebalanceOperations({
         previousPo: basePO,
-        nextPo,
+        nextPo: nextPO,
         previousWeight: 2,
         nextWeight: 3,
       })
