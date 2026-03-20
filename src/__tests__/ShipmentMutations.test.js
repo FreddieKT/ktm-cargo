@@ -431,12 +431,7 @@ describe('Shipment mutation paths', () => {
     it('skips PO rebalance when the previous shipment snapshot is missing from cache', async () => {
       mockUpdate.mockResolvedValueOnce({ id: 'ship-1' });
 
-      await updateShipmentWithAllocation(
-        'ship-1',
-        { weight_kg: '3' },
-        [],
-        basePurchaseOrders
-      );
+      await updateShipmentWithAllocation('ship-1', { weight_kg: '3' }, [], basePurchaseOrders);
 
       expect(mockPurchaseOrderUpdate).not.toHaveBeenCalled();
       expect(mockUpdate).toHaveBeenCalledWith('ship-1', { weight_kg: '3' });
@@ -445,9 +440,9 @@ describe('Shipment mutation paths', () => {
     it('deallocates shipment weight from the source PO on delete and rolls back on failure', async () => {
       mockDelete.mockRejectedValueOnce(new Error('delete failed'));
 
-      await expect(deleteShipmentWithAllocation('ship-1', [baseShipment], basePurchaseOrders)).rejects.toThrow(
-        'delete failed'
-      );
+      await expect(
+        deleteShipmentWithAllocation('ship-1', [baseShipment], basePurchaseOrders)
+      ).rejects.toThrow('delete failed');
 
       expect(mockPurchaseOrderUpdate).toHaveBeenNthCalledWith(1, 'po-1', {
         allocated_weight_kg: 4,
