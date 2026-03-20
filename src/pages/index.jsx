@@ -3,7 +3,6 @@ import Layout from './Layout.jsx';
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
-const Dashboard = lazy(() => import('./Dashboard'));
 const Operations = lazy(() => import('./Operations'));
 const Shipments = lazy(() => import('./Shipments'));
 const Customers = lazy(() => import('./Customers'));
@@ -14,6 +13,7 @@ const PriceCalculator = lazy(() => import('./PriceCalculator'));
 const CustomerSegments = lazy(() => import('./CustomerSegments'));
 const ShipmentDocuments = lazy(() => import('./ShipmentDocuments'));
 const Feedback = lazy(() => import('./Feedback'));
+const FeedbackQueue = lazy(() => import('./FeedbackQueue'));
 const FeedbackAnalytics = lazy(() => import('./FeedbackAnalytics'));
 const Inventory = lazy(() => import('./Inventory'));
 const Vendors = lazy(() => import('./Vendors'));
@@ -26,7 +26,6 @@ const LandingPage = lazy(() => import('./LandingPage'));
 const NotFound = lazy(() => import('./NotFound'));
 
 const PAGES = {
-  Dashboard,
   Operations,
   Shipments,
   Customers,
@@ -37,6 +36,7 @@ const PAGES = {
   CustomerSegments,
   ShipmentDocuments,
   Feedback,
+  FeedbackQueue,
   FeedbackAnalytics,
   Inventory,
   Vendors,
@@ -60,7 +60,7 @@ function _getCurrentPage(url) {
   const pageName = Object.keys(PAGES).find(
     (page) => page.toLowerCase() === urlLastPart.toLowerCase()
   );
-  return pageName || 'Dashboard';
+  return pageName || 'Operations';
 }
 
 // Loading component
@@ -97,6 +97,7 @@ function PagesContent() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/ClientPortal" element={<ClientPortal />} />
+          <Route path="/Feedback" element={<Feedback />} />
           <Route
             path="/VendorRegistration"
             element={
@@ -111,7 +112,7 @@ function PagesContent() {
           <Route
             path="/Operations"
             element={
-              <ProtectedRoute pageName="Dashboard">
+              <ProtectedRoute pageName="Operations">
                 <Operations />
               </ProtectedRoute>
             }
@@ -119,8 +120,8 @@ function PagesContent() {
           <Route
             path="/Dashboard"
             element={
-              <ProtectedRoute pageName="Dashboard">
-                <Dashboard />
+              <ProtectedRoute pageName="Operations">
+                <Navigate to={appendE2EFixture('/Operations', location.search)} replace />
               </ProtectedRoute>
             }
           />
@@ -181,10 +182,10 @@ function PagesContent() {
             }
           />
           <Route
-            path="/Feedback"
+            path="/FeedbackQueue"
             element={
-              <ProtectedRoute pageName="Feedback">
-                <Feedback />
+              <ProtectedRoute pageName="FeedbackQueue">
+                <FeedbackQueue />
               </ProtectedRoute>
             }
           />

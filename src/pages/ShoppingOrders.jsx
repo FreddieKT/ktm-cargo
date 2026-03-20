@@ -223,7 +223,7 @@ export default function ShoppingOrders() {
   // Remind user to create invoice when order is delivered + paid
   const remindToCreateInvoice = (order) => {
     if (order.status === 'delivered' && order.payment_status === 'paid') {
-      toast.info('Order completed. Remember to create an invoice from the Invoices page.');
+      toast.info('Order completed. Review invoice reconciliation from the Invoices page.');
     }
   };
 
@@ -664,10 +664,12 @@ export default function ShoppingOrders() {
                         variant="outline"
                         className="flex-1"
                         onClick={() => {
-                          toast.info('Go to Invoices page to create an invoice for this order.');
+                          toast.info(
+                            'Review invoice reconciliation from the Invoices page for this order.'
+                          );
                         }}
                       >
-                        <Receipt className="w-4 h-4 mr-2" /> Create Invoice
+                        <Receipt className="w-4 h-4 mr-2" /> Review Invoice Flow
                       </Button>
                     )}
                   {selectedOrder.status !== 'cancelled' && (

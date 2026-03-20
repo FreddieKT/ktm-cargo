@@ -22,8 +22,8 @@ export const ROLE_COLORS = {
 
 // Define permissions for each module/feature
 export const PERMISSIONS = {
-  // Dashboard
-  view_dashboard: [ROLES.MANAGING_DIRECTOR, ROLES.FINANCE_LEAD, ROLES.MARKETING_MANAGER],
+  // Operations
+  view_operations: [ROLES.MANAGING_DIRECTOR, ROLES.FINANCE_LEAD, ROLES.MARKETING_MANAGER],
 
   // Shipments
   view_shipments: [ROLES.MANAGING_DIRECTOR, ROLES.FINANCE_LEAD, ROLES.MARKETING_MANAGER],
@@ -74,7 +74,8 @@ export const PERMISSIONS = {
 
 // Navigation items with required permissions
 export const NAV_PERMISSIONS = {
-  Dashboard: 'view_dashboard',
+  Operations: 'view_operations',
+  Dashboard: 'view_operations',
   Shipments: 'view_shipments',
   ShipmentDocuments: 'view_shipments',
   ShoppingOrders: 'view_shopping_orders',
@@ -82,12 +83,13 @@ export const NAV_PERMISSIONS = {
   Customers: 'view_customers',
   CustomerSegments: 'view_campaigns',
   FeedbackAnalytics: 'view_feedback',
+  FeedbackQueue: 'view_feedback',
   Inventory: 'view_inventory',
   Procurement: 'view_procurement',
   Vendors: 'view_vendors',
   Tasks: 'view_tasks',
   Reports: 'view_reports',
-  PriceCalculator: 'view_dashboard',
+  PriceCalculator: 'view_operations',
   ClientPortal: null, // Public page - no permission required
   Settings: 'view_settings',
 };

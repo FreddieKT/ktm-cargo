@@ -40,11 +40,9 @@ export default function ProtectedRoute({ children, pageName }) {
             <div className="mt-6 flex gap-3">
               <Button
                 variant="outline"
-                onClick={() =>
-                  window.location.assign(appendE2EFixture('/ClientPortal', location.search))
-                }
+                onClick={() => window.location.assign(appendE2EFixture('/', location.search))}
               >
-                Back to Portal
+                Back Home
               </Button>
               <Button onClick={() => auth.logout()}>Sign Out</Button>
             </div>
@@ -53,10 +51,10 @@ export default function ProtectedRoute({ children, pageName }) {
       );
     }
 
-    if (canAccessPage(user, 'Dashboard')) {
+    if (canAccessPage(user, 'Operations')) {
       return <Navigate to={appendE2EFixture('/Operations', location.search)} replace />;
     }
-    return <Navigate to={appendE2EFixture('/ClientPortal', location.search)} replace />;
+    return <Navigate to={appendE2EFixture('/', location.search)} replace />;
   }
 
   return children;
