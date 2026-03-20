@@ -103,6 +103,7 @@ jest.mock('@/api/db', () => {
 });
 
 import LandingPage from '@/pages/LandingPage';
+import ClientPortal from '@/pages/ClientPortal';
 import DocumentGenerator from '@/components/documents/DocumentGenerator';
 
 describe('UI Visualization', () => {
@@ -127,6 +128,22 @@ describe('UI Visualization', () => {
       expect(
         screen.getByText(/website မှ တိုက်ရိုက် order တင်မယ့် flow မဟုတ်ဘဲ/i)
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('Client brochure page', () => {
+    test('renders company profile content without client-side ordering UI', async () => {
+      render(
+        <MemoryRouter>
+          <ClientPortal />
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /ကုမ္ပဏီအကြောင်း/i })).toBeInTheDocument();
+      });
+      expect(screen.getByText(/KTM က self-service portal မဟုတ်ပါ/i)).toBeInTheDocument();
+      expect(screen.getByText(/Facebook သို့မဟုတ် ဖုန်းဖြင့် တိုက်ရိုက်ဆက်သွယ်ပါ/i)).toBeInTheDocument();
     });
   });
 
