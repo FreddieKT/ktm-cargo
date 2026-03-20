@@ -120,10 +120,13 @@ describe('UI Visualization', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /KTM Cargo/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { name: /Need a quote from KTM Cargo\?/i })
+        ).toBeInTheDocument();
       });
       expect(screen.getByText(/Express Logistics/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/Enter tracking number/i)).toBeInTheDocument();
+      expect(screen.getAllByRole('link', { name: /View KTM Profile/i }).length).toBeGreaterThan(0);
+      expect(screen.getByText(/no self-service checkout or web ordering/i)).toBeInTheDocument();
     });
   });
 

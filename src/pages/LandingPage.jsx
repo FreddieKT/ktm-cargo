@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Plane,
@@ -12,12 +11,11 @@ import {
   Globe,
   Menu,
   X,
-  Search,
   Truck,
   Star,
   Users,
+  ArrowRight,
 } from 'lucide-react';
-import { db } from '@/api/db';
 import {
   Accordion,
   AccordionContent,
@@ -26,32 +24,7 @@ import {
 } from '@/components/ui/accordion';
 
 export default function LandingPage() {
-  const navigate = useNavigate();
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [isTracking, setIsTracking] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleTrack = async (e) => {
-    e.preventDefault();
-    if (!trackingNumber.trim()) return;
-
-    setIsTracking(true);
-    try {
-      const results = await db.shipments.filter({
-        tracking_number: trackingNumber.trim(),
-      });
-      if (results.length > 0) {
-        navigate('/ClientPortal?tab=track&tracking=' + trackingNumber);
-      } else {
-        alert('Shipment not found. Please check the number and try again.');
-      }
-    } catch (error) {
-      console.error('Tracking error:', error);
-      alert('Unable to track shipment at this time.');
-    } finally {
-      setIsTracking(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
@@ -107,12 +80,12 @@ export default function LandingPage() {
                     variant="ghost"
                     className="font-medium hover:bg-blue-50 hover:text-blue-600"
                   >
-                    Sign In
+                    View KTM Profile
                   </Button>
                 </Link>
                 <Link to="/ClientPortal">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 rounded-full px-6 transition-all hover:scale-105 active:scale-95">
-                    Register
+                    Business Workflow
                   </Button>
                 </Link>
               </div>
@@ -155,11 +128,11 @@ export default function LandingPage() {
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
               <Link to="/ClientPortal" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full justify-center">
-                  Sign In
+                  View KTM Profile
                 </Button>
               </Link>
               <Link to="/ClientPortal" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full justify-center bg-blue-600">Register</Button>
+                <Button className="w-full justify-center bg-blue-600">Business Workflow</Button>
               </Link>
             </div>
           </div>
@@ -191,43 +164,48 @@ export default function LandingPage() {
                 </span>
               </h1>
               <p className="text-lg text-slate-600 max-w-xl leading-relaxed">
-                The most reliable cargo service connecting Thailand and Myanmar. We handle
-                everything from personal shopping to bulk commercial shipments with real-time
-                tracking and premium support.
+                The most reliable cargo service connecting Thailand and Myanmar. Clients send
+                inquiries through our staff channels, and KTM Cargo handles the quote, collection,
+                booking, and delivery work behind the scenes.
               </p>
 
-              {/* Quick Track */}
-              <div className="max-w-md bg-white p-2 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex gap-2 transform transition-transform hover:scale-[1.02]">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    placeholder="Enter tracking number..."
-                    className="border-0 bg-transparent pl-9 h-11 focus-visible:ring-0 text-base"
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                  />
+              <div className="max-w-xl rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-xl shadow-slate-950/20">
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    asChild
+                    className="rounded-full bg-cyan-400 px-6 text-slate-950 hover:bg-cyan-300"
+                  >
+                    <Link to="/ClientPortal">
+                      View KTM Profile
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="rounded-full border-white/15 bg-white/5 px-6 text-white hover:bg-white/10"
+                  >
+                    <a href="#workflow">View Workflow</a>
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleTrack}
-                  disabled={isTracking}
-                  className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-6 h-11 font-medium"
-                >
-                  {isTracking ? 'Tracking...' : 'Track'}
-                </Button>
+                <p className="mt-4 text-sm leading-6 text-slate-300">
+                  There is no self-service checkout or web ordering. All live requests are handled
+                  by the KTM team through the operating workflow.
+                </p>
               </div>
 
               <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Verified Vendors</span>
+                  <span>Staff-led Quotes</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Insured Cargo</span>
+                  <span>Consolidated Cargo</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Fast Delivery</span>
+                  <span>Door-to-door Delivery</span>
                 </div>
               </div>
             </div>
@@ -305,17 +283,18 @@ export default function LandingPage() {
                     <CheckCircle className="w-4 h-4 text-emerald-500" /> 3-5 Day Delivery
                   </li>
                   <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Real-time Tracking
+                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Staff status updates
                   </li>
                   <li className="flex items-center gap-2 text-sm text-slate-600">
                     <CheckCircle className="w-4 h-4 text-emerald-500" /> Free Insurance up to ฿5,000
                   </li>
                 </ul>
                 <Button
+                  asChild
                   variant="outline"
                   className="w-full group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-200"
                 >
-                  Learn More
+                  <a href="#workflow">Read Workflow</a>
                 </Button>
               </CardContent>
             </Card>
@@ -345,8 +324,11 @@ export default function LandingPage() {
                     <CheckCircle className="w-4 h-4 text-emerald-500" /> Consolidated Shipping
                   </li>
                 </ul>
-                <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 group-hover:shadow-lg">
-                  Start Shopping
+                <Button
+                  asChild
+                  className="w-full bg-slate-900 text-white hover:bg-slate-800 group-hover:shadow-lg"
+                >
+                  <Link to="/ClientPortal">View KTM Profile</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -374,10 +356,11 @@ export default function LandingPage() {
                   </li>
                 </ul>
                 <Button
+                  asChild
                   variant="outline"
                   className="w-full group-hover:bg-purple-50 group-hover:text-purple-600 group-hover:border-purple-200"
                 >
-                  Contact Sales
+                  <a href="#services">View Services</a>
                 </Button>
               </CardContent>
             </Card>
@@ -390,7 +373,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl font-bold text-slate-900 mb-4">How It Works</h2>
-            <p className="text-slate-600 text-lg">Shipping with us is simple. Just 3 easy steps.</p>
+            <p className="text-slate-600 text-lg">
+              Shipping is staff-led. Customers send inquiries and KTM Cargo handles the rest.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12 relative">
@@ -402,18 +387,18 @@ export default function LandingPage() {
             {[
               {
                 icon: Users,
-                title: '1. Register & Get Address',
-                desc: 'Sign up to get your unique shipping address in Bangkok.',
+                title: '1. Send Inquiry',
+                desc: 'Share links, photos, quantities, and delivery details through our social channels.',
               },
               {
                 icon: ShoppingBag,
-                title: '2. Shop & Ship',
-                desc: 'Send your purchases to our warehouse. We receive and inspect them.',
+                title: '2. Quote & Confirm',
+                desc: 'Our team calculates product cost, cargo fees, and local delivery before confirming.',
               },
               {
                 icon: Package,
                 title: '3. We Deliver',
-                desc: 'We consolidate your items and ship them directly to your door in Yangon.',
+                desc: 'We purchase, consolidate, ship, and deliver the order through the KTM workflow.',
               },
             ].map((step, idx) => (
               <div key={idx} className="relative z-10 text-center group">
@@ -500,9 +485,9 @@ export default function LandingPage() {
             <AccordionItem value="item-2">
               <AccordionTrigger>What are your shipping rates?</AccordionTrigger>
               <AccordionContent>
-                Our rates start at ฿150 per kg for general goods. For bulk shipments over 100kg, we
-                offer special discounted rates. Please use our Price Calculator in the portal for an
-                exact quote.
+                Rates depend on item type, weight, route, and delivery location. KTM Cargo gives a
+                staff quote after we receive your inquiry so the full workflow is clear before
+                shipping starts.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
@@ -515,9 +500,9 @@ export default function LandingPage() {
             <AccordionItem value="item-4">
               <AccordionTrigger>How does 'Buy for Me' work?</AccordionTrigger>
               <AccordionContent>
-                Simply send us the link of the product you want to buy. We will purchase it, inspect
-                it at our warehouse, and ship it to you. We charge a 10% service fee on the product
-                value.
+                Send the product link or photo through Facebook, Line, or Telegram. Our team will
+                purchase or collect the item, inspect it, and move it through the KTM Cargo
+                workflow.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -525,7 +510,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-white">
+      <section id="contact" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
@@ -536,26 +521,25 @@ export default function LandingPage() {
 
             <div className="relative z-10 max-w-3xl mx-auto">
               <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6">
-                Ready to ship your first package?
+                Need a quote from KTM Cargo?
               </h2>
               <p className="text-blue-100 text-lg mb-10">
-                Join thousands of happy customers who trust KTM Cargo for their logistics needs.
-                Sign up today and get 10% off your first shipment.
+                Send your inquiry through Facebook, Line, or Telegram and our staff will guide the
+                shipment from quote to delivery.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/ClientPortal">
                   <Button className="bg-white text-blue-600 hover:bg-blue-50 h-14 px-8 rounded-full text-lg font-bold w-full sm:w-auto shadow-lg">
-                    Create Free Account
+                    View KTM Profile
                   </Button>
                 </Link>
-                <Link to="/ClientPortal">
-                  <Button
-                    variant="outline"
-                    className="border-blue-400 text-blue-100 hover:bg-blue-700 hover:text-white h-14 px-8 rounded-full text-lg font-medium w-full sm:w-auto"
-                  >
-                    Contact Support
-                  </Button>
-                </Link>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-blue-400 text-blue-100 hover:bg-blue-700 hover:text-white h-14 px-8 rounded-full text-lg font-medium w-full sm:w-auto"
+                >
+                  <a href="#workflow">See Workflow</a>
+                </Button>
               </div>
             </div>
           </div>
@@ -579,13 +563,13 @@ export default function LandingPage() {
               </p>
               <div className="flex gap-4">
                 <a
-                  href="#"
+                  href="#services"
                   className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors text-white"
                 >
                   <Globe className="w-5 h-5" />
                 </a>
                 <a
-                  href="#"
+                  href="#workflow"
                   className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors text-white"
                 >
                   <Users className="w-5 h-5" />
@@ -597,22 +581,22 @@ export default function LandingPage() {
               <h4 className="text-white font-bold mb-6">Services</h4>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#services" className="hover:text-white transition-colors">
                     Cargo Shipping
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#services" className="hover:text-white transition-colors">
                     Buy for Me
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#workflow" className="hover:text-white transition-colors">
                     Warehousing
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#workflow" className="hover:text-white transition-colors">
                     Customs Clearance
                   </a>
                 </li>
@@ -623,22 +607,22 @@ export default function LandingPage() {
               <h4 className="text-white font-bold mb-6">Company</h4>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#workflow" className="hover:text-white transition-colors">
                     About Us
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#contact" className="hover:text-white transition-colors">
                     Contact
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#workflow" className="hover:text-white transition-colors">
                     Careers
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#faq" className="hover:text-white transition-colors">
                     Privacy Policy
                   </a>
                 </li>

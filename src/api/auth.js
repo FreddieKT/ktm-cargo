@@ -114,9 +114,7 @@ export const auth = {
     window.location.href = '/';
   },
 
-  redirectToLogin: (redirectUrl) => {
-    window.location.href = redirectUrl
-      ? `/ClientPortal?returnTo=${encodeURIComponent(redirectUrl)}`
-      : '/ClientPortal';
+  redirectToLogin: () => {
+    window.location.href = '/';
   },
 };

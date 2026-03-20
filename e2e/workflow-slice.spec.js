@@ -33,43 +33,12 @@ test.describe('KTM workflow slice', () => {
     await expect(page.getByText('BILL-202603-0001')).toBeVisible();
   });
 
-  test('customer portal resolves the customer journey with history, invoices, support, and feedback', async ({
-    page,
-  }) => {
-    await page.goto('/ClientPortal?__e2e=workflow-customer');
+  test('public client portal reads as a brochure only', async ({ page }) => {
+    await page.goto('/ClientPortal?__e2e=public');
 
-    await expect(page.getByText(/Customer Portal/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Welcome back, Mya Mya!/i })).toBeVisible();
-
-    await page.getByRole('tab', { name: /History/i }).click();
-    await expect(page.getByText(/Order History \(4\)/i)).toBeVisible();
-    await expect(page.getByText('SHOP-202603-0001')).toBeVisible();
-    await expect(page.getByText('SHP-202603-0001')).toBeVisible();
-
-    await page.getByRole('tab', { name: /Invoices/i }).click();
-    await expect(page.getByText(/^Invoices$/i).first()).toBeVisible();
-    await expect(page.getByText('INV-202603-0001')).toBeVisible();
-
-    await page.getByRole('tab', { name: /Support/i }).click();
-    await expect(page.getByText(/Submit a Request/i).first()).toBeVisible();
-
-    await page.goto('/Feedback?shipment=shipment-1&journey=journey-1&__e2e=workflow-customer');
-    await expect(page.getByRole('heading', { name: /How was your experience\?/i })).toBeVisible();
-    await expect(page.getByText('SHP-202603-0001')).toBeVisible();
-  });
-
-  test('vendor portal resolves purchase orders and vendor bills', async ({ page }) => {
-    await page.goto('/ClientPortal?__e2e=workflow-vendor');
-
-    await expect(page.getByText(/Vendor Portal/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Welcome, Carrier Co!/i })).toBeVisible();
-
-    await page.getByRole('tab', { name: /Orders/i }).click();
-    await expect(page.getByText(/Purchase Orders \(1\)/i)).toBeVisible();
-    await expect(page.getByText('PO-202603-0001')).toBeVisible();
-
-    await page.getByRole('tab', { name: /Invoices/i }).click();
-    await expect(page.getByText(/Vendor Bills/i).first()).toBeVisible();
-    await expect(page.getByText('BILL-202603-0001')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Company Profile/i })).toBeVisible();
+    await expect(page.getByText(/no self-service ordering/i)).toBeVisible();
+    await expect(page.getByText(/current business flow/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: /Back Home/i })).toBeVisible();
   });
 });
