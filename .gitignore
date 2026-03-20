@@ -39,3 +39,4 @@ docs
 .vercel
 test-results
 playwright-report
+.playwright-cli/

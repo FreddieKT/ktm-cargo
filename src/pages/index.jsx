@@ -73,7 +73,6 @@ const PageLoader = () => (
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useUser } from '@/components/auth/UserContext';
 import { appendE2EFixture } from '@/lib/e2e';
-import { resolveLoginRedirectTarget } from '@/pages/loginRedirect';
 
 // Redirects already-authenticated staff/admin users away from login/registration pages
 function GuestOnlyRoute({ children }) {
@@ -81,10 +80,6 @@ function GuestOnlyRoute({ children }) {
   const location = useLocation();
   if (loading) return null;
   if (user && (user.role === 'staff' || user.role === 'admin')) {
-    const loginRedirectTarget = resolveLoginRedirectTarget(location);
-    if (loginRedirectTarget) {
-      return children;
-    }
     return <Navigate to={appendE2EFixture('/Operations', location.search)} replace />;
   }
   return children;
@@ -101,14 +96,7 @@ function PagesContent() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route
-            path="/ClientPortal"
-            element={
-              <GuestOnlyRoute>
-                <ClientPortal />
-              </GuestOnlyRoute>
-            }
-          />
+          <Route path="/ClientPortal" element={<ClientPortal />} />
           <Route
             path="/VendorRegistration"
             element={
