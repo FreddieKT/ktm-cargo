@@ -5,6 +5,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/api/auth';
 import { appendE2EFixture } from '@/lib/e2e';
+import { buildClientPortalLoginUrl } from '@/pages/loginRedirect';
 
 export default function ProtectedRoute({ children, pageName }) {
   const { user, loading } = useUser();
@@ -22,7 +23,10 @@ export default function ProtectedRoute({ children, pageName }) {
     // Redirect to ClientPortal login, saving the attempted location
     return (
       <Navigate
-        to={appendE2EFixture('/ClientPortal', location.search)}
+        to={buildClientPortalLoginUrl(
+          `${location.pathname}${location.search || ''}${location.hash || ''}`,
+          location.search
+        )}
         state={{ from: location }}
         replace
       />

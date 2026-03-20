@@ -44,6 +44,7 @@ import { toast } from 'sonner';
 import ClientNotificationBell from '@/components/portal/ClientNotificationBell';
 import { resolvePortalDeepLink } from '@/pages/clientPortalDeepLink';
 import { appendE2EFixture } from '@/lib/e2e';
+import { resolveLoginRedirectTarget } from '@/pages/loginRedirect';
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -305,6 +306,12 @@ export default function ClientPortal() {
 
       // Admin / staff users should use the admin dashboard
       if (currentUser.role === 'admin' || currentUser.role === 'staff') {
+        const loginRedirectTarget = resolveLoginRedirectTarget(location);
+        if (loginRedirectTarget) {
+          navigate(appendE2EFixture(loginRedirectTarget, location.search), { replace: true });
+          return;
+        }
+
         navigate(appendE2EFixture('/Operations', location.search), { replace: true });
         return;
       }
