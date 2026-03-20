@@ -16,13 +16,7 @@ const PURCHASE_ORDER_STATUS_ENUM = [
   'cancelled',
 ];
 
-const VENDOR_TYPE_ENUM = [
-  'supplier',
-  'cargo_carrier',
-  'packaging',
-  'customs_broker',
-  'warehouse',
-];
+const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier', 'packaging', 'customs_broker', 'warehouse'];
 
 const FEEDBACK_STATUS_ENUM = [
   'pending',
@@ -127,7 +121,12 @@ export const shipmentSchema = z.object({
   customer_name: z.string().min(1, 'Customer name is required'),
   customer_phone: z.string().optional().default(''),
   service_type: z.string().min(1, 'Service type is required'),
-  weight_kg: z.preprocess(numberPreprocess, z.number({ invalid_type_error: "Weight must be a number" }).min(0.1, 'Weight must be at least 0.1')),
+  weight_kg: z.preprocess(
+    numberPreprocess,
+    z
+      .number({ invalid_type_error: 'Weight must be a number' })
+      .min(0.1, 'Weight must be at least 0.1')
+  ),
   items_description: z.string().min(1, 'Description is required'),
   tracking_number: z.string().optional(),
   price_per_kg: z.preprocess(numberPreprocess, z.number().optional()),
@@ -193,9 +192,7 @@ export const shoppingOrderSchema = z.object({
 
 export const vendorSchema = z.object({
   name: z.string().min(1, 'Vendor name is required'),
-  vendor_type: z
-    .preprocess(normalizeVendorType, z.enum(VENDOR_TYPE_ENUM))
-    .default('supplier'),
+  vendor_type: z.preprocess(normalizeVendorType, z.enum(VENDOR_TYPE_ENUM)).default('supplier'),
   contact_name: z.string().min(1, 'Contact name is required'),
   phone: z.string().min(1, 'Phone number is required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
@@ -213,7 +210,10 @@ export const vendorSchema = z.object({
 
 export const campaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
-  campaign_type: z.enum(['discount', 'referral', 'promotion', 'announcement', 'loyalty']).optional().nullable(),
+  campaign_type: z
+    .enum(['discount', 'referral', 'promotion', 'announcement', 'loyalty'])
+    .optional()
+    .nullable(),
 
   // Optional fields for frontend use (not in database currently)
   description: z.string().optional(),
@@ -335,15 +335,11 @@ export const feedbackSchema = z.object({
   comment: z.string().optional(),
   service_type: z.string().optional(),
   feedback_type: z.string().optional(), // legacy field used by existing support flow
-  feedback_kind: z
-    .preprocess(normalizeFeedbackKind, z.enum(FEEDBACK_KIND_ENUM))
-    .optional(),
+  feedback_kind: z.preprocess(normalizeFeedbackKind, z.enum(FEEDBACK_KIND_ENUM)).optional(),
   order_reference_type: z.enum(ORDER_REFERENCE_TYPE_ENUM).optional(),
   order_reference_id: z.string().optional(),
   would_recommend: z.boolean().default(true),
-  status: z
-    .preprocess(normalizeFeedbackStatus, z.enum(FEEDBACK_STATUS_ENUM))
-    .default('pending'),
+  status: z.preprocess(normalizeFeedbackStatus, z.enum(FEEDBACK_STATUS_ENUM)).default('pending'),
 });
 
 // Audit Log Schema
@@ -386,7 +382,9 @@ export const paymentSchema = z.object({
   po_id: z.string().optional(),
   po_number: z.string().optional(),
   amount: z.preprocess(numberPreprocess, z.number().min(0.01, 'Amount must be greater than 0')),
-  payment_method: z.enum(['bank_transfer', 'cheque', 'cash', 'mobile_payment']).default('bank_transfer'),
+  payment_method: z
+    .enum(['bank_transfer', 'cheque', 'cash', 'mobile_payment'])
+    .default('bank_transfer'),
   payment_date: z.string().min(1, 'Payment date is required'),
   due_date: z.string().optional(),
   status: z.enum(['pending', 'paid', 'overdue', 'cancelled']).default('pending'),
@@ -419,7 +417,15 @@ export const journeyEventSchema = z.object({
   stage_from: z.enum(JOURNEY_STAGE_ENUM).optional(),
   stage_to: z.enum(JOURNEY_STAGE_ENUM).optional(),
   entity_type: z
-    .enum(['shopping_order', 'shipment', 'purchase_order', 'customer_invoice', 'feedback', 'vendor_order', 'manual'])
+    .enum([
+      'shopping_order',
+      'shipment',
+      'purchase_order',
+      'customer_invoice',
+      'feedback',
+      'vendor_order',
+      'manual',
+    ])
     .optional(),
   entity_id: z.string().optional(),
   event_status: z.enum(['recorded', 'pending', 'completed', 'cancelled']).default('recorded'),

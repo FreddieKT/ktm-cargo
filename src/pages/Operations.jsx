@@ -194,7 +194,9 @@ export default function Operations() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg text-slate-900">{stage.title}</CardTitle>
-                      <CardDescription className="mt-2 text-sm">{stage.description}</CardDescription>
+                      <CardDescription className="mt-2 text-sm">
+                        {stage.description}
+                      </CardDescription>
                     </div>
                     <div className="p-2 rounded-lg bg-blue-50 text-blue-700">
                       <StageIcon className="w-5 h-5" />

@@ -12,7 +12,7 @@ export async function sendFeedbackRequest(shipment, customer) {
     await sendMessengerNotification({
       to: customer.email,
       message: message,
-      platform: 'line'
+      platform: 'line',
     });
 
     // Create pending feedback record

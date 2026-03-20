@@ -15,7 +15,7 @@ const feedbackServicePath = path.resolve(
   'src',
   'components',
   'feedback',
-  'FeedbackRequestService.jsx',
+  'FeedbackRequestService.jsx'
 );
 
 const basePurchaseOrder = {
@@ -82,12 +82,10 @@ describe('Workflow contract normalization', () => {
   });
 
   it('enforces strict shipment lifecycle statuses', () => {
-    expect(
-      shipmentSchema.safeParse({ ...baseShipment, status: 'in_transit' }).success,
-    ).toBe(true);
-    expect(
-      shipmentSchema.safeParse({ ...baseShipment, status: 'unexpected_status' }).success,
-    ).toBe(false);
+    expect(shipmentSchema.safeParse({ ...baseShipment, status: 'in_transit' }).success).toBe(true);
+    expect(shipmentSchema.safeParse({ ...baseShipment, status: 'unexpected_status' }).success).toBe(
+      false
+    );
   });
 
   it('keeps shopping-order schema aligned with operational fields used in forms', () => {

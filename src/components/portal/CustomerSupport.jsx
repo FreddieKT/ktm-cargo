@@ -44,7 +44,7 @@ const ISSUE_TYPES = [
 export default function CustomerSupport({ customer, user }) {
   const queryClient = useQueryClient();
   const { handleError, handleValidationError } = useErrorHandler();
-  
+
   const form = useForm({
     resolver: zodResolver(supportTicketSchema.partial()),
     defaultValues: {
@@ -52,7 +52,7 @@ export default function CustomerSupport({ customer, user }) {
       comment: '',
     },
   });
-  
+
   const [issueType, setIssueType] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -88,7 +88,7 @@ export default function CustomerSupport({ customer, user }) {
           status: 'pending',
           source: 'portal',
         };
-        
+
         const validatedData = supportTicketSchema.partial().parse(ticketData);
 
         // Create support ticket
@@ -97,16 +97,16 @@ export default function CustomerSupport({ customer, user }) {
           ticket_number: ticketNumber,
         });
 
-      // Send notification email
-      try {
-        await sendMessengerNotification({
-          to: customer?.email || user?.email,
-          message: `Support Ticket Created: ${ticketNumber}\n\nWe received your request.\nIssue: ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}\nSubject: ${subject}\n\nWe will respond within 24 hours.`,
-          platform: 'line'
-        });
-      } catch (_e) {
-        console.error('Failed to send confirmation email', _e);
-      }
+        // Send notification email
+        try {
+          await sendMessengerNotification({
+            to: customer?.email || user?.email,
+            message: `Support Ticket Created: ${ticketNumber}\n\nWe received your request.\nIssue: ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}\nSubject: ${subject}\n\nWe will respond within 24 hours.`,
+            platform: 'line',
+          });
+        } catch (_e) {
+          console.error('Failed to send confirmation email', _e);
+        }
 
         return ticketNumber;
       } catch (error) {

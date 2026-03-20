@@ -10,7 +10,7 @@ const procurementInvoiceServicePath = path.resolve(
   'src',
   'components',
   'procurement',
-  'InvoiceService.jsx',
+  'InvoiceService.jsx'
 );
 const dbPath = path.resolve(process.cwd(), 'src', 'api', 'db.js');
 const customerSupportPath = path.resolve(
@@ -18,7 +18,7 @@ const customerSupportPath = path.resolve(
   'src',
   'components',
   'portal',
-  'CustomerSupport.jsx',
+  'CustomerSupport.jsx'
 );
 
 function extractRoutePaths(source) {
@@ -42,8 +42,7 @@ function extractNavItems(source) {
 }
 
 function extractWorkflowStagePages(source) {
-  const sectionRegex =
-    /title:\s*'Workflow Stages'[\s\S]*?items:\s*\[([\s\S]*?)\][\s\S]*?\}/;
+  const sectionRegex = /title:\s*'Workflow Stages'[\s\S]*?items:\s*\[([\s\S]*?)\][\s\S]*?\}/;
   const sectionBlock = source.match(sectionRegex)?.[1] || '';
   const pageRegex = /page:\s*'([^']+)'/g;
   const pages = [];
@@ -77,7 +76,7 @@ describe('Workflow route and pipeline contracts', () => {
         '/Procurement',
         '/Shipments',
         '/Invoices',
-      ]),
+      ])
     );
   });
 
@@ -102,9 +101,7 @@ describe('Workflow route and pipeline contracts', () => {
     const source = fs.readFileSync(layoutPath, 'utf-8');
     const navItems = extractNavItems(source);
     const feedbackQueueItem = navItems.find((item) => item.page === 'Feedback');
-    const feedbackAnalyticsItem = navItems.find(
-      (item) => item.page === 'FeedbackAnalytics',
-    );
+    const feedbackAnalyticsItem = navItems.find((item) => item.page === 'FeedbackAnalytics');
 
     expect(feedbackQueueItem).toBeTruthy();
     expect(feedbackAnalyticsItem).toBeTruthy();
@@ -113,14 +110,10 @@ describe('Workflow route and pipeline contracts', () => {
 
   it('supports vendor_bill type whenever procurement service emits vendor bills', () => {
     const invoicePageSource = fs.readFileSync(invoicesPath, 'utf-8');
-    const procurementInvoiceServiceSource = fs.readFileSync(
-      procurementInvoiceServicePath,
-      'utf-8',
-    );
+    const procurementInvoiceServiceSource = fs.readFileSync(procurementInvoiceServicePath, 'utf-8');
 
     const invoiceTypeKeys = extractTypeConfigKeys(invoicePageSource);
-    const emitsVendorBill =
-      /invoice_type:\s*'vendor_bill'/.test(procurementInvoiceServiceSource);
+    const emitsVendorBill = /invoice_type:\s*'vendor_bill'/.test(procurementInvoiceServiceSource);
 
     if (emitsVendorBill) {
       expect(invoiceTypeKeys).toContain('vendor_bill');
@@ -169,20 +162,15 @@ describe('Workflow route and pipeline contracts', () => {
 
     expect(dbSource).toMatch(/orderJourneys:\s*createEntityClient\('order_journeys'/);
     expect(dbSource).toMatch(/journeyEvents:\s*createEntityClient\('journey_events'/);
-    expect(dbSource).toMatch(
-      /orderJourneys:\s*createSafeEntityClient\('order_journeys'/,
-    );
+    expect(dbSource).toMatch(/orderJourneys:\s*createSafeEntityClient\('order_journeys'/);
     expect(dbSource).toMatch(/journeyEvents:\s*createSafeEntityClient\('journey_events'/);
   });
 
   it('uses support_ticket semantics for customer support (split-safe contract)', () => {
     const supportSource = fs.readFileSync(customerSupportPath, 'utf-8');
     const usesDedicatedSupportTable = /db\.supportTickets\./.test(supportSource);
-    const usesFeedbackKindSupportTicket =
-      /feedback_kind:\s*'support_ticket'/.test(supportSource);
+    const usesFeedbackKindSupportTicket = /feedback_kind:\s*'support_ticket'/.test(supportSource);
 
-    expect(
-      usesDedicatedSupportTable || usesFeedbackKindSupportTicket,
-    ).toBe(true);
+    expect(usesDedicatedSupportTable || usesFeedbackKindSupportTicket).toBe(true);
   });
 });
