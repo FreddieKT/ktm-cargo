@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  ArrowRight,
   Calculator,
   ClipboardCheck,
   FileText,
@@ -15,7 +14,6 @@ import {
   Plane,
   ShoppingBag,
   Truck,
-  Users,
 } from 'lucide-react';
 
 const WORKFLOW_STAGES = [
@@ -77,7 +75,7 @@ const WORKFLOW_STAGES = [
     icon: FileText,
     links: [
       { label: 'Invoices', page: 'Invoices' },
-      { label: 'Feedback Queue', page: 'Feedback' },
+      { label: 'Feedback Queue', page: 'FeedbackQueue' },
       { label: 'Feedback Analytics', page: 'FeedbackAnalytics' },
     ],
   },
@@ -171,16 +169,7 @@ export default function Operations() {
           </div>
           <div className="flex gap-2">
             <Link to={createPageUrl('ClientPortal')}>
-              <Button variant="outline">
-                <Users className="w-4 h-4 mr-2" />
-                Client Portal
-              </Button>
-            </Link>
-            <Link to={createPageUrl('Dashboard')}>
-              <Button>
-                Open Legacy Dashboard
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <Button variant="outline">Preview Public Profile</Button>
             </Link>
           </div>
         </div>

@@ -31,6 +31,12 @@ test.describe('KTM workflow slice', () => {
     await expect(page.getByRole('heading', { name: /Invoices/i })).toBeVisible();
     await expect(page.getByText('INV-202603-0001')).toBeVisible();
     await expect(page.getByText('BILL-202603-0001')).toBeVisible();
+
+    await page.goto('/FeedbackQueue?__e2e=workflow-staff');
+    await expect(page.getByRole('heading', { name: /Feedback Queue/i })).toBeVisible();
+    await expect(
+      page.getByText(/Staff-facing queue for delivery feedback follow-up/i)
+    ).toBeVisible();
   });
 
   test('public client portal reads as a brochure only', async ({ page }) => {

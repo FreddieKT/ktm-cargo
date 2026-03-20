@@ -357,7 +357,7 @@ export default function Shipments() {
       // Remind to create invoice when shipment is delivered and paid
       if (shipment.payment_status === 'paid') {
         toast.info(
-          'Shipment delivered & paid. Remember to create an invoice from the Invoices page.'
+          'Shipment delivered & paid. Review invoice reconciliation from the Invoices page.'
         );
       }
     }
@@ -376,7 +376,7 @@ export default function Shipments() {
 
       // Remind to create invoice when shipment is delivered and paid
       if (shipment.status === 'delivered') {
-        toast.info('Payment received. Remember to create an invoice from the Invoices page.');
+        toast.info('Payment received. Review invoice reconciliation from the Invoices page.');
       }
     }
   };

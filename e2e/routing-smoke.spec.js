@@ -35,6 +35,20 @@ test.describe('KTM route and workflow smoke', () => {
     await expect(page.getByText(/One canonical journey for staff operations/i)).toBeVisible();
   });
 
+  test('legacy dashboard route redirects into the operations workflow', async ({ page }) => {
+    await page.goto('/Dashboard?__e2e=staff-admin');
+
+    await page.waitForURL(/\/Operations\?__e2e=staff-admin$/);
+    await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
+  });
+
+  test('public feedback link bypasses the app layout', async ({ page }) => {
+    await page.goto('/Feedback?shipment=ship-123&__e2e=public');
+
+    await expect(page.getByRole('heading', { name: /How was your experience/i })).toBeVisible();
+    await expect(page.getByText(/Operations Console/i)).toHaveCount(0);
+  });
+
   test('misconfigured staff reaches stable unauthorized state instead of bouncing', async ({
     page,
   }) => {

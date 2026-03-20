@@ -38,11 +38,10 @@ const navSections = [
       {
         name: 'Operations Console',
         icon: LayoutDashboard,
-        page: 'Dashboard',
+        page: 'Operations',
         href: createPageUrl('Operations'),
         activePages: ['Operations'],
       },
-      { name: 'Client Portal', icon: Users, page: 'ClientPortal' },
       { name: 'Settings', icon: Settings, page: 'Settings' },
     ],
   },
@@ -65,7 +64,7 @@ const navSections = [
   {
     title: 'Supporting Modules',
     items: [
-      { name: 'Feedback Queue', icon: Star, page: 'Feedback' },
+      { name: 'Feedback Queue', icon: Star, page: 'FeedbackQueue' },
       { name: 'Shipment Documents', icon: FileText, page: 'ShipmentDocuments' },
       { name: 'Customers', icon: Users, page: 'Customers' },
       { name: 'Vendors', icon: Users, page: 'Vendors' },
@@ -73,7 +72,6 @@ const navSections = [
       { name: 'Segments & Campaigns', icon: Target, page: 'CustomerSegments' },
       { name: 'Reports', icon: BarChart3, page: 'Reports' },
       { name: 'Tasks', icon: ClipboardList, page: 'Tasks', feature: 'enableTasks' },
-      { name: 'Legacy Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     ],
   },
 ];

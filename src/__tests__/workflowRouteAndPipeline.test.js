@@ -76,6 +76,7 @@ describe('Workflow route and pipeline contracts', () => {
         '/Procurement',
         '/Shipments',
         '/Invoices',
+        '/FeedbackQueue',
       ])
     );
   });
@@ -100,12 +101,23 @@ describe('Workflow route and pipeline contracts', () => {
   it('keeps feedback queue and analytics as separate route labels', () => {
     const source = fs.readFileSync(layoutPath, 'utf-8');
     const navItems = extractNavItems(source);
-    const feedbackQueueItem = navItems.find((item) => item.page === 'Feedback');
+    const feedbackQueueItem = navItems.find((item) => item.page === 'FeedbackQueue');
     const feedbackAnalyticsItem = navItems.find((item) => item.page === 'FeedbackAnalytics');
 
     expect(feedbackQueueItem).toBeTruthy();
     expect(feedbackAnalyticsItem).toBeTruthy();
     expect(feedbackQueueItem.name.toLowerCase()).not.toContain('analytics');
+  });
+
+  it('filters procurement invoices down to vendor bills before rendering the AP list', () => {
+    const procurementSource = fs.readFileSync(
+      path.resolve(process.cwd(), 'src', 'pages', 'Procurement.jsx'),
+      'utf-8'
+    );
+
+    expect(procurementSource).toMatch(
+      /const vendorBills = invoices\.filter\(\(invoice\) => invoice\.invoice_type === 'vendor_bill'\)/
+    );
   });
 
   it('supports vendor_bill type whenever procurement service emits vendor bills', () => {

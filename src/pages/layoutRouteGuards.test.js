@@ -4,6 +4,7 @@ describe('shouldBypassAppLayout', () => {
   it('bypasses layout for exact public pages', () => {
     expect(shouldBypassAppLayout('/')).toBe(true);
     expect(shouldBypassAppLayout('/PriceCalculator')).toBe(true);
+    expect(shouldBypassAppLayout('/Feedback')).toBe(true);
   });
 
   it('bypasses layout for public portal prefixes', () => {

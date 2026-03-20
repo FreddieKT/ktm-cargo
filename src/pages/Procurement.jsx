@@ -141,6 +141,8 @@ export default function Procurement() {
     queryFn: () => db.customerInvoices.list('-created_date'),
   });
 
+  const vendorBills = invoices.filter((invoice) => invoice.invoice_type === 'vendor_bill');
+
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
     queryFn: () => db.shipments.list('-created_date'),
@@ -866,7 +868,7 @@ export default function Procurement() {
           {/* Invoices Tab */}
           <TabsContent value="invoices" className="mt-6">
             <InvoiceList
-              invoices={invoices}
+              invoices={vendorBills}
               onMarkPaid={(id) => markInvoicePaidMutation.mutate(id)}
               isLoading={isLoadingInvoices}
             />

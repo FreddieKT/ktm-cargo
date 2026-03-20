@@ -37,6 +37,7 @@ const EXPECTED_ROUTES = [
   '/Customers',
   '/Dashboard',
   '/Feedback',
+  '/FeedbackQueue',
   '/FeedbackAnalytics',
   '/Inventory',
   '/Invoices',
@@ -61,18 +62,24 @@ describe('Route snapshot protection', () => {
     expect(actual).toEqual(EXPECTED_ROUTES);
   });
 
-  it('has exactly 21 routes (4 public + 16 protected + 1 catch-all)', () => {
+  it('has exactly 22 routes (5 public + 16 protected + 1 catch-all)', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
     const actual = extractRoutePaths(source);
 
-    expect(actual).toHaveLength(21);
+    expect(actual).toHaveLength(22);
   });
 
   it('public routes are not wrapped in ProtectedRoute', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
 
     // These routes should appear without ProtectedRoute wrapper
-    const publicRoutes = ['/', '/ClientPortal', '/VendorRegistration', '/PriceCalculator'];
+    const publicRoutes = [
+      '/',
+      '/ClientPortal',
+      '/Feedback',
+      '/VendorRegistration',
+      '/PriceCalculator',
+    ];
 
     for (const route of publicRoutes) {
       // Match the Route definition and verify it does NOT contain ProtectedRoute
