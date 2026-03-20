@@ -14,7 +14,7 @@ test.describe('KTM route and workflow smoke', () => {
   }) => {
     await page.goto('/Operations?__e2e=public');
 
-    await page.waitForURL(/\/ClientPortal\?__e2e=public$/);
+    await page.waitForURL(/\/ClientPortal\?__e2e=public&returnTo=%2FOperations%3F__e2e%3Dpublic$/);
     await expect(page.getByRole('heading', { name: /Welcome back/i })).toBeVisible();
   });
 
