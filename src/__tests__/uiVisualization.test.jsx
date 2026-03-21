@@ -143,7 +143,9 @@ describe('UI Visualization', () => {
         expect(screen.getByRole('heading', { name: /ကုမ္ပဏီအကြောင်း/i })).toBeInTheDocument();
       });
       expect(screen.getByText(/KTM က self-service portal မဟုတ်ပါ/i)).toBeInTheDocument();
-      expect(screen.getByText(/Facebook သို့မဟုတ် ဖုန်းဖြင့် တိုက်ရိုက်ဆက်သွယ်ပါ/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Facebook သို့မဟုတ် ဖုန်းဖြင့် တိုက်ရိုက်ဆက်သွယ်ပါ/i)
+      ).toBeInTheDocument();
     });
   });
 

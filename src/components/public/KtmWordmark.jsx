@@ -1,9 +1,7 @@
 import { cn } from '@/lib/utils';
 
 function SpeedBars({ compact, tone }) {
-  const bars = compact
-    ? ['w-7', 'w-7', 'w-7']
-    : ['w-10 sm:w-12', 'w-10 sm:w-12', 'w-10 sm:w-12'];
+  const bars = compact ? ['w-7', 'w-7', 'w-7'] : ['w-10 sm:w-12', 'w-10 sm:w-12', 'w-10 sm:w-12'];
 
   return (
     <div
@@ -51,9 +49,7 @@ export default function KtmWordmark({
           )}
           style={{
             WebkitTextStroke:
-              tone === 'dark'
-                ? '1px rgba(252, 229, 163, 0.28)'
-                : '1px rgba(120, 86, 19, 0.24)',
+              tone === 'dark' ? '1px rgba(252, 229, 163, 0.28)' : '1px rgba(120, 86, 19, 0.24)',
             textShadow:
               tone === 'dark'
                 ? '0 10px 28px rgba(212, 166, 58, 0.18)'
