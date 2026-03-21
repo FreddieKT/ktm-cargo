@@ -97,21 +97,36 @@ export default function InvoiceTemplate({ data, settings }) {
         className="flex justify-between items-start pb-8 mb-8"
         style={{ borderBottom: '2px solid #D4A63A' }}
       >
-        <div className="flex gap-4 items-center">
+        {/* Left — logo + company info */}
+        <div>
           {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="w-20 h-20 object-contain" />
+            <img
+              src={logoUrl}
+              alt={companyName}
+              style={{
+                height: 80,
+                maxWidth: 240,
+                objectFit: 'contain',
+                objectPosition: 'left center',
+                display: 'block',
+              }}
+            />
           ) : (
             <KtmMark />
           )}
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">{companyName}</h1>
-            <p className="text-slate-500 max-w-xs text-xs mt-1">{companyAddress}</p>
-            <div className="flex gap-3 text-xs text-slate-400 mt-1">
+          <div className="mt-3 space-y-0.5">
+            {!logoUrl && (
+              <h1 className="text-base font-bold text-slate-900 tracking-tight">{companyName}</h1>
+            )}
+            <p className="text-xs text-slate-500">{companyAddress}</p>
+            <div className="flex gap-3 text-xs text-slate-400">
               {companyPhone && <span>{companyPhone}</span>}
               {companyEmail && <span>{companyEmail}</span>}
             </div>
           </div>
         </div>
+
+        {/* Right — invoice meta */}
         <div className="text-right">
           <h2
             className="text-4xl font-bold tracking-widest uppercase"
