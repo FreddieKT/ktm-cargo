@@ -157,9 +157,29 @@ export default function ShoppingOrders() {
 
   const { handleError } = useErrorHandler();
 
+  const ALLOWED_STATUS_TRANSITIONS = {
+    pending:    ['purchasing', 'cancelled'],
+    purchasing: ['purchased', 'cancelled'],
+    purchased:  ['received', 'cancelled'],
+    received:   ['shipping', 'cancelled'],
+    shipping:   ['delivered', 'cancelled'],
+    delivered:  [],
+    cancelled:  [],
+  };
+
   const applyPurchaseOrderAllocationPlan = async (plan) => {
-    for (const step of plan) {
-      await db.purchaseOrders.update(step.poId, step.nextState);
+    const applied = [];
+    try {
+      for (const step of plan) {
+        await db.purchaseOrders.update(step.poId, step.nextState);
+        applied.push(step);
+      }
+    } catch (err) {
+      // Rollback already-applied steps in reverse
+      for (const step of [...applied].reverse()) {
+        await db.purchaseOrders.update(step.poId, step.previousState).catch(() => {});
+      }
+      throw err;
     }
   };
 
@@ -212,6 +232,13 @@ export default function ShoppingOrders() {
         previousOrder,
         nextOrder,
       });
+
+      if (data.status && previousOrder?.status && data.status !== previousOrder.status) {
+        const allowed = ALLOWED_STATUS_TRANSITIONS[previousOrder.status] ?? [];
+        if (!allowed.includes(data.status)) {
+          throw new Error(`Cannot transition from "${previousOrder.status}" to "${data.status}"`);
+        }
+      }
 
       if (plan.length > 0) {
         await applyPurchaseOrderAllocationPlan(plan);

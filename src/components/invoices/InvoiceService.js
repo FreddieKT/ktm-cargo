@@ -212,27 +212,34 @@ export async function createInvoiceFromShipment(shipment, customer) {
   const packagingFee = parseFloat(shipment.packaging_fee) || 0;
   const subtotal = shippingAmount + insuranceAmount + packagingFee;
 
-  const invoice = await createCustomerInvoice({
-    invoice_type: 'shipment',
-    shipment_id: shipment.id,
-    tracking_number: shipment.tracking_number,
-    customer_id: customer?.id || shipment.customer_id,
-    customer_name: shipment.customer_name,
-    customer_email: customer?.email || '',
-    customer_phone: shipment.customer_phone,
-    customer_address: shipment.delivery_address || '',
-    service_type: shipment.service_type,
-    weight_kg: weight,
-    price_per_kg: pricePerKg,
-    shipping_amount: shippingAmount,
-    insurance_amount: insuranceAmount,
-    packaging_fee: packagingFee,
-    subtotal: subtotal,
-    total_amount: subtotal,
-    notes: `Shipment: ${shipment.tracking_number}\nItems: ${shipment.items_description || ''}`,
-  });
-
-  return { invoice, isNew: true };
+  try {
+    const invoice = await createCustomerInvoice({
+      invoice_type: 'shipment',
+      shipment_id: shipment.id,
+      tracking_number: shipment.tracking_number,
+      customer_id: customer?.id || shipment.customer_id,
+      customer_name: shipment.customer_name,
+      customer_email: customer?.email || '',
+      customer_phone: shipment.customer_phone,
+      customer_address: shipment.delivery_address || '',
+      service_type: shipment.service_type,
+      weight_kg: weight,
+      price_per_kg: pricePerKg,
+      shipping_amount: shippingAmount,
+      insurance_amount: insuranceAmount,
+      packaging_fee: packagingFee,
+      subtotal: subtotal,
+      total_amount: subtotal,
+      notes: `Shipment: ${shipment.tracking_number}\nItems: ${shipment.items_description || ''}`,
+    });
+    return { invoice, isNew: true };
+  } catch (err) {
+    if (err?.code === '23505' || err?.message?.includes('unique') || err?.message?.includes('duplicate')) {
+      const existing = await db.customerInvoices.filter({ shipment_id: shipment.id });
+      if (existing.length > 0) return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
+    }
+    throw err;
+  }
 }
 
 /**
@@ -257,26 +264,33 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
   // Avoid hardcoded fallback: use derived rate or 0; prefer company_settings.default_shopping_price_per_kg when available
   const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 0;
 
-  const invoice = await createCustomerInvoice({
-    invoice_type: 'shopping_order',
-    order_id: order.id,
-    order_number: order.order_number,
-    customer_id: customer?.id || order.customer_id,
-    customer_name: order.customer_name,
-    customer_email: customer?.email || '',
-    customer_phone: order.customer_phone || '',
-    service_type: 'shopping_service',
-    weight_kg: weight,
-    price_per_kg: pricePerKg,
-    shipping_amount: shippingCost,
-    product_cost: productCost,
-    commission_amount: commissionAmount,
-    subtotal: totalAmount,
-    total_amount: totalAmount,
-    notes: `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || order.product_links || ''}`,
-  });
-
-  return { invoice, isNew: true };
+  try {
+    const invoice = await createCustomerInvoice({
+      invoice_type: 'shopping_order',
+      order_id: order.id,
+      order_number: order.order_number,
+      customer_id: customer?.id || order.customer_id,
+      customer_name: order.customer_name,
+      customer_email: customer?.email || '',
+      customer_phone: order.customer_phone || '',
+      service_type: 'shopping_service',
+      weight_kg: weight,
+      price_per_kg: pricePerKg,
+      shipping_amount: shippingCost,
+      product_cost: productCost,
+      commission_amount: commissionAmount,
+      subtotal: totalAmount,
+      total_amount: totalAmount,
+      notes: `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || order.product_links || ''}`,
+    });
+    return { invoice, isNew: true };
+  } catch (err) {
+    if (err?.code === '23505' || err?.message?.includes('unique') || err?.message?.includes('duplicate')) {
+      const existing = await db.customerInvoices.filter({ order_id: order.id });
+      if (existing.length > 0) return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
+    }
+    throw err;
+  }
 }
 
 /**
@@ -364,6 +378,11 @@ export async function recordPayment(invoiceId, paymentDetails = {}) {
     payment_method: paymentDetails.payment_method || 'bank_transfer',
     payment_reference: paymentDetails.reference || '',
   });
+
+  if (invoice.amount_paid !== newAmountPaid) {
+    throw new Error('Payment was modified concurrently. Please refresh and try again.');
+  }
+
   return invoice;
 }
 
