@@ -1,6 +1,6 @@
 # ============================================================================
 # CI Pipeline - KTM Cargo Express
-# Runs on every push and pull request
+# Single job: install once → lint → test → build  (saves ~6 min vs 3 jobs)
 # ============================================================================
 
 name: CI
@@ -19,18 +19,13 @@ env:
   NODE_VERSION: '20'
 
 jobs:
-  # ============================================================================
-  # Lint & Format Check
-  # ============================================================================
-  lint:
-    name: Lint & Format
+  ci:
+    name: Lint, Test & Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -38,63 +33,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Lint & Format
+        run: npm run lint && npx prettier --check .
 
-      - name: Check Prettier formatting
-        run: npx prettier --check .
-
-  # ============================================================================
-  # Unit Tests
-  # ============================================================================
-  test:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test -- --coverage --passWithNoTests
+      - name: Unit Tests
+        run: npm test -- --passWithNoTests
         env:
           CI: true
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v5
-        if: always()
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-
-  # ============================================================================
-  # Build Check
-  # ============================================================================
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build application
+      - name: Build
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
