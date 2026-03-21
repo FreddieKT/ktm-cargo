@@ -82,13 +82,6 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'];
 const typeConfig = {
   cargo_carrier: { label: 'Cargo Carrier', icon: Truck, color: 'bg-blue-100 text-blue-800' },
   supplier: { label: 'Supplier', icon: Package, color: 'bg-purple-100 text-purple-800' },
-  packaging: { label: 'Packaging', icon: Package, color: 'bg-amber-100 text-amber-800' },
-  customs_broker: {
-    label: 'Customs Broker',
-    icon: FileText,
-    color: 'bg-emerald-100 text-emerald-800',
-  },
-  warehouse: { label: 'Warehouse', icon: Building2, color: 'bg-rose-100 text-rose-800' },
 };
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';

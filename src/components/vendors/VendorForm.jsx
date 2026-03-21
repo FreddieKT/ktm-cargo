@@ -47,17 +47,9 @@ const vendorTypes = [
     value: 'cargo_carrier',
     label: 'Cargo Carrier',
     icon: Truck,
-    description: 'Transport services',
+    description: 'Land / Air logistics',
   },
-  { value: 'supplier', label: 'Supplier', icon: Package, description: 'Product supplier' },
-  { value: 'packaging', label: 'Packaging', icon: Building2, description: 'Packaging materials' },
-  {
-    value: 'customs_broker',
-    label: 'Customs Broker',
-    icon: FileText,
-    description: 'Customs clearance',
-  },
-  { value: 'warehouse', label: 'Warehouse', icon: Building2, description: 'Storage facility' },
+  { value: 'supplier', label: 'Supplier', icon: Package, description: 'Thai product supplier' },
 ];
 
 const paymentTermOptions = [

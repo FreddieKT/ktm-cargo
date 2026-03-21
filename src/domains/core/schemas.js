@@ -16,7 +16,7 @@ const PURCHASE_ORDER_STATUS_ENUM = [
   'cancelled',
 ];
 
-const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier', 'packaging', 'customs_broker', 'warehouse'];
+const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier'];
 const CARRIER_MODE_ENUM = ['land', 'air'];
 
 const FEEDBACK_STATUS_ENUM = [
