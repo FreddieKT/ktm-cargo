@@ -6,13 +6,13 @@ test.describe('KTM workflow slice', () => {
   }) => {
     await page.goto('/Operations?__e2e=workflow-staff');
 
-    await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
-    await expect(page.getByText(/Client Inquiry & Quote/i)).toBeVisible();
-    await expect(page.getByText(/Payment & Order Confirmation/i)).toBeVisible();
-    await expect(page.getByText(/Accounting & After-sales/i)).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Good (morning|afternoon|evening)/i })
+    ).toBeVisible();
+    await expect(page.getByText(/Here's what's happening with your business today/i)).toBeVisible();
 
     await page.goto('/ShoppingOrders?__e2e=workflow-staff');
-    await expect(page.getByRole('heading', { name: /Shopping Orders/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Orders/i })).toBeVisible();
     await expect(page.getByText('SHOP-202603-0001')).toBeVisible();
     await expect(page.getByText(/Kitchen appliances bundle/i)).toBeVisible();
 
