@@ -46,7 +46,7 @@ let invoiceSequenceFallback = 0;
  * @returns {Promise<string>}
  */
 export async function getNextInvoiceNumber(options = {}) {
-  const { allowFallback = true } = options;
+  const { allowFallback = false } = options;
   const { data, error } = await supabase.rpc('next_invoice_number');
 
   if (!error && data) return data;
