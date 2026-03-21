@@ -552,7 +552,7 @@ function createWorkflowFixture(sessionUserId, email, fullName) {
     },
     tables: WORKFLOW_TABLES,
     rpc: {
-      next_invoice_number: 'INV-202603-0001',
+      next_invoice_number: 'INV-202603-0003',
       my_customer_id: 'customer-1',
       my_vendor_id: 'vendor-1',
     },

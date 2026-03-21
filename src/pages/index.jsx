@@ -21,6 +21,7 @@ const Vendors = lazy(() => import('./Vendors'));
 const Settings = lazy(() => import('./Settings'));
 const Procurement = lazy(() => import('./Procurement'));
 const VendorRegistration = lazy(() => import('./VendorRegistration'));
+const VendorPortal = lazy(() => import('./VendorPortal'));
 const ClientPortal = lazy(() => import('./ClientPortal'));
 const Invoices = lazy(() => import('./Invoices'));
 const LandingPage = lazy(() => import('./LandingPage'));
@@ -45,6 +46,7 @@ const PAGES = {
   Settings,
   Procurement,
   VendorRegistration,
+  VendorPortal,
   ClientPortal,
   Invoices,
   NotFound,
@@ -121,6 +123,7 @@ function PagesContent() {
               </GuestOnlyRoute>
             }
           />
+          <Route path="/VendorPortal" element={<VendorPortal />} />
           <Route path="/PriceCalculator" element={<PriceCalculator />} />
 
           {/* Protected Routes */}

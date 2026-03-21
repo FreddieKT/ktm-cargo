@@ -1,4 +1,10 @@
-const LAYOUT_BYPASS_EXACT_PATHS = new Set(['/', '/PriceCalculator', '/Feedback', '/StaffLogin']);
+const LAYOUT_BYPASS_EXACT_PATHS = new Set([
+  '/',
+  '/PriceCalculator',
+  '/Feedback',
+  '/StaffLogin',
+  '/VendorPortal',
+]);
 const LAYOUT_BYPASS_PREFIXES = ['/ClientPortal', '/VendorRegistration'];
 
 export function shouldBypassAppLayout(pathname = '') {
