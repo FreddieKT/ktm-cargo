@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import KtmWordmark from '@/components/public/KtmWordmark';
 import {
   ArrowRight,
   BadgeCheck,
@@ -133,7 +134,10 @@ const CONTACTS = [
 
 export default function ClientPortal() {
   return (
-    <div className="min-h-screen bg-[#F6F1E7] text-[#1F1914]">
+    <div
+      className="min-h-screen bg-[#F6F1E7] text-[#1F1914]"
+      style={{ fontFamily: "'Noto Sans Myanmar', 'Pyidaungsu', sans-serif" }}
+    >
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute left-0 top-0 h-[28rem] w-[28rem] rounded-full bg-[#D4A63A]/15 blur-3xl" />
         <div className="absolute right-[-6rem] top-20 h-[22rem] w-[22rem] rounded-full bg-[#B6851F]/12 blur-3xl" />
@@ -142,14 +146,8 @@ export default function ClientPortal() {
 
       <header className="sticky top-0 z-50 border-b border-[#D9C8A9]/70 bg-[#F6F1E7]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="rounded-2xl bg-gradient-to-br from-[#B6851F] to-[#E3BE62] p-3 shadow-[0_10px_30px_rgba(182,133,31,0.22)]">
-              <div className="flex items-center gap-1">
-                <span className="block h-6 w-1.5 rounded-full bg-white/75" />
-                <span className="block h-6 w-1.5 rounded-full bg-white/55" />
-                <span className="block h-6 w-1.5 rounded-full bg-white/40" />
-              </div>
-            </div>
+          <Link to="/" className="flex items-center gap-4">
+            <KtmWordmark compact showSubtitle={false} />
             <div>
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-[#8C6A22]">
                 KTM Cargo Express
@@ -160,7 +158,7 @@ export default function ClientPortal() {
 
           <div className="flex items-center gap-3">
             <Badge className="border-[#D4A63A]/30 bg-[#D4A63A]/10 text-[#8C6A22] hover:bg-[#D4A63A]/10">
-              Brochure only
+              ဝန်ဆောင်မှုလမ်းညွှန်
             </Badge>
             <Button
               asChild
@@ -187,10 +185,11 @@ export default function ClientPortal() {
 
             <div className="relative space-y-6">
               <Badge className="border-[#D4A63A]/30 bg-[#D4A63A]/10 text-[#8C6A22] hover:bg-[#D4A63A]/10">
-                Premium gold logistics
+                KTM ကုမ္ပဏီမိတ်ဆက်
               </Badge>
 
               <div className="space-y-4">
+                <KtmWordmark className="max-w-max" showSubtitle={false} />
                 <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#8C6A22]">
                   KTM Cargo Express
                 </p>
@@ -235,9 +234,18 @@ export default function ClientPortal() {
 
               <div className="grid gap-4 sm:grid-cols-3">
                 {[
-                  ['Inquiry-led', 'Facebook သို့မဟုတ် ဖုန်းဖြင့် စတင်မေးမြန်းနိုင်ပါသည်။'],
-                  ['Staff quoted', 'ဈေးနှုန်းနှင့် အစီအစဉ်ကို team က စုစည်းတွက်ချက်ပေးပါသည်။'],
-                  ['Door-to-door', 'လက်ခံခြင်းမှ အရောက်ပို့ခြင်းအထိ တစ်ဆက်တည်း စီမံပါသည်။'],
+                  [
+                    'မေးမြန်းချက်ဖြင့် စတင်',
+                    'Facebook သို့မဟုတ် ဖုန်းဖြင့် စတင်မေးမြန်းနိုင်ပါသည်။',
+                  ],
+                  [
+                    'KTM က ဈေးနှုန်းတွက်',
+                    'ဈေးနှုန်းနှင့် အစီအစဉ်ကို team က စုစည်းတွက်ချက်ပေးပါသည်။',
+                  ],
+                  [
+                    'အရောက်ပို့ဝန်ဆောင်မှု',
+                    'လက်ခံခြင်းမှ အရောက်ပို့ခြင်းအထိ တစ်ဆက်တည်း စီမံပါသည်။',
+                  ],
                 ].map(([title, text]) => (
                   <Card key={title} className="border-[#D9C8A9]/80 bg-white/75 shadow-none">
                     <CardContent className="p-4">
@@ -254,12 +262,12 @@ export default function ClientPortal() {
             <CardHeader className="space-y-4 border-b border-white/10 bg-[linear-gradient(180deg,rgba(212,166,58,0.16),rgba(42,34,27,0.0))] p-6 sm:p-8">
               <div className="flex items-center justify-between">
                 <Badge className="border-[#D4A63A]/25 bg-[#D4A63A]/10 text-[#F7E3A4] hover:bg-[#D4A63A]/10">
-                  Public service guide
+                  ဝန်ဆောင်မှုအကျဉ်းချုပ်
                 </Badge>
                 <div className="flex items-center gap-2 text-[#D4A63A]">
                   <Sparkles className="h-4 w-4" />
                   <span className="text-xs font-semibold uppercase tracking-[0.28em]">
-                    Gold standard
+                    ယုံကြည်စိတ်ချရမှု
                   </span>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import KtmWordmark from '@/components/public/KtmWordmark';
 import {
   ArrowRight,
   BadgeCheck,
@@ -95,40 +96,6 @@ const TRUST_POINTS = [
   },
 ];
 
-function SpeedMark({ compact = false }) {
-  return (
-    <div className={`inline-grid gap-1.5 ${compact ? 'mr-1' : 'mr-2'}`}>
-      {[1, 2, 3].map((index) => (
-        <span
-          key={index}
-          className={`${compact ? 'h-1.5 w-6' : 'h-2 w-10'} rounded-full bg-gradient-to-r from-[#B6851F] via-[#D4A63A] to-[#F3D470] shadow-[0_2px_8px_rgba(182,133,31,0.28)]`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function BrandMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="rounded-[1.35rem] border border-[#D4A63A]/30 bg-[#1F1914] px-3 py-3 shadow-[0_20px_50px_rgba(44,29,10,0.22)]">
-        <div className="flex items-center text-[2rem] font-black uppercase leading-none tracking-[0.18em] text-[#D4A63A] sm:text-[2.3rem]">
-          <SpeedMark compact />
-          KTM
-        </div>
-      </div>
-      <div className="hidden sm:block">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.35em] text-[#8F8374]">
-          Cargo Express
-        </p>
-        <p className="mt-1 text-sm text-[#5B5147]">
-          ထိုင်းမှ မြန်မာသို့ ယုံကြည်စိတ်ချရသော ဝန်ဆောင်မှု
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -144,7 +111,7 @@ export default function LandingPage() {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             type="button"
           >
-            <BrandMark />
+            <KtmWordmark compact />
           </button>
 
           <div className="hidden items-center gap-6 lg:flex">
@@ -321,7 +288,11 @@ export default function LandingPage() {
               <div className="overflow-hidden rounded-[2rem] border border-[#cfbfaa] bg-[#1F1914] p-4 shadow-[0_35px_70px_rgba(31,25,20,0.24)]">
                 <div className="rounded-[1.6rem] border border-white/10 bg-gradient-to-br from-[#2A221B] via-[#1F1914] to-[#17120E] p-5">
                   <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                    <BrandMark />
+                    <KtmWordmark
+                      compact
+                      tone="dark"
+                      subtitle="ထိုင်းမှ မြန်မာသို့ စိတ်ချရသော ပို့ဆောင်ရေးဝန်ဆောင်မှု"
+                    />
                     <div className="rounded-full border border-[#D4A63A]/25 bg-[#D4A63A]/10 px-3 py-1 text-xs font-semibold text-[#F3D470]">
                       premium logistics
                     </div>
@@ -597,7 +568,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-[#d8ccb8] bg-[#F6F1E7] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <BrandMark />
+          <KtmWordmark compact />
           <div className="flex flex-col gap-3 text-sm text-[#5B5147] sm:flex-row sm:items-center sm:gap-6">
             <Link className="font-semibold hover:text-[#B6851F]" to="/ClientPortal">
               ကုမ္ပဏီအကြောင်း
