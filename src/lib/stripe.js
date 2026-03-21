@@ -16,6 +16,18 @@ import { supabase } from '@/api/supabaseClient';
 
 const STRIPE_PK = (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim();
 
+function unwrapEdgeFunctionResponse(data) {
+  if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
+    return data;
+  }
+
+  return {
+    success: true,
+    data,
+    error: null,
+  };
+}
+
 /** Lazy-load Stripe.js only when needed (saves bundle size) */
 let stripePromise = null;
 export function getStripe() {
@@ -48,10 +60,22 @@ export async function redirectToCheckout(priceId, successUrl, cancelUrl) {
     },
   });
 
-  if (error) throw new Error(error.message || 'Failed to create checkout session');
-  if (!data?.url) throw new Error('No checkout URL returned');
+  const response = unwrapEdgeFunctionResponse(data);
 
-  window.location.href = data.url;
+  if (error) {
+    throw new Error(
+      response?.error?.message || error.message || 'Failed to create checkout session'
+    );
+  }
+
+  if (!response?.success) {
+    throw new Error(response?.error?.message || 'Failed to create checkout session');
+  }
+
+  const checkoutUrl = response?.data?.url || response?.url;
+  if (!checkoutUrl) throw new Error('No checkout URL returned');
+
+  window.location.href = checkoutUrl;
 }
 
 /**
@@ -71,10 +95,20 @@ export async function redirectToCustomerPortal() {
     },
   });
 
-  if (error) throw new Error(error.message || 'Failed to open customer portal');
-  if (!data?.url) throw new Error('No portal URL returned');
+  const response = unwrapEdgeFunctionResponse(data);
 
-  window.location.href = data.url;
+  if (error) {
+    throw new Error(response?.error?.message || error.message || 'Failed to open customer portal');
+  }
+
+  if (!response?.success) {
+    throw new Error(response?.error?.message || 'Failed to open customer portal');
+  }
+
+  const portalUrl = response?.data?.url || response?.url;
+  if (!portalUrl) throw new Error('No portal URL returned');
+
+  window.location.href = portalUrl;
 }
 
 /**
