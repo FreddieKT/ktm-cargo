@@ -257,6 +257,13 @@ export default function ShipmentForm({
 
     try {
       await onSubmit(enhancedData);
+    } catch (err) {
+      const message =
+        err?.message?.includes('capacity') ? 'Weight exceeds PO capacity — adjust and retry.' :
+        err?.message?.includes('invoice') ? 'Invoice number error — apply the DB sequence migration.' :
+        err?.message?.includes('network') || err?.message?.includes('fetch') ? 'Network error — check your connection and retry.' :
+        err?.message || 'Submission failed — please try again.';
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

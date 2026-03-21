@@ -49,9 +49,10 @@ function buildPOOperation(po, nextAllocatedWeight) {
   const previousPatch = getPOAllocationSnapshot(po);
   const nextPatch = buildPOAllocationPatch(po, nextAllocatedWeight);
 
+  const WEIGHT_TOLERANCE = 0.001;
   if (
-    previousPatch.allocated_weight_kg === nextPatch.allocated_weight_kg &&
-    previousPatch.remaining_weight_kg === nextPatch.remaining_weight_kg
+    Math.abs(previousPatch.allocated_weight_kg - nextPatch.allocated_weight_kg) < WEIGHT_TOLERANCE &&
+    Math.abs(previousPatch.remaining_weight_kg - nextPatch.remaining_weight_kg) < WEIGHT_TOLERANCE
   ) {
     return null;
   }
