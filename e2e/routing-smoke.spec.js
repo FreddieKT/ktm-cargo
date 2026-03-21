@@ -32,8 +32,10 @@ test.describe('KTM route and workflow smoke', () => {
   }) => {
     await page.goto('/Operations?__e2e=staff-admin');
 
-    await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
-    await expect(page.getByText(/One canonical journey for staff operations/i)).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Good (morning|afternoon|evening)/i })
+    ).toBeVisible();
+    await expect(page.getByText(/Here's what's happening with your business today/i)).toBeVisible();
   });
 
   test('staff login returns users to the protected page they originally requested', async ({
@@ -67,7 +69,9 @@ test.describe('KTM route and workflow smoke', () => {
     await page.goto('/Dashboard?__e2e=staff-admin');
 
     await page.waitForURL(/\/Operations\?__e2e=staff-admin$/);
-    await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Good (morning|afternoon|evening)/i })
+    ).toBeVisible();
   });
 
   test('common typo aliases redirect to canonical staff routes', async ({ page }) => {
@@ -77,7 +81,9 @@ test.describe('KTM route and workflow smoke', () => {
 
     await page.goto('/operation?__e2e=workflow-staff');
     await page.waitForURL(/\/Operations\?__e2e=workflow-staff$/);
-    await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Good (morning|afternoon|evening)/i })
+    ).toBeVisible();
 
     await page.goto('/invoice?__e2e=workflow-staff');
     await page.waitForURL(/\/Invoices\?__e2e=workflow-staff$/);
