@@ -316,9 +316,7 @@ export default function Vendors() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
-              Logistics
-            </h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Logistics</h1>
             <p className="text-sm text-slate-500 mt-1">Manage your 3PL partners</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">

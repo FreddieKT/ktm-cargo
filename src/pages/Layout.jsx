@@ -45,9 +45,7 @@ const navSections = [
   },
   {
     title: 'System',
-    items: [
-      { name: 'Settings', icon: Settings, page: 'Settings' },
-    ],
+    items: [{ name: 'Settings', icon: Settings, page: 'Settings' }],
   },
 ];
 

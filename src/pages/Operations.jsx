@@ -61,9 +61,7 @@ export default function Operations() {
       .filter((o) => new Date(o.created_date) >= monthStart)
       .reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
-    const pendingInvoices = invoices.filter(
-      (inv) => !['paid', 'void'].includes(inv.status)
-    ).length;
+    const pendingInvoices = invoices.filter((inv) => !['paid', 'void'].includes(inv.status)).length;
 
     const vendorCount = {};
     shipments.forEach((s) => {
@@ -80,11 +78,12 @@ export default function Operations() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-blue-700 font-semibold">Dashboard</p>
+            <p className="text-xs uppercase tracking-wider text-blue-700 font-semibold">
+              Dashboard
+            </p>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">
               Good {getGreeting()}, {user?.full_name?.split(' ')[0] || 'there'}
             </h1>
@@ -116,7 +115,9 @@ export default function Operations() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Revenue This Month</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-500">
+                Revenue This Month
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
@@ -212,7 +213,8 @@ export default function Operations() {
                         {order.customer_name || 'Unknown Client'}
                       </p>
                       <p className="text-sm text-slate-500 truncate">
-                        {order.order_number} · {String(order.product_details || 'No description').substring(0, 50)}
+                        {order.order_number} ·{' '}
+                        {String(order.product_details || 'No description').substring(0, 50)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
@@ -231,7 +233,6 @@ export default function Operations() {
             )}
           </CardContent>
         </Card>
-
       </div>
     </div>
   );

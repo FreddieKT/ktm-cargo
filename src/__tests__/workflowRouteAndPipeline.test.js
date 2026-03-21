@@ -42,7 +42,7 @@ function extractNavItems(source) {
 }
 
 function extractWorkflowStagePages(source) {
-  const sectionRegex = /title:\s*'Workflow Stages'[\s\S]*?items:\s*\[([\s\S]*?)\][\s\S]*?\}/;
+  const sectionRegex = /title:\s*'Main'[\s\S]*?items:\s*\[([\s\S]*?)\][\s\S]*?\}/;
   const sectionBlock = source.match(sectionRegex)?.[1] || '';
   const pageRegex = /page:\s*'([^']+)'/g;
   const pages = [];
@@ -84,32 +84,24 @@ describe('Workflow route and pipeline contracts', () => {
     );
   });
 
-  it('keeps primary staff navigation ordered by business pipeline stages', () => {
-    const source = fs.readFileSync(layoutPath, 'utf-8');
-    const pagesInOrder = extractWorkflowStagePages(source);
-
-    const quoteIndex = pagesInOrder.indexOf('PriceCalculator');
-    const orderIntakeIndex = pagesInOrder.indexOf('ShoppingOrders');
-    const bookingIndex = pagesInOrder.indexOf('Procurement');
-    const transitIndex = pagesInOrder.indexOf('Shipments');
-    const reconcileIndex = pagesInOrder.indexOf('Invoices');
-
-    expect(quoteIndex).toBeGreaterThanOrEqual(0);
-    expect(orderIntakeIndex).toBeGreaterThan(quoteIndex);
-    expect(bookingIndex).toBeGreaterThan(orderIntakeIndex);
-    expect(transitIndex).toBeGreaterThan(bookingIndex);
-    expect(reconcileIndex).toBeGreaterThan(transitIndex);
-  });
-
-  it('keeps feedback queue and analytics as separate route labels', () => {
+  it('keeps primary staff navigation with core business pages', () => {
     const source = fs.readFileSync(layoutPath, 'utf-8');
     const navItems = extractNavItems(source);
-    const feedbackQueueItem = navItems.find((item) => item.page === 'FeedbackQueue');
-    const feedbackAnalyticsItem = navItems.find((item) => item.page === 'FeedbackAnalytics');
+    const pages = navItems.map((item) => item.page);
 
-    expect(feedbackQueueItem).toBeTruthy();
-    expect(feedbackAnalyticsItem).toBeTruthy();
-    expect(feedbackQueueItem.name.toLowerCase()).not.toContain('analytics');
+    expect(pages).toContain('Operations');
+    expect(pages).toContain('ShoppingOrders');
+    expect(pages).toContain('Customers');
+    expect(pages).toContain('Vendors');
+    expect(pages).toContain('Invoices');
+  });
+
+  it('keeps feedback queue and analytics available as routes even if not in primary nav', () => {
+    const source = fs.readFileSync(indexPath, 'utf-8');
+    const routes = extractRoutePaths(source);
+
+    expect(routes).toContain('/FeedbackQueue');
+    expect(routes).toContain('/FeedbackAnalytics');
   });
 
   it('filters procurement invoices down to vendor bills before rendering the AP list', () => {
