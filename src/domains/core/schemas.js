@@ -16,7 +16,8 @@ const PURCHASE_ORDER_STATUS_ENUM = [
   'cancelled',
 ];
 
-const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier', 'packaging', 'customs_broker', 'warehouse'];
+const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier'];
+const CARRIER_MODE_ENUM = ['land', 'air'];
 
 const FEEDBACK_STATUS_ENUM = [
   'pending',
@@ -193,19 +194,15 @@ export const shoppingOrderSchema = z.object({
 export const vendorSchema = z.object({
   name: z.string().min(1, 'Vendor name is required'),
   vendor_type: z.preprocess(normalizeVendorType, z.enum(VENDOR_TYPE_ENUM)).default('supplier'),
-  contact_name: z.string().min(1, 'Contact name is required'),
-  phone: z.string().min(1, 'Phone number is required'),
+  contact_name: z.string().optional(),
+  phone: z.string().optional(),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   address: z.string().optional(),
-  payment_terms: z.string().optional(),
-  bank_details: z.string().optional(),
-  services: z.string().optional(),
+  cost_per_kg: z.preprocess(numberPreprocess, z.number().min(0).optional()),
+  is_preferred: z.boolean().optional().default(false),
   notes: z.string().optional(),
   status: z.enum(['active', 'inactive', 'pending']).default('active'),
-  contract_start: z.string().optional(),
-  contract_end: z.string().optional(),
-  onboarding_source: z.string().optional(),
-  cargo_capacity_per_month: z.preprocess(numberPreprocess, z.number().optional()),
+  carrier_mode: z.enum(CARRIER_MODE_ENUM).optional().nullable(),
 });
 
 export const campaignSchema = z.object({

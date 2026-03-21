@@ -82,13 +82,6 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'];
 const typeConfig = {
   cargo_carrier: { label: 'Cargo Carrier', icon: Truck, color: 'bg-blue-100 text-blue-800' },
   supplier: { label: 'Supplier', icon: Package, color: 'bg-purple-100 text-purple-800' },
-  packaging: { label: 'Packaging', icon: Package, color: 'bg-amber-100 text-amber-800' },
-  customs_broker: {
-    label: 'Customs Broker',
-    icon: FileText,
-    color: 'bg-emerald-100 text-emerald-800',
-  },
-  warehouse: { label: 'Warehouse', icon: Building2, color: 'bg-rose-100 text-rose-800' },
 };
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -468,8 +461,13 @@ export default function Vendors() {
                             </div>
                             <div>
                               <p className="font-semibold text-slate-900">{vendor.name}</p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-slate-500 flex items-center gap-1">
                                 {typeConfig[vendor.vendor_type]?.label}
+                                {vendor.vendor_type === 'cargo_carrier' && vendor.carrier_mode && (
+                                  <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                                    {vendor.carrier_mode === 'land' ? '🚛 Land' : '✈️ Air'}
+                                  </span>
+                                )}
                               </p>
                             </div>
                           </div>
