@@ -85,6 +85,10 @@ const PO_STATUS_CONFIG = {
 import { startTour } from '@/components/common/TourGuide';
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import {
+  updateShipmentWithPoRebalance,
+  updateShoppingOrderWithPoRebalance,
+} from '@/api/shipmentAllocationRpc';
 export default function Procurement() {
   const { handleError } = useErrorHandler();
   const [activeTab, setActiveTab] = useState('orders');
@@ -899,7 +903,9 @@ export default function Procurement() {
               shoppingOrders={shoppingOrders}
               onUpdateShipment={async (id, data) => {
                 try {
-                  await updateShipmentMutation.mutateAsync({ id, data });
+                  await updateShipmentWithPoRebalance(id, data);
+                  queryClient.invalidateQueries({ queryKey: ['shipments'] });
+                  queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
                 } catch (error) {
                   handleError(error, 'Failed to update shipment', {
                     component: 'Procurement',
@@ -909,21 +915,13 @@ export default function Procurement() {
               }}
               onUpdateShoppingOrder={async (id, data) => {
                 try {
-                  await updateShoppingOrderMutation.mutateAsync({ id, data });
+                  await updateShoppingOrderWithPoRebalance(id, data);
+                  queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
+                  queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
                 } catch (error) {
                   handleError(error, 'Failed to update shopping order', {
                     component: 'Procurement',
                     action: 'updateShoppingOrder',
-                  });
-                }
-              }}
-              onUpdatePO={async (id, data) => {
-                try {
-                  await updatePOMutation.mutateAsync({ id, data });
-                } catch (error) {
-                  handleError(error, 'Failed to update purchase order', {
-                    component: 'Procurement',
-                    action: 'updatePO',
                   });
                 }
               }}

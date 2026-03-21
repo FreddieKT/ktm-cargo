@@ -846,6 +846,15 @@ function applyPurchaseOrderDelta(state, poId, delta) {
   });
 }
 
+function getShoppingOrderWeight(order) {
+  if (!order) return 0;
+
+  const actualWeight = Math.max(0, Number(order.actual_weight) || 0);
+  if (actualWeight > 0) return actualWeight;
+
+  return Math.max(0, Number(order.estimated_weight) || 0);
+}
+
 function createShipmentRpcHandlers(state) {
   return {
     create_shipment_with_po_rebalance: ({ args }) => {
@@ -903,6 +912,41 @@ function createShipmentRpcHandlers(state) {
       const updatedShipment = updateRowById(state, 'shipments', shipmentId, updates);
       return {
         shipment: updatedShipment,
+        purchase_orders: purchaseOrders,
+      };
+    },
+    update_shopping_order_with_po_rebalance: ({ args }) => {
+      const orderId = args?.p_shopping_order_id || args?.p_order_id;
+      const updates = { ...(args?.p_updates || {}) };
+      const existingOrder = findRowById(state, 'shopping_orders', orderId);
+      if (!existingOrder) {
+        throw new Error(`Shopping order not found: ${orderId}`);
+      }
+
+      const nextOrder = { ...existingOrder, ...updates };
+      const previousPoId = existingOrder.vendor_po_id || null;
+      const nextPoId = nextOrder.vendor_po_id || null;
+      const previousWeight = getShoppingOrderWeight(existingOrder);
+      const nextWeight = getShoppingOrderWeight(nextOrder);
+
+      const purchaseOrders = [];
+      if (previousPoId && nextPoId && previousPoId === nextPoId) {
+        const updatedPo = applyPurchaseOrderDelta(state, previousPoId, nextWeight - previousWeight);
+        if (updatedPo) purchaseOrders.push(updatedPo);
+      } else {
+        if (previousPoId && previousWeight > 0) {
+          const releasedPo = applyPurchaseOrderDelta(state, previousPoId, -previousWeight);
+          if (releasedPo) purchaseOrders.push(releasedPo);
+        }
+        if (nextPoId && nextWeight > 0) {
+          const allocatedPo = applyPurchaseOrderDelta(state, nextPoId, nextWeight);
+          if (allocatedPo) purchaseOrders.push(allocatedPo);
+        }
+      }
+
+      const updatedOrder = updateRowById(state, 'shopping_orders', orderId, updates);
+      return {
+        shopping_order: updatedOrder,
         purchase_orders: purchaseOrders,
       };
     },

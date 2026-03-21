@@ -64,6 +64,7 @@ import { sendShoppingOrderNotification } from '@/components/notifications/Shippi
 import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
 import { appendE2EFixture } from '@/lib/e2e';
 import { buildShoppingOrderAllocationPlan } from '@/lib/shoppingOrderAllocation';
+import { updateShoppingOrderWithPoRebalance } from '@/api/shipmentAllocationRpc';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
 
@@ -281,7 +282,10 @@ export default function ShoppingOrders() {
 
   // Handle order update for allocation
   const handleUpdateOrderForAllocation = async (orderId, data) => {
-    await updateMutation.mutateAsync({ id: orderId, data });
+    await updateShoppingOrderWithPoRebalance(orderId, data);
+    queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
+    queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
   };
 
   // Remind user to create invoice when order is delivered + paid

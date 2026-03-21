@@ -27,15 +27,12 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
-import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function WeightAllocationManager({
   purchaseOrders = [],
   shipments = [],
   shoppingOrders = [],
   onUpdateShipment,
   onUpdateShoppingOrder,
-  onUpdatePO,
 }) {
   const [selectedPO, setSelectedPO] = useState(null);
   const [showAllocateDialog, setShowAllocateDialog] = useState(false);
@@ -146,16 +143,6 @@ export default function WeightAllocationManager({
         }
       }
 
-      // Update PO allocation
-      if (onUpdatePO) {
-        const newAllocated = (selectedPO.allocated_weight_kg || 0) + weight;
-        const newRemaining = (selectedPO.total_weight_kg || 0) - newAllocated;
-        await onUpdatePO(selectedPO.id, {
-          allocated_weight_kg: newAllocated,
-          remaining_weight_kg: newRemaining,
-        });
-      }
-
       toast.success('Weight allocated successfully');
       setShowAllocateDialog(false);
       setSelectedOrderId('');
@@ -169,11 +156,6 @@ export default function WeightAllocationManager({
   // Handle unlink
   const handleUnlink = async (type, order) => {
     try {
-      const weight =
-        type === 'shipment' ? order.weight_kg : order.actual_weight || order.estimated_weight;
-      const poId = order.vendor_po_id;
-      const po = purchaseOrders.find((p) => p.id === poId);
-
       if (type === 'shipment' && onUpdateShipment) {
         await onUpdateShipment(order.id, {
           vendor_po_id: '',
@@ -191,16 +173,6 @@ export default function WeightAllocationManager({
           vendor_name: '',
           vendor_cost_per_kg: 0,
           vendor_cost: 0,
-        });
-      }
-
-      // Update PO allocation
-      if (po && onUpdatePO) {
-        const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - weight);
-        const newRemaining = (po.total_weight_kg || 0) - newAllocated;
-        await onUpdatePO(po.id, {
-          allocated_weight_kg: newAllocated,
-          remaining_weight_kg: newRemaining,
         });
       }
 
