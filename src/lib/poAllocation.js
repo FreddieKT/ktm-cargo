@@ -51,7 +51,8 @@ function buildPOOperation(po, nextAllocatedWeight) {
 
   const WEIGHT_TOLERANCE = 0.001;
   if (
-    Math.abs(previousPatch.allocated_weight_kg - nextPatch.allocated_weight_kg) < WEIGHT_TOLERANCE &&
+    Math.abs(previousPatch.allocated_weight_kg - nextPatch.allocated_weight_kg) <
+      WEIGHT_TOLERANCE &&
     Math.abs(previousPatch.remaining_weight_kg - nextPatch.remaining_weight_kg) < WEIGHT_TOLERANCE
   ) {
     return null;
