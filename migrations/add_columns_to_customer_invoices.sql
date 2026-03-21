@@ -1,0 +1,33 @@
+-- Migration: add missing columns to customer_invoices
+-- Run in Supabase SQL Editor
+
+ALTER TABLE customer_invoices
+  ADD COLUMN IF NOT EXISTS invoice_type      TEXT DEFAULT 'shipment',
+  ADD COLUMN IF NOT EXISTS shipment_id       UUID REFERENCES shipments(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS tracking_number   TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS order_id          UUID REFERENCES shopping_orders(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS order_number      TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS customer_name     TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS customer_email    TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS customer_phone    TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS customer_address  TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS invoice_date      DATE,
+  ADD COLUMN IF NOT EXISTS due_date          DATE,
+  ADD COLUMN IF NOT EXISTS service_type      TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS weight_kg         NUMERIC(10,3) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS price_per_kg      NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS shipping_amount   NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS insurance_amount  NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS packaging_fee     NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS product_cost      NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS commission_amount NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS subtotal          NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS tax_rate          NUMERIC(5,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS tax_amount        NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS discount_amount   NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS amount_paid       NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS balance_due       NUMERIC(12,2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS payment_terms     TEXT DEFAULT 'net_7',
+  ADD COLUMN IF NOT EXISTS payment_method    TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS payment_date      DATE,
+  ADD COLUMN IF NOT EXISTS notes             TEXT DEFAULT '';

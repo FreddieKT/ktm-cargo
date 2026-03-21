@@ -110,10 +110,10 @@ export default function ShoppingOrderForm({
       customer_id: '',
       product_links: '',
       product_details: '',
-      estimated_product_cost: '',
-      actual_product_cost: '',
-      estimated_weight: '',
-      actual_weight: '',
+      estimated_product_cost: 0,
+      actual_product_cost: 0,
+      estimated_weight: 0,
+      actual_weight: 0,
       commission_rate: 10,
       delivery_address: '',
       notes: '',
@@ -227,6 +227,10 @@ export default function ShoppingOrderForm({
         shipping_cost: calculated.shippingCost,
         total_amount: calculated.total,
         vendor_cost: calculated.vendorCost,
+        // UUID columns must be null, not empty string
+        vendor_po_id: data.vendor_po_id || null,
+        vendor_id: data.vendor_id || null,
+        customer_id: data.customer_id || null,
       };
       await onSubmit(formattedData);
     } finally {
