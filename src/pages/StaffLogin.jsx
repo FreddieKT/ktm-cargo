@@ -4,12 +4,90 @@ import { AlertTriangle, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { auth } from '@/api/auth';
 import { useUser } from '@/components/auth/UserContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { STAFF_HOME_PATH, getStaffDestinationFromSearch } from '@/lib/staffAuthRouting';
 import { appendE2EFixture } from '@/lib/e2e';
+
+/* ── Brand tokens (mirrored from ClientPortal) ─────────────────────────── */
+const GOLD_GRADIENT = 'linear-gradient(160deg, #F7E17A 0%, #D4A63A 48%, #9A6E10 100%)';
+const GOLD_BTN_GRADIENT = 'linear-gradient(135deg, #E8C968 0%, #C9A030 50%, #9A6E10 100%)';
+const GOLD_TEXT_STYLE = {
+  background: GOLD_GRADIENT,
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+};
+
+function SpeedMark({ size = 'md' }) {
+  const bars =
+    size === 'sm'
+      ? [
+          { w: 14, h: 3 },
+          { w: 11, h: 3 },
+          { w: 8, h: 3 },
+        ]
+      : [
+          { w: 22, h: 4.5 },
+          { w: 17, h: 4.5 },
+          { w: 12, h: 4.5 },
+        ];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: size === 'sm' ? 3 : 5 }}>
+      {bars.map((b, i) => (
+        <span
+          key={i}
+          style={{
+            display: 'block',
+            width: b.w,
+            height: b.h,
+            borderRadius: 2,
+            transform: 'skewX(-18deg)',
+            background: GOLD_GRADIENT,
+            boxShadow: '0 2px 8px rgba(212,166,58,0.35)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function KtmMark({ size = 'md' }) {
+  const fontSize = size === 'sm' ? 22 : size === 'lg' ? 42 : 32;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: size === 'sm' ? 6 : 10 }}>
+      <SpeedMark size={size} />
+      <div>
+        <div
+          style={{
+            fontFamily: "'Oswald', 'Bebas Neue', Impact, sans-serif",
+            fontSize,
+            fontWeight: 700,
+            fontStyle: 'italic',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+            ...GOLD_TEXT_STYLE,
+          }}
+        >
+          KTM
+        </div>
+        <div
+          style={{
+            fontFamily: "'Oswald', sans-serif",
+            fontSize: size === 'sm' ? 7 : 9,
+            fontWeight: 500,
+            letterSpacing: '0.32em',
+            textTransform: 'uppercase',
+            color: '#9A7A30',
+            marginTop: 3,
+          }}
+        >
+          CARGO EXPRESS
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function isStaffAccount(user) {
   return user?.role === 'staff' || user?.role === 'admin';
@@ -68,185 +146,463 @@ export default function StaffLogin() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div
+        style={{
+          minHeight: '100vh',
+          background: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: '#D4A63A' }} />
       </div>
     );
   }
 
   if (signedInButNotStaff) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900">
-        <div className="mx-auto max-w-xl">
-          <Card className="border-amber-200 bg-white shadow-xl shadow-slate-200/50">
-            <CardHeader className="space-y-3">
-              <Badge className="w-fit border-amber-400/20 bg-amber-500/10 text-amber-100 hover:bg-amber-500/10">
-                Staff access required
-              </Badge>
-              <CardTitle className="flex items-center gap-3 text-2xl text-slate-900">
-                <AlertTriangle className="h-6 w-6 text-amber-300" />
+      <div
+        style={{
+          minHeight: '100vh',
+          background: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 24px',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: 480 }}>
+          <div style={{ marginBottom: 32 }}>
+            <KtmMark size="md" />
+          </div>
+          <div
+            style={{
+              background: '#fff',
+              border: '1px solid rgba(201,168,76,0.25)',
+              borderRadius: 16,
+              padding: '32px',
+              boxShadow: '0 4px 32px rgba(212,166,58,0.08)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <AlertTriangle style={{ color: '#D4A63A', width: 22, height: 22, flexShrink: 0 }} />
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#111827' }}>
                 Account Not Configured
-              </CardTitle>
-              <CardDescription className="text-sm leading-6 text-slate-600">
-                This account is signed in, but it is not configured for staff modules like
-                shipments, procurement, or invoices.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                <p>
-                  Use a staff or admin account to continue to{' '}
-                  <span className="font-medium text-slate-900">{nextPath}</span>.
-                </p>
-              </div>
-              {errorMessage && (
-                <p className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                  {errorMessage}
-                </p>
-              )}
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                >
-                  <Link to={appendE2EFixture('/', location.search)}>Back Home</Link>
-                </Button>
-                <Button onClick={() => auth.logout()} className="bg-blue-600 hover:bg-blue-700">
-                  Sign Out and Switch Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </h2>
+            </div>
+            <div
+              style={{
+                height: 1,
+                background: 'linear-gradient(90deg, #D4A63A 0%, rgba(212,166,58,0.08) 100%)',
+                marginBottom: 20,
+              }}
+            />
+            <p style={{ margin: '0 0 8px', fontSize: 14, color: '#6B7280', lineHeight: 1.6 }}>
+              This account is signed in, but it is not configured for staff modules.
+            </p>
+            <p style={{ margin: '0 0 24px', fontSize: 14, color: '#6B7280', lineHeight: 1.6 }}>
+              Use a staff or admin account to continue to{' '}
+              <span style={{ color: '#111827', fontWeight: 600 }}>{nextPath}</span>.
+            </p>
+            {errorMessage && (
+              <p
+                style={{
+                  margin: '0 0 16px',
+                  padding: '10px 14px',
+                  background: '#FEF2F2',
+                  border: '1px solid #FECACA',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: '#991B1B',
+                }}
+              >
+                {errorMessage}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Link
+                to={appendE2EFixture('/', location.search)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '10px 0',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#6B7280',
+                  border: '1px solid rgba(201,168,76,0.25)',
+                  borderRadius: 8,
+                  textDecoration: 'none',
+                  letterSpacing: '0.03em',
+                  transition: 'border-color 0.15s',
+                }}
+              >
+                Back Home
+              </Link>
+              <button
+                onClick={() => auth.logout()}
+                style={{
+                  flex: 1,
+                  padding: '10px 0',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  letterSpacing: '0.05em',
+                  color: '#fff',
+                  background: GOLD_BTN_GRADIENT,
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  clipPath: 'polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)',
+                }}
+              >
+                Switch Account
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900">
-      <div className="absolute inset-0 -z-10 bg-slate-50" />
+    <div style={{ minHeight: '100vh', background: '#fff', color: '#111827' }}>
+      {/* Header */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: '1px solid rgba(201,168,76,0.2)',
+          background: 'rgba(255,255,255,0.96)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: '0 auto',
+            padding: '14px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Link to={appendE2EFixture('/', location.search)} style={{ textDecoration: 'none' }}>
+            <KtmMark size="sm" />
+          </Link>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#9A7A30',
+              background: 'rgba(212,166,58,0.08)',
+              border: '1px solid rgba(212,166,58,0.2)',
+              padding: '4px 10px',
+              borderRadius: 4,
+            }}
+          >
+            Staff Access
+          </span>
+        </div>
+      </header>
 
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_420px] lg:items-center">
-        <div className="space-y-6">
-          <Badge className="border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100">
+      {/* Body */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: '0 auto',
+          padding: '64px 24px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 64,
+          alignItems: 'center',
+        }}
+      >
+        {/* Left — brand panel */}
+        <div>
+          <div
+            style={{
+              display: 'inline-block',
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: '#9A7A30',
+              background: 'rgba(212,166,58,0.08)',
+              border: '1px solid rgba(212,166,58,0.2)',
+              padding: '4px 10px',
+              borderRadius: 4,
+              marginBottom: 24,
+            }}
+          >
             Internal access
-          </Badge>
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              Staff operations run through one secured workflow.
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-slate-600">
-              Use your KTM staff account to manage shopping intake, cargo shipments, procurement,
-              invoicing, and after-sales work from the operations console.
-            </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+
+          <h1
+            style={{
+              margin: '0 0 16px',
+              fontSize: 'clamp(28px, 4vw, 44px)',
+              fontWeight: 800,
+              lineHeight: 1.15,
+              letterSpacing: '-0.02em',
+              color: '#111827',
+            }}
+          >
+            Staff operations, <span style={GOLD_TEXT_STYLE}>one secured&nbsp;workflow.</span>
+          </h1>
+
+          <div
+            style={{
+              height: 2,
+              width: 48,
+              background: GOLD_GRADIENT,
+              borderRadius: 2,
+              marginBottom: 20,
+            }}
+          />
+
+          <p
+            style={{
+              margin: '0 0 40px',
+              fontSize: 15,
+              lineHeight: 1.7,
+              color: '#6B7280',
+              maxWidth: 480,
+            }}
+          >
+            Shopping intake, cargo shipments, procurement, invoicing, and after-sales — all managed
+            from the KTM operations console.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              ['Operations Console', 'Start from /Operations after sign in.'],
-              ['Route-safe', 'Protected routes redirect here with the page you requested.'],
-              ['Role-aware', 'Only staff and admin accounts can enter the internal workflow.'],
-              ['Back office only', 'Customers stay on the public brochure and feedback pages.'],
-            ].map(([title, text]) => (
-              <Card key={title} className="border-slate-200 bg-white shadow-sm">
-                <CardContent className="p-4">
-                  <p className="font-semibold text-slate-900">{title}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
-                </CardContent>
-              </Card>
+              ['TH → MM', 'Bangkok မှ Yangon door-to-door logistics'],
+              ['Role-aware', 'Staff and admin accounts only'],
+              ['Route-safe', 'Protected routes redirect back here'],
+            ].map(([label, desc]) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <div
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    background: GOLD_GRADIENT,
+                    marginTop: 8,
+                    flexShrink: 0,
+                  }}
+                />
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginRight: 8 }}>
+                    {label}
+                  </span>
+                  <span style={{ fontSize: 13, color: '#9CA3AF' }}>{desc}</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
-        <Card className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
-          <CardHeader className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-blue-50 p-3 ring-1 ring-blue-100">
-                <ShieldCheck className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle className="text-2xl text-slate-900">Staff Login</CardTitle>
-                <CardDescription className="text-slate-500">
-                  Continue to {nextPath === STAFF_HOME_PATH ? 'Operations' : nextPath}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="staff-email" className="text-slate-700">
-                  Email
-                </Label>
-                <Input
-                  id="staff-email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="staff@ktmcargo.com"
-                  className="h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="staff-password" className="text-slate-700">
-                  Password
-                </Label>
-                <Input
-                  id="staff-password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Enter your password"
-                  className="h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-              </div>
-
-              {errorMessage && (
-                <p className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-                  {errorMessage}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                className="h-11 w-full bg-blue-600 text-white hover:bg-blue-700"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing In
-                  </>
-                ) : (
-                  <>
-                    <LockKeyhole className="mr-2 h-4 w-4" />
-                    Sign In
-                  </>
-                )}
-              </Button>
-            </form>
-
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              <p className="font-medium text-slate-900">Need access?</p>
-              <p className="mt-1 leading-6">
-                Ask your KTM administrator to create a staff account and assign the correct
-                `staff_role` in the profile record.
-              </p>
-            </div>
-
-            <Button
-              asChild
-              variant="outline"
-              className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+        {/* Right — login card */}
+        <div
+          style={{
+            background: '#fff',
+            border: '1px solid rgba(201,168,76,0.2)',
+            borderRadius: 16,
+            padding: '36px',
+            boxShadow: '0 4px 40px rgba(212,166,58,0.07), 0 1px 4px rgba(0,0,0,0.04)',
+          }}
+        >
+          {/* Card header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: 'rgba(212,166,58,0.08)',
+                border: '1px solid rgba(212,166,58,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
             >
-              <Link to={appendE2EFixture('/', location.search)}>Back Home</Link>
-            </Button>
-          </CardContent>
-        </Card>
+              <ShieldCheck style={{ width: 22, height: 22, color: '#D4A63A' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', lineHeight: 1.2 }}>
+                Staff Login
+              </div>
+              <div style={{ fontSize: 13, color: '#9CA3AF', marginTop: 2 }}>
+                Continue to {nextPath === STAFF_HOME_PATH ? 'Operations' : nextPath}
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              height: 1,
+              background:
+                'linear-gradient(90deg, rgba(212,166,58,0.3) 0%, rgba(212,166,58,0.04) 100%)',
+              marginBottom: 24,
+            }}
+          />
+
+          {/* Form */}
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+          >
+            <div>
+              <Label
+                htmlFor="staff-email"
+                style={{
+                  display: 'block',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#374151',
+                  marginBottom: 6,
+                }}
+              >
+                Email
+              </Label>
+              <Input
+                id="staff-email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="staff@ktmcargo.com"
+                className="h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:ring-amber-400/40"
+                required
+              />
+            </div>
+
+            <div>
+              <Label
+                htmlFor="staff-password"
+                style={{
+                  display: 'block',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#374151',
+                  marginBottom: 6,
+                }}
+              >
+                Password
+              </Label>
+              <Input
+                id="staff-password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:ring-amber-400/40"
+                required
+              />
+            </div>
+
+            {errorMessage && (
+              <p
+                style={{
+                  margin: 0,
+                  padding: '10px 14px',
+                  background: '#FEF2F2',
+                  border: '1px solid #FECACA',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  color: '#991B1B',
+                }}
+              >
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                marginTop: 4,
+                width: '100%',
+                height: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: '#fff',
+                background: submitting ? '#C9A030' : GOLD_BTN_GRADIENT,
+                border: 'none',
+                borderRadius: 8,
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
+                opacity: submitting ? 0.75 : 1,
+                transition: 'filter 0.15s, opacity 0.15s',
+              }}
+            >
+              {submitting ? (
+                <>
+                  <Loader2
+                    style={{ width: 15, height: 15, animation: 'spin 1s linear infinite' }}
+                  />
+                  Signing In
+                </>
+              ) : (
+                <>
+                  <LockKeyhole style={{ width: 15, height: 15 }} />
+                  Sign In
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Need access */}
+          <div
+            style={{
+              marginTop: 20,
+              padding: '14px',
+              background: 'rgba(212,166,58,0.04)',
+              border: '1px solid rgba(212,166,58,0.15)',
+              borderRadius: 10,
+            }}
+          >
+            <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 600, color: '#374151' }}>
+              Need access?
+            </p>
+            <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF', lineHeight: 1.6 }}>
+              Ask your KTM administrator to create a staff account and assign the correct{' '}
+              <code style={{ fontFamily: 'monospace', color: '#6B7280' }}>staff_role</code> in the
+              profile record.
+            </p>
+          </div>
+
+          <Link
+            to={appendE2EFixture('/', location.search)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 12,
+              height: 40,
+              fontSize: 13,
+              color: '#9CA3AF',
+              border: '1px solid rgba(201,168,76,0.15)',
+              borderRadius: 8,
+              textDecoration: 'none',
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+          >
+            Back Home
+          </Link>
+        </div>
       </div>
     </div>
   );
