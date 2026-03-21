@@ -102,7 +102,6 @@ jest.mock('@/api/db', () => {
   };
 });
 
-
 import ClientPortal from '@/pages/ClientPortal';
 import DocumentGenerator from '@/components/documents/DocumentGenerator';
 
@@ -111,8 +110,6 @@ describe('UI Visualization', () => {
     jest.clearAllMocks();
     mockChain.then.mockImplementation((fn) => fn({ data: [], error: null }));
   });
-
-
 
   describe('Client brochure page', () => {
     test('renders company profile content without client-side ordering UI', async () => {

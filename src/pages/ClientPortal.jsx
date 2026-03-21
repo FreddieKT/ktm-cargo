@@ -48,7 +48,6 @@ function SpeedMark({ size = 'md' }) {
         display: 'flex',
         flexDirection: 'column',
         gap: size === 'sm' ? 3 : 5,
-        
       }}
     >
       {bars.map((b, i) => (
