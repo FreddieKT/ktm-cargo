@@ -9,7 +9,9 @@ test.describe('Invoice flow', () => {
     await expect(page.getByRole('heading', { name: /Invoices/i })).toBeVisible();
 
     await page.getByRole('button', { name: /^Create Invoice$/ }).click();
-    await expect(page.getByRole('dialog').getByText(/Create Invoice/i)).toBeVisible();
+    await expect(
+      page.getByRole('dialog').getByRole('heading', { name: /Create Invoice/i })
+    ).toBeVisible();
 
     await page.getByRole('button', { name: /Select customer/i }).click();
     await page.getByPlaceholder('Search customer...').fill('Mya Mya');
