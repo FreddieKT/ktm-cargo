@@ -214,7 +214,7 @@ export function computeInvoiceTotals(params) {
   const discount = Math.max(0, safeNum(params.discount_amount));
 
   const subtotal = roundMoney(shipping + insurance + packaging + product + commission);
-  const taxAmount = roundMoney((subtotal * taxRate) / 100);
+  const taxAmount = Math.round(roundMoney((subtotal * taxRate) / 100));
   const total = roundMoney(Math.max(0, subtotal + taxAmount - discount));
 
   return { subtotal, taxAmount, total };

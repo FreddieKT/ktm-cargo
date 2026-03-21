@@ -74,7 +74,7 @@ describe('getNextInvoiceNumber', () => {
   test('falls back to in-memory number when RPC fails', async () => {
     mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'function not found' } });
 
-    const result = await getNextInvoiceNumber();
+    const result = await getNextInvoiceNumber({ allowFallback: true });
     expect(result).toMatch(/^INV-\d{6}-\d{4}$/);
   });
 
