@@ -71,7 +71,10 @@ export function validateTransition(from, to, transitionMap) {
   }
 
   if (allowed.length === 0) {
-    return { valid: false, reason: `"${from}" is a terminal status — no further transitions allowed` };
+    return {
+      valid: false,
+      reason: `"${from}" is a terminal status — no further transitions allowed`,
+    };
   }
 
   if (!allowed.includes(to)) {

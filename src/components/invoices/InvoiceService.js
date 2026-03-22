@@ -392,9 +392,7 @@ export async function processRefund(invoiceId, refundAmount, reason = '') {
 
   const currentPaid = invoice.amount_paid || 0;
   if (refundAmount > currentPaid) {
-    throw new Error(
-      `Refund amount (${refundAmount}) exceeds amount already paid (${currentPaid})`
-    );
+    throw new Error(`Refund amount (${refundAmount}) exceeds amount already paid (${currentPaid})`);
   }
 
   const newAmountPaid = Math.max(0, currentPaid - refundAmount);

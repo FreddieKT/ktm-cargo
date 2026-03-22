@@ -108,7 +108,12 @@ export default function Invoices() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [actionDialog, setActionDialog] = useState({ open: false, action: null, invoice: null });
   const [paymentDialog, setPaymentDialog] = useState({ open: false, invoice: null, amount: '' });
-  const [refundDialog, setRefundDialog] = useState({ open: false, invoice: null, amount: '', reason: '' });
+  const [refundDialog, setRefundDialog] = useState({
+    open: false,
+    invoice: null,
+    amount: '',
+    reason: '',
+  });
 
   // Data fetching
   const { data: invoices = [], isLoading } = useQuery({
