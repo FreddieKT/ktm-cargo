@@ -312,8 +312,7 @@ export default function Reports() {
     0
   );
   const shoppingOrdersTrueProfit = filteredOrders.reduce(
-    (sum, o) =>
-      sum + (o.commission_amount || 0) + ((o.shipping_cost || 0) - (o.vendor_cost || 0)),
+    (sum, o) => sum + (o.commission_amount || 0) + ((o.shipping_cost || 0) - (o.vendor_cost || 0)),
     0
   );
 
