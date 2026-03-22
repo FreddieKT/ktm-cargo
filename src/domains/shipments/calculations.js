@@ -65,21 +65,6 @@ export function chargeableWeight(actualKg, dimensionsCm, useVolumetric) {
 }
 
 /**
- * Default packaging fee by weight (THB). Can be overridden by service.
- * @param {number} weightKg
- * @param {number} [overrideFee] - from service config
- * @returns {number}
- */
-export function packagingFeeByWeight(weightKg, overrideFee) {
-  if (typeof overrideFee === 'number' && Number.isFinite(overrideFee))
-    return roundMoney(overrideFee);
-  const w = safeNum(weightKg);
-  if (w < 5) return 50;
-  if (w < 15) return 100;
-  return 200;
-}
-
-/**
  * Resolve effective selling rate from an optional tiered rate table.
  * Falls back to defaultRate if no table is provided or no tier matches.
  *
@@ -100,8 +85,8 @@ export function effectiveRate(weightKg, rateTable, defaultRate) {
 }
 
 /**
- * Compute shipping, insurance, packaging, commission, surcharges, totals and profit.
- * Updated for "Dropshipping / Personal Shopper Model" as default.
+ * Compute shipping, insurance, commission, surcharges, totals and profit.
+ * Packaging fee is disabled (set to 0) — not part of KTM's billing model.
  *
  * @param {{
  *   actualWeightKg: number,
@@ -110,8 +95,6 @@ export function effectiveRate(weightKg, rateTable, defaultRate) {
  *   rateTable?: Array<{ minKg: number, pricePerKg: number }>, // Tiered selling rates
  *   useVolumetric?: boolean,
  *   dimensionsCm?: { length, width, height },
- *   includePackingFee?: boolean,
- *   packagingFee?: number,
  *   productCost?: number,
  *   commissionRatePercent?: number,
  *   insuranceRatePercent?: number,
@@ -125,7 +108,6 @@ export function effectiveRate(weightKg, rateTable, defaultRate) {
  *   cargoCost: number,
  *   customerShippingFee: number,
  *   insuranceFee: number,
- *   packagingFee: number,
  *   commission: number,
  *   surchargeTotal: number,
  *   totalCustomer: number,
@@ -160,25 +142,22 @@ export function computeOrderTotals(params) {
   const commissionRate = safeNum(params.commissionRatePercent, 0);
   const insuranceRate = safeNum(params.insuranceRatePercent, 3);
   const includeInsurance = params.includeInsurance !== false;
-  const includePackingFee = Boolean(params.includePackingFee);
   const serviceType = params.serviceType || '';
 
   // 4. Core fees — based on billingWeight
   const customerShippingFee = roundMoney(sellingPricePerKg * billingWeight);
   const cargoCost = roundMoney(cargoCostPerKg * billingWeight);
 
-  // 5. Optional fees
+  // 5. Insurance (collected from customer — not KTM's internal expense)
   const insuranceFee = includeInsurance
     ? roundMoney(customerShippingFee * (insuranceRate / 100))
     : 0;
-  const packagingFee = includePackingFee
-    ? roundMoney(packagingFeeByWeight(billingWeight, params.packagingFee))
-    : 0;
 
+  // 6. Commission (shopping orders only)
   const isShopping = String(serviceType).startsWith('shopping');
   const commission = isShopping ? roundMoney(productCost * (commissionRate / 100)) : 0;
 
-  // 6. Surcharges
+  // 7. Surcharges
   let surchargeTotal = 0;
   const surcharges = params.surcharges || [];
   for (const s of surcharges) {
@@ -196,21 +175,22 @@ export function computeOrderTotals(params) {
   }
   surchargeTotal = roundMoney(surchargeTotal);
 
-  // 7. Final totals
+  // 8. Final totals
+  // totalCustomer = productCost + shipping + insurance + commission + surcharge
   const totalCustomer = roundMoney(
-    productCost + customerShippingFee + insuranceFee + packagingFee + commission + surchargeTotal
+    productCost + customerShippingFee + insuranceFee + commission + surchargeTotal
   );
 
-  // Internal cost (insuranceFee is collected from customer, not KTM's expense)
-  const totalCost = roundMoney(productCost + cargoCost + packagingFee);
+  // totalCost = productCost + cargoCost (packaging removed)
+  const totalCost = roundMoney(productCost + cargoCost);
 
-  // Profit = commission + (customerShippingFee - cargoCost) + insuranceFee + surchargeTotal
+  // profit = commission + (customerShippingFee - cargoCost) + insuranceFee + surchargeTotal
   const profit = roundMoney(
     commission + (customerShippingFee - cargoCost) + insuranceFee + surchargeTotal
   );
   const marginPercent = totalCustomer > 0 ? roundMoney((profit / totalCustomer) * 100, 1) : 0;
 
-  // 8. Warnings
+  // 9. Warnings
   const warnings = [];
   if (profit < 0) warnings.push('negative_margin');
 
@@ -220,7 +200,6 @@ export function computeOrderTotals(params) {
     cargoCost,
     customerShippingFee,
     insuranceFee,
-    packagingFee,
     commission,
     surchargeTotal,
     totalCustomer,
@@ -238,7 +217,6 @@ export function computeOrderTotals(params) {
  * @param {{
  *   shipping_amount: number,
  *   insurance_amount: number,
- *   packaging_fee: number,
  *   product_cost: number,
  *   commission_amount: number,
  *   tax_rate: number,
@@ -249,13 +227,12 @@ export function computeOrderTotals(params) {
 export function computeInvoiceTotals(params) {
   const shipping = Math.max(0, safeNum(params.shipping_amount));
   const insurance = Math.max(0, safeNum(params.insurance_amount));
-  const packaging = Math.max(0, safeNum(params.packaging_fee));
   const product = Math.max(0, safeNum(params.product_cost));
   const commission = Math.max(0, safeNum(params.commission_amount));
   const taxRate = Math.max(0, safeNum(params.tax_rate));
   const discount = Math.max(0, safeNum(params.discount_amount));
 
-  const subtotal = roundMoney(shipping + insurance + packaging + product + commission);
+  const subtotal = roundMoney(shipping + insurance + product + commission);
   const taxAmount = roundMoney((subtotal * taxRate) / 100);
   const total = roundMoney(Math.max(0, subtotal + taxAmount - discount));
 

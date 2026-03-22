@@ -71,7 +71,6 @@ export default function PriceCalculator() {
   const [weight, setWeight] = useState('');
   const [serviceType, setServiceType] = useState('cargo_medium');
   const [includeInsurance, setIncludeInsurance] = useState(false);
-  const [includePacking, setIncludePacking] = useState(false);
   const [productCost, setProductCost] = useState('');
   const [commissionRate, setCommissionRate] = useState(10);
   const [exchangeRate, setExchangeRate] = useState(78);
@@ -133,9 +132,6 @@ export default function PriceCalculator() {
     const baseCost = service.costBasis * w;
     const insuranceRate = service.insuranceRate || 3;
     const insuranceFee = includeInsurance ? shippingCost * (insuranceRate / 100) : 0;
-    const packagingFee = includePacking
-      ? service.packagingFee || (w < 5 ? 50 : w < 15 ? 100 : 200)
-      : 0;
     const commission = serviceType.startsWith('shopping') ? pCost * (commissionRate / 100) : 0;
 
     // Apply surcharges
@@ -151,8 +147,7 @@ export default function PriceCalculator() {
       }
     });
 
-    const totalCustomer =
-      pCost + shippingCost + insuranceFee + packagingFee + commission + surchargeTotal;
+    const totalCustomer = pCost + shippingCost + insuranceFee + commission + surchargeTotal;
     const totalCost = pCost + baseCost;
     const profit = totalCustomer - totalCost;
     const margin = totalCustomer > 0 ? (profit / totalCustomer) * 100 : 0;
@@ -161,7 +156,6 @@ export default function PriceCalculator() {
     setCalculation({
       shippingCost: roundMoney(shippingCost),
       insuranceFee: roundMoney(insuranceFee),
-      packagingFee: roundMoney(packagingFee),
       commission: roundMoney(commission),
       surchargeTotal: roundMoney(surchargeTotal),
       totalCustomer: roundMoney(totalCustomer),
@@ -175,7 +169,6 @@ export default function PriceCalculator() {
     weight,
     serviceType,
     includeInsurance,
-    includePacking,
     productCost,
     commissionRate,
     exchangeRate,
@@ -216,7 +209,7 @@ export default function PriceCalculator() {
     const text = `Quote: ${selectedService?.label}
 Weight: ${chargeableWeight} kg
 Shipping: ฿${calculation.shippingCost.toLocaleString()}
-${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}\n` : ''}${includePacking ? `Packing: ฿${calculation.packagingFee.toLocaleString()}\n` : ''}Total: ฿${calculation.totalCustomer.toLocaleString()}${showMMK ? ` (${calculation.totalMMK.toLocaleString()} MMK)` : ''}`;
+${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}\n` : ''}Total: ฿${calculation.totalCustomer.toLocaleString()}${showMMK ? ` (${calculation.totalMMK.toLocaleString()} MMK)` : ''}`;
     navigator.clipboard.writeText(text);
     toast.success('Quote copied to clipboard!');
   };
@@ -416,13 +409,6 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                   </div>
                   <Switch checked={includeInsurance} onCheckedChange={setIncludeInsurance} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-900">Professional Packing</p>
-                    <p className="text-sm text-slate-500">฿50-200 based on size</p>
-                  </div>
-                  <Switch checked={includePacking} onCheckedChange={setIncludePacking} />
-                </div>
               </div>
 
               {/* Exchange Rate */}
@@ -498,12 +484,6 @@ ${includeInsurance ? `Insurance: ฿${calculation.insuranceFee.toLocaleString()}
                         <div className="flex justify-between">
                           <span className="text-blue-200">Insurance</span>
                           <span>฿{calculation.insuranceFee.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {includePacking && (
-                        <div className="flex justify-between">
-                          <span className="text-blue-200">Packing</span>
-                          <span>฿{calculation.packagingFee.toLocaleString()}</span>
                         </div>
                       )}
                       {calculation.surchargeTotal > 0 && (

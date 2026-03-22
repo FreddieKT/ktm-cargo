@@ -126,14 +126,13 @@ export default function ShipmentForm({
   const calculated = useMemo(() => {
     const service = serviceTypes.find((s) => s.value === watchedValues.service_type);
     const weight = parseFloat(watchedValues.weight_kg) || 0;
-    const packaging = parseFloat(watchedValues.packaging_fee) || 0;
 
     if (service && weight > 0) {
       const vendorCostPerKg = parseFloat(watchedValues.vendor_cost_per_kg) || service.costBasis;
       const vendorCost = vendorCostPerKg * weight;
       const price = service.price * weight;
       const insurance = watchedValues.insurance_opted ? price * 0.03 : 0;
-      const total = price + insurance + packaging;
+      const total = price + insurance;
       // insurance is part of total revenue charged to customer — not a separate cost
       const profit = total - vendorCost;
       const margin = total > 0 ? ((profit / total) * 100).toFixed(1) : 0;
@@ -163,7 +162,6 @@ export default function ShipmentForm({
     watchedValues.service_type,
     watchedValues.weight_kg,
     watchedValues.insurance_opted,
-    watchedValues.packaging_fee,
     watchedValues.vendor_cost_per_kg,
   ]);
 
@@ -569,21 +567,6 @@ export default function ShipmentForm({
               </Label>
               <Input type="date" {...register('estimated_delivery')} className="h-11" />
             </div>
-            {enableAdvancedCosting && (
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Box className="w-4 h-4 text-slate-400" />
-                  Packaging Fee (THB)
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  {...register('packaging_fee')}
-                  placeholder="0"
-                  className="h-11"
-                />
-              </div>
-            )}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-slate-400" />
@@ -646,15 +629,6 @@ export default function ShipmentForm({
                     ฿{(calculated.insurance || 0).toLocaleString()}
                   </p>
                 </div>
-
-                {enableAdvancedCosting && (
-                  <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
-                    <p className="text-slate-500 text-xs mb-1">Packaging</p>
-                    <p className="font-bold text-lg">
-                      ฿{parseFloat(watchedValues.packaging_fee || 0).toLocaleString()}
-                    </p>
-                  </div>
-                )}
 
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
                   <p className="text-blue-100 text-xs mb-1">Total</p>

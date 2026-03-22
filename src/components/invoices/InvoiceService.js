@@ -209,8 +209,7 @@ export async function createInvoiceFromShipment(shipment, customer) {
   const pricePerKg = parseFloat(shipment.price_per_kg) || 0;
   const shippingAmount = weight * pricePerKg;
   const insuranceAmount = parseFloat(shipment.insurance_amount) || 0;
-  const packagingFee = parseFloat(shipment.packaging_fee) || 0;
-  const subtotal = shippingAmount + insuranceAmount + packagingFee;
+  const subtotal = shippingAmount + insuranceAmount;
 
   try {
     const invoice = await createCustomerInvoice({
@@ -227,7 +226,7 @@ export async function createInvoiceFromShipment(shipment, customer) {
       price_per_kg: pricePerKg,
       shipping_amount: shippingAmount,
       insurance_amount: insuranceAmount,
-      packaging_fee: packagingFee,
+      packaging_fee: 0,
       subtotal: subtotal,
       total_amount: subtotal,
       notes: `Shipment: ${shipment.tracking_number}\nItems: ${shipment.items_description || ''}`,

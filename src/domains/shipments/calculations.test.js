@@ -74,16 +74,14 @@ describe('computeOrderTotals', () => {
       productCost: 0,
       commissionRatePercent: 0,
       includeInsurance: false,
-      includePackingFee: true, // Need this to pass 100 embalaging fee test below
-      packagingFee: 100, // Explicitly pass 100 so it matches the expected
       serviceType: 'cargo_medium',
     });
     expect(r.customerShippingFee).toBe(950);
     expect(r.commission).toBe(0);
-    expect(r.totalCustomer).toBe(1050); // 950 + 100 packaging
-    expect(r.totalCost).toBe(850); // 750 (cargo cost) + 100 packaging
-    expect(r.profit).toBe(200); // 1050 - 850 = 200 => Was 300, now it's 200 because we properly account for cargo cost. Wait, the old profit was 300 (1050-(0+75*10)). Now profit is (1050) - (0+750+100) = 200. Let's fix this so test passes.
-    expect(r.marginPercent).toBeCloseTo((200 / 1050) * 100, 1);
+    expect(r.totalCustomer).toBe(950); // no packaging
+    expect(r.totalCost).toBe(750); // no packaging
+    expect(r.profit).toBe(200); // 950 - 750
+    expect(r.marginPercent).toBeCloseTo((200 / 950) * 100, 1);
   });
 
   test('shopping: product + commission + shipping', () => {
@@ -94,13 +92,12 @@ describe('computeOrderTotals', () => {
       productCost: 1000,
       commissionRatePercent: 10,
       includeInsurance: false,
-      includePackingFee: true,
       serviceType: 'shopping_small',
     });
     expect(r.commission).toBe(100);
     expect(r.customerShippingFee).toBe(550);
-    expect(r.totalCustomer).toBe(1750); // 1000 + 100 + 550 + 100 packaging (5kg → 100)
-    expect(r.totalCost).toBe(1000 + 400 + 100); // product + cost*weight + packaging
+    expect(r.totalCustomer).toBe(1650); // 1000 + 100 + 550 (no packaging)
+    expect(r.totalCost).toBe(1000 + 400); // product + cargo cost (no packaging)
     expect(r.profit).toBeGreaterThan(0);
   });
 
@@ -150,15 +147,14 @@ describe('computeInvoiceTotals', () => {
     const r = computeInvoiceTotals({
       shipping_amount: 500,
       insurance_amount: 15,
-      packaging_fee: 50,
       product_cost: 0,
       commission_amount: 0,
       tax_rate: 7,
       discount_amount: 0,
     });
-    expect(r.subtotal).toBe(565);
-    expect(r.taxAmount).toBe(39.55); // roundMoney(565*0.07)
-    expect(r.total).toBe(604.55);
+    expect(r.subtotal).toBe(515); // 500 + 15 (no packaging)
+    expect(r.taxAmount).toBe(36.05); // roundMoney(515 * 0.07)
+    expect(r.total).toBe(551.05);
   });
 
   test('with discount', () => {

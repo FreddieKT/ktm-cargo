@@ -110,13 +110,12 @@ export default function InvoiceForm({
   const calculated = useMemo(() => {
     const shipping = parseFloat(watchedValues.shipping_amount) || 0;
     const insurance = parseFloat(watchedValues.insurance_amount) || 0;
-    const packaging = parseFloat(watchedValues.packaging_fee) || 0;
     const product = parseFloat(watchedValues.product_cost) || 0;
     const commission = parseFloat(watchedValues.commission_amount) || 0;
     const discount = parseFloat(watchedValues.discount_amount) || 0;
     const taxRate = parseFloat(watchedValues.tax_rate) || 0;
 
-    const subtotal = shipping + insurance + packaging + product + commission;
+    const subtotal = shipping + insurance + product + commission;
     const taxAmount = Math.round((subtotal * taxRate) / 100);
     const total = subtotal + taxAmount - discount;
 
@@ -124,7 +123,6 @@ export default function InvoiceForm({
   }, [
     watchedValues.shipping_amount,
     watchedValues.insurance_amount,
-    watchedValues.packaging_fee,
     watchedValues.product_cost,
     watchedValues.commission_amount,
     watchedValues.discount_amount,
@@ -472,10 +470,6 @@ export default function InvoiceForm({
               <div className="space-y-2">
                 <Label>Insurance (฿)</Label>
                 <Input type="number" {...register('insurance_amount')} />
-              </div>
-              <div className="space-y-2">
-                <Label>Packaging (฿)</Label>
-                <Input type="number" {...register('packaging_fee')} />
               </div>
               <div className="space-y-2">
                 <Label>Product Cost (฿)</Label>

@@ -212,8 +212,8 @@ describe('createInvoiceFromShipment', () => {
     const arg = __mocks.createMock.mock.calls[0][0];
     expect(arg.shipping_amount).toBe(950); // 10 * 95
     expect(arg.insurance_amount).toBe(50);
-    expect(arg.packaging_fee).toBe(100);
-    expect(arg.subtotal).toBe(1100); // 950 + 50 + 100
+    expect(arg.packaging_fee).toBe(0); // packaging disabled
+    expect(arg.subtotal).toBe(1000); // 950 + 50 (no packaging)
   });
 });
 
