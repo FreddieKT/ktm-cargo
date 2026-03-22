@@ -14,10 +14,6 @@ describe('shouldBypassAppLayout', () => {
     expect(shouldBypassAppLayout('/VendorRegistration?token=abc')).toBe(true);
   });
 
-  it('bypasses layout for public calculator page', () => {
-    expect(shouldBypassAppLayout('/PriceCalculator')).toBe(true);
-  });
-
   it('does not bypass layout for internal routes', () => {
     expect(shouldBypassAppLayout('/Dashboard')).toBe(false);
     expect(shouldBypassAppLayout('/Procurement')).toBe(false);

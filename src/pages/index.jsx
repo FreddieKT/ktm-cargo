@@ -9,7 +9,6 @@ const Customers = lazy(() => import('./Customers'));
 const ShoppingOrders = lazy(() => import('./ShoppingOrders'));
 const Tasks = lazy(() => import('./Tasks'));
 const Reports = lazy(() => import('./Reports'));
-const PriceCalculator = lazy(() => import('./PriceCalculator'));
 const StaffLogin = lazy(() => import('./StaffLogin'));
 const CustomerSegments = lazy(() => import('./CustomerSegments'));
 const ShipmentDocuments = lazy(() => import('./ShipmentDocuments'));
@@ -32,7 +31,6 @@ const PAGES = {
   ShoppingOrders,
   Tasks,
   Reports,
-  PriceCalculator,
   StaffLogin,
   CustomerSegments,
   ShipmentDocuments,
@@ -120,8 +118,6 @@ function PagesContent() {
               </GuestOnlyRoute>
             }
           />
-          <Route path="/PriceCalculator" element={<PriceCalculator />} />
-
           {/* Protected Routes */}
           <Route
             path="/Operations"
