@@ -77,13 +77,7 @@ describe('Route snapshot protection', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
 
     // These routes should appear without ProtectedRoute wrapper
-    const publicRoutes = [
-      '/',
-      '/ClientPortal',
-      '/Feedback',
-      '/StaffLogin',
-      '/VendorRegistration',
-    ];
+    const publicRoutes = ['/', '/ClientPortal', '/Feedback', '/StaffLogin', '/VendorRegistration'];
 
     for (const route of publicRoutes) {
       // Match the Route definition and verify it does NOT contain ProtectedRoute

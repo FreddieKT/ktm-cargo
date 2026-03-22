@@ -49,9 +49,7 @@ export async function getNextInvoiceNumber() {
     console.error(hardFailMessage, error);
   }
 
-  throw new Error(
-    'Invoice number could not be generated. Please try again.'
-  );
+  throw new Error('Invoice number could not be generated. Please try again.');
 }
 
 /**
@@ -276,11 +274,11 @@ export async function markInvoiceSent(invoiceId) {
  */
 export async function recordPayment(invoiceId, paymentDetails = {}) {
   const { data, error } = await supabase.rpc('record_payment_atomic', {
-    p_invoice_id:        invoiceId,
-    p_amount:            Number(paymentDetails.amount),
-    p_payment_date:      paymentDetails.payment_date ?? format(new Date(), 'yyyy-MM-dd'),
-    p_payment_method:    paymentDetails.payment_method ?? 'bank_transfer',
-    p_payment_reference: paymentDetails.reference ?? null,  // field is `reference` not `payment_reference`
+    p_invoice_id: invoiceId,
+    p_amount: Number(paymentDetails.amount),
+    p_payment_date: paymentDetails.payment_date ?? format(new Date(), 'yyyy-MM-dd'),
+    p_payment_method: paymentDetails.payment_method ?? 'bank_transfer',
+    p_payment_reference: paymentDetails.reference ?? null, // field is `reference` not `payment_reference`
   });
 
   if (error || !data?.success) {

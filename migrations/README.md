@@ -57,9 +57,9 @@ Order matters — later migrations depend on objects created by earlier ones.
 
 ### Phase 5 — Data integrity hardening
 
-| #   | File                                  | Purpose                                                                          |
-| --- | ------------------------------------- | -------------------------------------------------------------------------------- |
-| 24  | `add_record_payment_atomic_rpc.sql`   | Atomic payment RPC with FOR UPDATE lock — prevents concurrent balance corruption |
+| #   | File                                | Purpose                                                                          |
+| --- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| 24  | `add_record_payment_atomic_rpc.sql` | Atomic payment RPC with FOR UPDATE lock — prevents concurrent balance corruption |
 
 ### Phase 6 — Monetization (optional, if using Stripe)
 

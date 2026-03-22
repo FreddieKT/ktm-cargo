@@ -258,10 +258,13 @@ describe('recordPayment', () => {
 
     const result = await recordPayment('inv-partial', { amount: 50 });
 
-    expect(mockRpc).toHaveBeenCalledWith('record_payment_atomic', expect.objectContaining({
-      p_invoice_id: 'inv-partial',
-      p_amount: 50,
-    }));
+    expect(mockRpc).toHaveBeenCalledWith(
+      'record_payment_atomic',
+      expect.objectContaining({
+        p_invoice_id: 'inv-partial',
+        p_amount: 50,
+      })
+    );
     expect(result.status).toBe('partially_paid');
     expect(result.balance_due).toBe(50);
   });
@@ -278,11 +281,14 @@ describe('recordPayment', () => {
       reference: 'PAY-123',
     });
 
-    expect(mockRpc).toHaveBeenCalledWith('record_payment_atomic', expect.objectContaining({
-      p_invoice_id: 'inv-issued',
-      p_payment_method: 'cash',
-      p_payment_reference: 'PAY-123',
-    }));
+    expect(mockRpc).toHaveBeenCalledWith(
+      'record_payment_atomic',
+      expect.objectContaining({
+        p_invoice_id: 'inv-issued',
+        p_payment_method: 'cash',
+        p_payment_reference: 'PAY-123',
+      })
+    );
     expect(result.status).toBe('paid');
   });
 
