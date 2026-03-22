@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -86,12 +86,7 @@ jobs:
 
             Download the appropriate archive for your platform and extract to your web server.
 
-            ## Docker
-
-            ```bash
-            docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            ```
-          files: |
+            files: |
             ktm-cargo-express-${{ github.ref_name }}.zip
             ktm-cargo-express-${{ github.ref_name }}.tar.gz
           draft: false
