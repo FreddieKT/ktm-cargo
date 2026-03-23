@@ -44,6 +44,12 @@ export default [
       // Disallow debug console.log in production source; console.warn/error are allowed
       // for legitimate catch-block error logging. Use src/api/logger.js for structured logging.
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      // react-hooks v7 adds React Compiler rules that flag patterns common in our existing
+      // codebase. All three disabled until we adopt the React Compiler.
+      'react-hooks/react-compiler': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/static-components': 'off',
     },
   },
   {
