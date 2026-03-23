@@ -28,7 +28,6 @@ export default function ShoppingOrderAllocationPanel({
   orders = [],
   purchaseOrders = [],
   onUpdateOrder,
-  onUpdatePO,
   isLoading,
 }) {
   const [showAllocateDialog, setShowAllocateDialog] = useState(false);
@@ -78,7 +77,6 @@ export default function ShoppingOrderAllocationPanel({
   };
 
   const handleAllocate = async () => {
-    // ... (same as before) ...
     if (!selectedOrder || !selectedPOId) {
       toast.error('Please select a Purchase Order');
       return;
@@ -97,7 +95,8 @@ export default function ShoppingOrderAllocationPanel({
     const vendorCost = weight * (po.cost_per_kg || 0);
 
     try {
-      // Update order with PO allocation
+      // Update order with PO allocation. 
+      // Atomic PO rebalance is handled by the server-side RPC via onUpdateOrder.
       await onUpdateOrder(selectedOrder.id, {
         vendor_po_id: po.id,
         vendor_po_number: po.po_number,
@@ -107,31 +106,20 @@ export default function ShoppingOrderAllocationPanel({
         vendor_cost: vendorCost,
       });
 
-      // Update PO weight
-      if (onUpdatePO) {
-        const newAllocated = (po.allocated_weight_kg || 0) + weight;
-        const newRemaining = (po.total_weight_kg || 0) - newAllocated;
-        await onUpdatePO(po.id, {
-          allocated_weight_kg: newAllocated,
-          remaining_weight_kg: newRemaining,
-        });
-      }
-
       toast.success('Weight allocated successfully');
       setShowAllocateDialog(false);
       setSelectedOrder(null);
       setSelectedPOId('');
     } catch (error) {
       console.error('Failed to allocate weight:', error);
+      toast.error('Allocation failed. Please try again.');
     }
   };
 
   const handleUnlink = async (order) => {
-    // ... (same as before) ...
     try {
-      const weight = order.actual_weight || order.estimated_weight || 0;
-      const po = purchaseOrders.find((p) => p.id === order.vendor_po_id);
-
+      // Remove PO allocation from order.
+      // Atomic PO deallocation is handled by the server-side RPC via onUpdateOrder.
       await onUpdateOrder(order.id, {
         vendor_po_id: '',
         vendor_po_number: '',
@@ -142,19 +130,10 @@ export default function ShoppingOrderAllocationPanel({
         vendor_cost: 0,
       });
 
-      // Update PO weight
-      if (po && onUpdatePO) {
-        const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - weight);
-        const newRemaining = (po.total_weight_kg || 0) - newAllocated;
-        await onUpdatePO(po.id, {
-          allocated_weight_kg: newAllocated,
-          remaining_weight_kg: newRemaining,
-        });
-      }
-
       toast.success('Order unlinked from PO');
     } catch (error) {
       console.error('Failed to unlink order:', error);
+      toast.error('Failed to unlink order. Please try again.');
     }
   };
 
