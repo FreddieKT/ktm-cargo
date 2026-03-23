@@ -95,7 +95,7 @@ export default function ShoppingOrderAllocationPanel({
     const vendorCost = weight * (po.cost_per_kg || 0);
 
     try {
-      // Update order with PO allocation. 
+      // Update order with PO allocation.
       // Atomic PO rebalance is handled by the server-side RPC via onUpdateOrder.
       await onUpdateOrder(selectedOrder.id, {
         vendor_po_id: po.id,
