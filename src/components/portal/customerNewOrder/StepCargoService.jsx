@@ -7,8 +7,8 @@ import { SERVICE_TYPES } from '../pricingMaps';
 
 export default function StepCargoService({ form, onUpdate, onNext, onBack }) {
   return (
-    <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden animate-in slide-in-from-right duration-300">
-      <CardHeader className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-0 shadow-xl bg-white  overflow-hidden animate-in slide-in-from-right duration-300">
+      <CardHeader className="bg-gradient-to-br from-blue-50 to-indigo-50   border-b border-slate-100 ">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-blue-500 rounded-xl text-white">
             <Package className="w-5 h-5" />
@@ -31,8 +31,8 @@ export default function StepCargoService({ form, onUpdate, onNext, onBack }) {
                 className={cn(
                   'relative p-4 rounded-2xl border-2 text-left transition-all duration-200 group overflow-hidden',
                   isSelected
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    ? 'border-blue-500 bg-blue-50 '
+                    : 'border-slate-200  hover:border-blue-300  hover:bg-slate-50 '
                 )}
               >
                 {isSelected && (
@@ -49,14 +49,14 @@ export default function StepCargoService({ form, onUpdate, onNext, onBack }) {
                       'p-3 rounded-xl transition-all',
                       isSelected
                         ? `bg-gradient-to-br ${service.color} text-white shadow-lg`
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                        : 'bg-slate-100  text-slate-500 group-hover:bg-slate-200'
                     )}
                   >
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white">{service.label}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="font-semibold text-slate-900 ">{service.label}</p>
+                    <p className="text-sm text-slate-500 ">
                       {service.description}
                     </p>
                     <Badge variant="secondary" className="text-xs mt-1">
@@ -68,7 +68,7 @@ export default function StepCargoService({ form, onUpdate, onNext, onBack }) {
                     <p
                       className={cn(
                         'text-2xl font-bold',
-                        isSelected ? 'text-blue-600' : 'text-slate-700 dark:text-slate-300'
+                        isSelected ? 'text-blue-600' : 'text-slate-700 '
                       )}
                     >
                       ฿{service.price}

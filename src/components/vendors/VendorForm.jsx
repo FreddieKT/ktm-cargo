@@ -101,8 +101,8 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
   const VendorTypeIcon = selectedVendorType?.icon || Building2;
 
   return (
-    <Card className="border-0 shadow-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900">
-      <CardHeader className="pb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-0 shadow-2xl max-h-[85vh] overflow-y-auto bg-white ">
+      <CardHeader className="pb-4 bg-gradient-to-br from-blue-50 to-indigo-50   border-b border-slate-100 ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
@@ -196,8 +196,8 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                       className={cn(
                         'p-3 rounded-xl border-2 text-left transition-all',
                         form.carrier_mode === mode.value
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                          ? 'border-blue-500 bg-blue-50 '
+                          : 'border-slate-200  hover:border-slate-300'
                       )}
                     >
                       <div className="font-semibold text-sm">{mode.label}</div>
@@ -321,16 +321,16 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
             </div>
 
             {/* Preferred Vendor Toggle */}
-            <div className="md:col-span-2 flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
+            <div className="md:col-span-2 flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-yellow-50   rounded-xl border border-amber-200 ">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg">
+                <div className="p-2 bg-amber-100  rounded-lg">
                   <Star className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <Label className="text-amber-900 dark:text-amber-200 font-medium">
+                  <Label className="text-amber-900  font-medium">
                     Preferred Vendor
                   </Label>
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                  <p className="text-sm text-amber-700 ">
                     Show first in dropdowns
                   </p>
                 </div>
@@ -342,7 +342,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
             </div>
           </div>
 
-          <div className="flex gap-3 pt-6 border-t border-slate-100 dark:border-slate-800 mt-6">
+          <div className="flex gap-3 pt-6 border-t border-slate-100  mt-6">
             <Button
               type="button"
               variant="outline"

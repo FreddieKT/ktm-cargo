@@ -228,8 +228,8 @@ export default function InvoiceForm({
   }, [watchedValues.invoice_type, shipments, shoppingOrders]);
 
   return (
-    <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-      <CardHeader className="border-b bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 sticky top-0 z-10">
+    <Card className="border-0 shadow-2xl bg-white  max-h-[90vh] overflow-y-auto">
+      <CardHeader className="border-b bg-gradient-to-br from-blue-50 to-indigo-50   sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
             <FileText className="w-5 h-5" />
@@ -287,8 +287,8 @@ export default function InvoiceForm({
 
           {/* Link to Source (Shipment or Order) */}
           {availableSources.length > 0 && (
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 space-y-3">
-              <Label className="text-blue-800 dark:text-blue-200">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50   rounded-xl border border-blue-200  space-y-3">
+              <Label className="text-blue-800 ">
                 Link to {watchedValues.invoice_type === 'shipment' ? 'Shipment' : 'Shopping Order'}{' '}
                 (Optional)
               </Label>
@@ -496,10 +496,10 @@ export default function InvoiceForm({
           </div>
 
           {/* Totals Summary */}
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl p-5 space-y-3">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100   rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <Calculator className="w-5 h-5 text-slate-600" />
-              <span className="font-semibold text-slate-700 dark:text-slate-200">
+              <span className="font-semibold text-slate-700 ">
                 Invoice Total
               </span>
             </div>
@@ -539,7 +539,7 @@ export default function InvoiceForm({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex gap-3 pt-4 border-t border-slate-100 ">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>

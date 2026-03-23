@@ -224,7 +224,7 @@ export default function StaffManagement() {
 
       {/* Staff List */}
       <Card className="border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-br from-slate-50 to-slate-100   rounded-t-lg">
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-600" />
@@ -275,9 +275,9 @@ export default function StaffManagement() {
               {filteredUsers.map((user) => {
                 const roleColor =
                   user.role === 'admin'
-                    ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 dark:from-purple-900/50 dark:to-indigo-900/50 dark:text-purple-300'
+                    ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800   '
                     : ROLE_COLORS[user.staff_role] ||
-                      'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+                      'bg-slate-100 text-slate-800  ';
                 const roleLabel =
                   user.role === 'admin'
                     ? 'Managing Director'
@@ -289,8 +289,8 @@ export default function StaffManagement() {
                     className={cn(
                       'flex items-center justify-between p-4 rounded-xl border transition-all hover:shadow-md group',
                       user.is_active === false
-                        ? 'bg-slate-50 dark:bg-slate-800/50 opacity-60 border-slate-200 dark:border-slate-700'
-                        : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+                        ? 'bg-slate-50  opacity-60 border-slate-200 '
+                        : 'bg-white  border-slate-100 '
                     )}
                   >
                     <div className="flex items-center gap-4">
@@ -299,14 +299,14 @@ export default function StaffManagement() {
                           'w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold transition-transform group-hover:scale-105',
                           user.role === 'admin'
                             ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-                            : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300'
+                            : 'bg-gradient-to-br from-slate-100 to-slate-200   text-slate-600 '
                         )}
                       >
                         {user.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-slate-900 dark:text-white">
+                          <p className="font-semibold text-slate-900 ">
                             {user.full_name || 'No Name'}
                           </p>
                           <Badge className={cn('font-medium', roleColor)}>
@@ -314,12 +314,12 @@ export default function StaffManagement() {
                             {roleLabel}
                           </Badge>
                           {user.is_active === false && (
-                            <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300">
+                            <Badge className="bg-rose-100 text-rose-800  ">
                               Inactive
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                        <p className="text-sm text-slate-500  flex items-center gap-1 mt-0.5">
                           <Mail className="w-3 h-3" />
                           {user.email}
                         </p>
@@ -360,8 +360,8 @@ export default function StaffManagement() {
                             className={cn(
                               'transition-colors',
                               user.is_active === false
-                                ? 'hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
-                                : 'hover:bg-amber-50 dark:hover:bg-amber-900/30'
+                                ? 'hover:bg-emerald-50 '
+                                : 'hover:bg-amber-50 '
                             )}
                           >
                             {user.is_active === false ? (
@@ -374,7 +374,7 @@ export default function StaffManagement() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 "
                             onClick={() => setUserToDelete(user)}
                             title="Delete User"
                           >
@@ -389,7 +389,7 @@ export default function StaffManagement() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full inline-block mb-4">
+              <div className="p-4 bg-slate-100  rounded-full inline-block mb-4">
                 <Users className="w-8 h-8 text-slate-400" />
               </div>
               <p className="text-slate-500 mb-4">
@@ -522,7 +522,7 @@ function InviteForm({ onSubmit, onCancel }) {
             return (
               <label
                 key={role.value}
-                className="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-950/30"
+                className="flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200  cursor-pointer hover:border-blue-300  transition-all has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50"
               >
                 <input
                   type="radio"
@@ -534,7 +534,7 @@ function InviteForm({ onSubmit, onCancel }) {
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-slate-900 dark:text-white">{role.label}</p>
+                  <p className="font-semibold text-slate-900 ">{role.label}</p>
                   <p className="text-sm text-slate-500">{role.description}</p>
                 </div>
               </label>
@@ -548,12 +548,12 @@ function InviteForm({ onSubmit, onCancel }) {
         <Input {...register('department')} placeholder="e.g. Operations" className="h-11" />
       </div>
 
-      <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
+      <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50   rounded-xl border border-blue-200 ">
         <div className="flex items-start gap-3">
           <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
           <div>
-            <p className="font-medium text-blue-900 dark:text-blue-200">Invitation Email</p>
-            <p className="text-sm text-blue-700 dark:text-blue-400">
+            <p className="font-medium text-blue-900 ">Invitation Email</p>
+            <p className="text-sm text-blue-700 ">
               An invitation will be sent to the staff member with login instructions
             </p>
           </div>

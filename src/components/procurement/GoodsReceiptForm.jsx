@@ -156,8 +156,8 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
   if (!purchaseOrder) return null;
 
   return (
-    <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-      <CardHeader className="flex flex-row items-center justify-between border-b bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 sticky top-0 z-10">
+    <Card className="border-0 shadow-2xl bg-white  max-h-[90vh] overflow-y-auto">
+      <CardHeader className="flex flex-row items-center justify-between border-b bg-gradient-to-br from-emerald-50 to-teal-50   sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl text-white">
             <PackageCheck className="w-5 h-5" />
@@ -182,28 +182,28 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Stats Overview */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center">
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{items.length}</p>
+            <div className="p-3 bg-slate-50  rounded-xl text-center">
+              <p className="text-2xl font-bold text-slate-900 ">{items.length}</p>
               <p className="text-xs text-slate-500">Line Items</p>
             </div>
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl text-center">
+            <div className="p-3 bg-emerald-50  rounded-xl text-center">
               <p className="text-2xl font-bold text-emerald-600">{receiptStats.good}</p>
               <p className="text-xs text-emerald-600">Good</p>
             </div>
-            <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl text-center">
+            <div className="p-3 bg-amber-50  rounded-xl text-center">
               <p className="text-2xl font-bold text-amber-600">{receiptStats.damaged}</p>
               <p className="text-xs text-amber-600">Damaged</p>
             </div>
-            <div className="p-3 bg-rose-50 dark:bg-rose-900/30 rounded-xl text-center">
+            <div className="p-3 bg-rose-50  rounded-xl text-center">
               <p className="text-2xl font-bold text-rose-600">{receiptStats.rejected}</p>
               <p className="text-xs text-rose-600">Rejected</p>
             </div>
           </div>
 
           {/* Fulfillment Progress */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+          <div className="p-4 bg-slate-50  rounded-xl">
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-slate-600 dark:text-slate-400">Fulfillment Rate</span>
+              <span className="text-slate-600 ">Fulfillment Rate</span>
               <span className="font-semibold">{receiptStats.fulfillmentRate.toFixed(1)}%</span>
             </div>
             <Progress
@@ -231,23 +231,23 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
           </div>
 
           {/* Items Table */}
-          <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+          <div className="border border-slate-200  rounded-xl overflow-hidden">
             <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-800">
+              <thead className="bg-slate-50 ">
                 <tr>
-                  <th className="text-left p-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  <th className="text-left p-3 text-sm font-semibold text-slate-600 ">
                     Item
                   </th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-24">
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600  w-24">
                     Ordered
                   </th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-28">
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600  w-28">
                     Received
                   </th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-36">
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600  w-36">
                     Condition
                   </th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-20">
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600  w-20">
                     Status
                   </th>
                 </tr>
@@ -263,14 +263,14 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                     <tr
                       key={idx}
                       className={cn(
-                        'border-t border-slate-100 dark:border-slate-700 transition-colors',
-                        !isMatch && 'bg-amber-50/50 dark:bg-amber-950/20'
+                        'border-t border-slate-100  transition-colors',
+                        !isMatch && 'bg-amber-50/50 '
                       )}
                     >
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Package className="w-4 h-4 text-slate-400" />
-                          <span className="font-medium text-slate-900 dark:text-white">
+                          <span className="font-medium text-slate-900 ">
                             {item.item_name}
                           </span>
                         </div>
@@ -290,7 +290,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                           className={cn(
                             'text-center h-9',
                             item.received_qty !== item.ordered_qty &&
-                              'border-amber-400 bg-amber-50 dark:bg-amber-900/20'
+                              'border-amber-400 bg-amber-50 '
                           )}
                         />
                       </td>
@@ -320,13 +320,13 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                       <td className="p-3 text-center">
                         {isMatch ? (
                           <div className="flex justify-center">
-                            <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-full">
+                            <div className="p-1.5 bg-emerald-100  rounded-full">
                               <CheckCircle className="w-4 h-4 text-emerald-600" />
                             </div>
                           </div>
                         ) : (
                           <div className="flex justify-center">
-                            <div className="p-1.5 bg-amber-100 dark:bg-amber-900/50 rounded-full animate-pulse">
+                            <div className="p-1.5 bg-amber-100  rounded-full animate-pulse">
                               <AlertTriangle className="w-4 h-4 text-amber-600" />
                             </div>
                           </div>
@@ -341,8 +341,8 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
 
           {/* Discrepancy Notes */}
           {hasDiscrepancy && (
-            <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-xl animate-in fade-in duration-300">
-              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 mb-3">
+            <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50   border border-amber-200  rounded-xl animate-in fade-in duration-300">
+              <div className="flex items-center gap-2 text-amber-800  mb-3">
                 <AlertCircle className="w-5 h-5" />
                 <span className="font-semibold">Discrepancy Detected</span>
               </div>
@@ -350,7 +350,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                 {...form.register('discrepancy_notes')}
                 placeholder="Please describe any discrepancies, damages, or issues found..."
                 rows={3}
-                className="bg-white dark:bg-slate-800"
+                className="bg-white "
               />
               {form.formState.errors.discrepancy_notes && (
                 <p className="text-xs text-rose-600 mt-2 flex items-center gap-1">
@@ -375,7 +375,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 ">
             <div className="flex items-center gap-3">
               <span className="text-slate-500">Total Value:</span>
               <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">

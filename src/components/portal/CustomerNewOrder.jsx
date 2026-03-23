@@ -278,7 +278,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                     isActive &&
                       !isComplete &&
                       'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30',
-                    !isActive && 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                    !isActive && 'bg-slate-100  text-slate-400'
                   )}
                 >
                   {isComplete ? (
@@ -293,7 +293,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                 <span
                   className={cn(
                     'hidden md:block text-sm font-medium transition-colors',
-                    isActive ? 'text-slate-900 dark:text-white' : 'text-slate-400'
+                    isActive ? 'text-slate-900 ' : 'text-slate-400'
                   )}
                 >
                   {s.name}
@@ -302,7 +302,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   <div
                     className={cn(
                       'flex-1 h-0.5 mx-3 transition-colors duration-300',
-                      isComplete ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'
+                      isComplete ? 'bg-emerald-500' : 'bg-slate-200 '
                     )}
                   />
                 )}

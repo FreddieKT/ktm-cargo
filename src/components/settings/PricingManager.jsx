@@ -282,17 +282,17 @@ export default function PricingManager() {
       </div>
 
       <Tabs defaultValue="services" className="w-full">
-        <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <TabsList className="bg-slate-100  p-1 rounded-xl">
           <TabsTrigger
             value="services"
-            className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+            className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
           >
             <Package className="w-4 h-4" />
             Services
           </TabsTrigger>
           <TabsTrigger
             value="surcharges"
-            className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+            className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
           >
             <Percent className="w-4 h-4" />
             Surcharges
@@ -301,7 +301,7 @@ export default function PricingManager() {
 
         <TabsContent value="services" className="mt-4">
           <Card className="border-0 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+            <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-br from-slate-50 to-slate-100   rounded-t-lg">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-blue-600" />
@@ -342,14 +342,14 @@ export default function PricingManager() {
                     return (
                       <div
                         key={pricing.id}
-                        className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all group"
+                        className="flex items-center justify-between p-4 bg-white  rounded-xl border border-slate-100  hover:shadow-md transition-all group"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 rounded-xl group-hover:scale-105 transition-transform">
+                          <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100   rounded-xl group-hover:scale-105 transition-transform">
                             <ServiceIcon className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900 dark:text-white">
+                            <p className="font-semibold text-slate-900 ">
                               {pricing.display_name || pricing.service_type?.replace(/_/g, ' ')}
                             </p>
                             <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
@@ -383,8 +383,8 @@ export default function PricingManager() {
                             className={cn(
                               'font-medium',
                               pricing.is_active !== false
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                                ? 'bg-emerald-100 text-emerald-800  '
+                                : 'bg-slate-100 text-slate-600  '
                             )}
                           >
                             {pricing.is_active !== false ? 'Active' : 'Inactive'}
@@ -396,14 +396,14 @@ export default function PricingManager() {
                               setEditingPricing(pricing);
                               setShowPricingForm(true);
                             }}
-                            className="hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                            className="hover:bg-blue-50 "
                           >
                             <Pencil className="w-4 h-4 text-slate-500" />
                           </Button>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 "
                             onClick={() => setPricingToDelete(pricing)}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -415,7 +415,7 @@ export default function PricingManager() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full inline-block mb-4">
+                  <div className="p-4 bg-slate-100  rounded-full inline-block mb-4">
                     <Package className="w-8 h-8 text-slate-400" />
                   </div>
                   <p className="text-slate-500 mb-4">No service pricing configured</p>
@@ -431,7 +431,7 @@ export default function PricingManager() {
 
         <TabsContent value="surcharges" className="mt-4">
           <Card className="border-0 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-t-lg">
+            <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-br from-slate-50 to-slate-100   rounded-t-lg">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Percent className="w-5 h-5 text-amber-600" />
@@ -461,14 +461,14 @@ export default function PricingManager() {
                   {surcharges.map((surcharge) => (
                     <div
                       key={surcharge.id}
-                      className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all group"
+                      className="flex items-center justify-between p-4 bg-white  rounded-xl border border-slate-100  hover:shadow-md transition-all group"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/50 rounded-xl group-hover:scale-105 transition-transform">
+                        <div className="p-3 bg-gradient-to-br from-amber-100 to-orange-100   rounded-xl group-hover:scale-105 transition-transform">
                           <Percent className="w-5 h-5 text-amber-600" />
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 dark:text-white">
+                          <p className="font-semibold text-slate-900 ">
                             {surcharge.name}
                           </p>
                           <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
@@ -493,8 +493,8 @@ export default function PricingManager() {
                           className={cn(
                             'font-medium',
                             surcharge.is_active !== false
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
-                              : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                              ? 'bg-emerald-100 text-emerald-800  '
+                              : 'bg-slate-100 text-slate-600  '
                           )}
                         >
                           {surcharge.is_active !== false ? 'Active' : 'Inactive'}
@@ -506,14 +506,14 @@ export default function PricingManager() {
                             setEditingSurcharge(surcharge);
                             setShowSurchargeForm(true);
                           }}
-                          className="hover:bg-amber-50 dark:hover:bg-amber-900/30"
+                          className="hover:bg-amber-50 "
                         >
                           <Pencil className="w-4 h-4 text-slate-500" />
                         </Button>
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                          className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 "
                           onClick={() => setSurchargeToDelete(surcharge)}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -524,7 +524,7 @@ export default function PricingManager() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full inline-block mb-4">
+                  <div className="p-4 bg-slate-100  rounded-full inline-block mb-4">
                     <Percent className="w-8 h-8 text-slate-400" />
                   </div>
                   <p className="text-slate-500 mb-4">No surcharges configured</p>
@@ -723,7 +723,7 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
         </div>
       </div>
 
-      <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-xl">
+      <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100   rounded-xl">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1">
@@ -744,7 +744,7 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
         {watchedValues.price_per_kg > 0 && (
           <div
             className={cn(
-              'mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 text-center',
+              'mt-3 pt-3 border-t border-slate-200  text-center',
               margin > 20 ? 'text-emerald-600' : margin > 10 ? 'text-amber-600' : 'text-rose-600'
             )}
           >
@@ -794,7 +794,7 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+      <div className="flex items-center justify-between p-4 bg-slate-50  rounded-xl">
         <Label className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-slate-400" />
           Active
@@ -918,7 +918,7 @@ function SurchargeForm({ surcharge, onSubmit, onCancel, isSubmitting }) {
         <Input {...register('description')} placeholder="Optional description" className="h-11" />
       </div>
 
-      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+      <div className="flex items-center justify-between p-4 bg-slate-50  rounded-xl">
         <Label className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-slate-400" />
           Active

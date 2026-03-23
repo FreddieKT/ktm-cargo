@@ -274,8 +274,8 @@ export default function ShipmentForm({
   const ServiceIcon = selectedService?.icon || Package;
 
   return (
-    <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-      <CardHeader className="border-b bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 sticky top-0 z-10">
+    <Card className="border-0 shadow-2xl bg-white  max-h-[90vh] overflow-y-auto">
+      <CardHeader className="border-b bg-gradient-to-br from-blue-50 to-indigo-50   sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
             <ServiceIcon className="w-5 h-5" />
@@ -375,12 +375,12 @@ export default function ShipmentForm({
 
           {/* Vendor PO Linkage */}
           {availablePOs.length > 0 && (
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 space-y-3">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50   rounded-xl border border-blue-200  space-y-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                <div className="p-1.5 bg-blue-100  rounded-lg">
                   <Truck className="w-4 h-4 text-blue-600" />
                 </div>
-                <Label className="text-blue-800 dark:text-blue-200 font-medium">
+                <Label className="text-blue-800  font-medium">
                   Link to Vendor Purchase Order
                 </Label>
               </div>
@@ -389,7 +389,7 @@ export default function ShipmentForm({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value || 'none'} onValueChange={handlePOChange}>
-                    <SelectTrigger className="h-11 bg-white dark:bg-slate-800">
+                    <SelectTrigger className="h-11 bg-white ">
                       <SelectValue placeholder="Select vendor PO (optional)" />
                     </SelectTrigger>
                     <SelectContent>
@@ -421,7 +421,7 @@ export default function ShipmentForm({
               {/* Vendor Cost Info */}
               {watchedValues.vendor_po_id && (
                 <div className="flex items-center gap-2 text-sm animate-in fade-in duration-300">
-                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
+                  <Badge className="bg-blue-100 text-blue-800  ">
                     <Package className="w-3 h-3 mr-1" />
                     {watchedValues.vendor_name}
                   </Badge>
@@ -573,7 +573,7 @@ export default function ShipmentForm({
                 <Shield className="w-4 h-4 text-slate-400" />
                 Insurance (3%)
               </Label>
-              <div className="flex items-center gap-3 h-11 px-3 bg-slate-50 dark:bg-slate-800 rounded-lg border">
+              <div className="flex items-center gap-3 h-11 px-3 bg-slate-50  rounded-lg border">
                 <Controller
                   control={control}
                   name="insurance_opted"
@@ -581,7 +581,7 @@ export default function ShipmentForm({
                     <Switch checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
-                <span className="text-sm text-slate-600 dark:text-slate-400">
+                <span className="text-sm text-slate-600 ">
                   {watchedValues.insurance_opted
                     ? `฿${calculated.insurance?.toFixed(0) || 0}`
                     : 'Not included'}
@@ -598,16 +598,16 @@ export default function ShipmentForm({
 
           {/* Pricing Summary */}
           {watchedValues.weight_kg > 0 && (
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl p-5 space-y-4 animate-in fade-in duration-300">
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100   rounded-2xl p-5 space-y-4 animate-in fade-in duration-300">
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-slate-600" />
-                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                <span className="font-semibold text-slate-700 ">
                   Price Calculation
                 </span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
+                <div className="p-3 bg-white  rounded-xl">
                   <p className="text-slate-500 text-xs mb-1">Vendor Cost</p>
                   <p className="font-bold text-rose-600 text-lg">
                     ฿{calculated.vendorCost?.toLocaleString()}
@@ -619,12 +619,12 @@ export default function ShipmentForm({
                   </p>
                 </div>
 
-                <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
+                <div className="p-3 bg-white  rounded-xl">
                   <p className="text-slate-500 text-xs mb-1">Customer Price</p>
                   <p className="font-bold text-lg">฿{calculated.price?.toLocaleString()}</p>
                 </div>
 
-                <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
+                <div className="p-3 bg-white  rounded-xl">
                   <p className="text-slate-500 text-xs mb-1">Insurance</p>
                   <p className="font-bold text-lg">
                     ฿{(calculated.insurance || 0).toLocaleString()}
@@ -637,7 +637,7 @@ export default function ShipmentForm({
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <div className="pt-3 border-t border-slate-200  flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-emerald-600" />
@@ -659,7 +659,7 @@ export default function ShipmentForm({
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex gap-3 pt-4 border-t border-slate-100 ">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>

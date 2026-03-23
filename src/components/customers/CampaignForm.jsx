@@ -201,8 +201,8 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
   };
 
   return (
-    <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-      <CardHeader className="border-b bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 sticky top-0 z-10">
+    <Card className="border-0 shadow-2xl bg-white  max-h-[90vh] overflow-y-auto">
+      <CardHeader className="border-b bg-gradient-to-br from-amber-50 to-orange-50   sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl text-white">
             <Megaphone className="w-5 h-5" />
@@ -258,7 +258,7 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
                       'relative p-4 rounded-xl border-2 text-left transition-all duration-200 group',
                       isSelected
                         ? 'border-transparent bg-gradient-to-br text-white shadow-lg'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'border-slate-200  hover:border-slate-300 '
                     )}
                     style={
                       isSelected
@@ -287,7 +287,7 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
                       <p
                         className={cn(
                           'font-semibold text-sm',
-                          isSelected ? 'text-white' : 'text-slate-900 dark:text-white'
+                          isSelected ? 'text-white' : 'text-slate-900 '
                         )}
                       >
                         {type.label}
@@ -341,14 +341,14 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
               />
             </div>
 
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50   rounded-xl border border-blue-200 ">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                <div className="p-2 bg-blue-100  rounded-lg">
                   <Users className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Estimated Reach</p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                  <p className="text-sm text-blue-700 ">Estimated Reach</p>
+                  <p className="text-2xl font-bold text-blue-900 ">
                     {targetedCustomers.toLocaleString()}
                   </p>
                   <p className="text-xs text-blue-600">customers will receive this campaign</p>
@@ -359,10 +359,10 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
 
           {/* Discount & Code (hide for announcements) */}
           {watchedValues.campaign_type !== 'announcement' && (
-            <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800 space-y-4">
+            <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50   rounded-2xl border border-emerald-200  space-y-4">
               <div className="flex items-center gap-2">
                 <Percent className="w-5 h-5 text-emerald-600" />
-                <span className="font-semibold text-emerald-900 dark:text-emerald-200">
+                <span className="font-semibold text-emerald-900 ">
                   Discount Settings
                 </span>
               </div>
@@ -441,8 +441,8 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
                     className={cn(
                       'flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all',
                       isSelected
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                        ? 'border-blue-500 bg-blue-50  text-blue-700 '
+                        : 'border-slate-200  text-slate-600  hover:border-slate-300'
                     )}
                   >
                     <Icon className="w-4 h-4" />
@@ -474,7 +474,7 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
 
           {/* Message Preview */}
           {watchedValues.message_template && (
-            <div className="p-4 bg-slate-900 dark:bg-slate-800 rounded-xl border border-slate-700">
+            <div className="p-4 bg-slate-900  rounded-xl border border-slate-700">
               <p className="text-xs text-slate-400 mb-2">Preview</p>
               <p className="text-white whitespace-pre-wrap">{watchedValues.message_template}</p>
             </div>
@@ -491,7 +491,7 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex gap-3 pt-4 border-t border-slate-100 ">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>

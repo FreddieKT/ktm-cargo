@@ -164,8 +164,8 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
   const selectedVendor = vendors.find((v) => v.id === formData.vendor_id);
 
   return (
-    <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-      <CardHeader className="flex flex-row items-center justify-between border-b bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 sticky top-0 z-10">
+    <Card className="border-0 shadow-2xl bg-white  max-h-[90vh] overflow-y-auto">
+      <CardHeader className="flex flex-row items-center justify-between border-b bg-gradient-to-br from-blue-50 to-indigo-50   sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
             <FileText className="w-5 h-5" />
@@ -202,7 +202,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                 <SelectContent>
                   {recommendedVendors.length > 0 && (
                     <>
-                      <div className="px-2 py-2 text-xs font-semibold text-slate-500 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/50 dark:to-yellow-950/50 flex items-center gap-1">
+                      <div className="px-2 py-2 text-xs font-semibold text-slate-500 bg-gradient-to-r from-amber-50 to-yellow-50   flex items-center gap-1">
                         <Zap className="w-3 h-3 text-amber-500" />
                         Recommended Carriers
                       </div>
@@ -222,7 +222,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           </div>
                         </SelectItem>
                       ))}
-                      <div className="px-2 py-2 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-slate-800">
+                      <div className="px-2 py-2 text-xs font-semibold text-slate-500 bg-slate-50 ">
                         All Vendors
                       </div>
                     </>
@@ -279,16 +279,16 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
           </div>
 
           {/* Cargo Weight & Cost per KG */}
-          <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl border border-blue-100 dark:border-blue-900">
+          <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50   rounded-2xl border border-blue-100 ">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+              <div className="p-2 bg-blue-100  rounded-lg">
                 <Scale className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <Label className="text-blue-900 dark:text-blue-200 font-semibold">
+                <Label className="text-blue-900  font-semibold">
                   Cargo Weight & Pricing
                 </Label>
-                <p className="text-sm text-blue-700 dark:text-blue-400">
+                <p className="text-sm text-blue-700 ">
                   Set weight and cost parameters
                 </p>
               </div>
@@ -326,11 +326,11 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
             </div>
 
             {estimatedCargoCost > 0 && (
-              <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800 flex justify-between items-center">
-                <span className="text-blue-700 dark:text-blue-300 font-medium">
+              <div className="mt-4 pt-4 border-t border-blue-200  flex justify-between items-center">
+                <span className="text-blue-700  font-medium">
                   Estimated Cargo Cost:
                 </span>
-                <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                <span className="text-xl font-bold text-blue-900 ">
                   ฿{estimatedCargoCost.toLocaleString()}
                 </span>
               </div>
@@ -349,20 +349,20 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
               </Button>
             </div>
 
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+            <div className="border border-slate-200  rounded-xl overflow-hidden">
               <table className="w-full">
-                <thead className="bg-slate-50 dark:bg-slate-800">
+                <thead className="bg-slate-50 ">
                   <tr>
-                    <th className="text-left p-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    <th className="text-left p-3 text-sm font-semibold text-slate-600 ">
                       Item Description
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-24">
+                    <th className="text-center p-3 text-sm font-semibold text-slate-600  w-24">
                       Qty
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-32">
+                    <th className="text-center p-3 text-sm font-semibold text-slate-600  w-32">
                       Unit Price
                     </th>
-                    <th className="text-right p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-32">
+                    <th className="text-right p-3 text-sm font-semibold text-slate-600  w-32">
                       Total
                     </th>
                     <th className="w-12"></th>
@@ -372,7 +372,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   {items.map((item, idx) => (
                     <tr
                       key={idx}
-                      className="border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      className="border-t border-slate-100  hover:bg-slate-50  transition-colors"
                     >
                       <td className="p-2">
                         <Input
@@ -405,7 +405,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           className="text-center border-0 bg-transparent focus-visible:ring-1"
                         />
                       </td>
-                      <td className="p-2 text-right font-semibold text-slate-700 dark:text-slate-300">
+                      <td className="p-2 text-right font-semibold text-slate-700 ">
                         ฿{item.total.toLocaleString()}
                       </td>
                       <td className="p-2">
@@ -414,7 +414,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           variant="ghost"
                           size="icon"
                           onClick={() => removeItem(idx)}
-                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                          className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 "
                           disabled={items.length === 1}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -429,7 +429,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
 
           {/* Totals */}
           <div className="flex justify-end">
-            <div className="w-80 space-y-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+            <div className="w-80 space-y-3 p-4 bg-slate-50  rounded-xl">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Subtotal:</span>
                 <span className="font-medium">฿{subtotal.toLocaleString()}</span>
@@ -458,7 +458,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   className="w-28 text-right h-9"
                 />
               </div>
-              <div className="flex justify-between font-bold text-lg pt-3 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex justify-between font-bold text-lg pt-3 border-t border-slate-200 ">
                 <span>Total:</span>
                 <span className="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   ฿{total.toLocaleString()}
@@ -482,7 +482,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 ">
             <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </Button>

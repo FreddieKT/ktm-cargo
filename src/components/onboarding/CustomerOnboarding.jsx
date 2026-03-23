@@ -162,7 +162,7 @@ export default function CustomerOnboarding({ customer, onComplete }) {
 
   return (
     <div className="max-w-2xl mx-auto p-4 animate-in fade-in duration-500">
-      <Card className="border-0 shadow-2xl overflow-hidden bg-white dark:bg-slate-900">
+      <Card className="border-0 shadow-2xl overflow-hidden bg-white ">
         {/* Progress Header */}
         <div
           className={cn(
@@ -247,10 +247,10 @@ export default function CustomerOnboarding({ customer, onComplete }) {
               <Icon className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-bold text-slate-900 ">
                 {currentStepData.title}
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-slate-500  mt-1">
                 {currentStepData.description}
               </p>
             </div>
@@ -264,13 +264,13 @@ export default function CustomerOnboarding({ customer, onComplete }) {
                 return (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl hover:bg-slate-100  transition-colors"
                     style={{ animationDelay: `${idx * 100}ms` }}
                   >
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-                      <ItemIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="p-2 bg-blue-100  rounded-lg">
+                      <ItemIcon className="w-5 h-5 text-blue-600 " />
                     </div>
-                    <span className="text-slate-700 dark:text-slate-300">{item.text}</span>
+                    <span className="text-slate-700 ">{item.text}</span>
                   </div>
                 );
               })}
@@ -284,12 +284,12 @@ export default function CustomerOnboarding({ customer, onComplete }) {
                 {currentStepData.steps?.map((step, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl"
+                    className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl"
                   >
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100  flex items-center justify-center text-emerald-600  font-bold">
                       {step.num}
                     </div>
-                    <span className="text-slate-700 dark:text-slate-300">{step.text}</span>
+                    <span className="text-slate-700 ">{step.text}</span>
                   </div>
                 ))}
               </div>
@@ -332,12 +332,12 @@ export default function CustomerOnboarding({ customer, onComplete }) {
                 return (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl"
+                    className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl"
                   >
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
-                      <ItemIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 bg-purple-100  rounded-lg">
+                      <ItemIcon className="w-5 h-5 text-purple-600 " />
                     </div>
-                    <span className="text-slate-700 dark:text-slate-300">{item.text}</span>
+                    <span className="text-slate-700 ">{item.text}</span>
                   </div>
                 );
               })}
@@ -345,7 +345,7 @@ export default function CustomerOnboarding({ customer, onComplete }) {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 ">
             <div className="flex gap-2">
               {currentStep > 0 && (
                 <Button variant="outline" onClick={handleBack} size="lg">

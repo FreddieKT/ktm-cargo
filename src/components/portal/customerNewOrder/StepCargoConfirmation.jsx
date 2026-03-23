@@ -10,8 +10,8 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
   const selectedService = SERVICE_TYPES.find((s) => s.value === form.service_type);
 
   return (
-    <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden animate-in slide-in-from-right duration-300">
-      <CardHeader className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-0 shadow-xl bg-white  overflow-hidden animate-in slide-in-from-right duration-300">
+      <CardHeader className="bg-gradient-to-br from-emerald-50 to-teal-50   border-b border-slate-100 ">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-emerald-500 rounded-xl text-white">
             <CheckCircle className="w-5 h-5" />
@@ -24,7 +24,7 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
       </CardHeader>
       <CardContent className="p-6 space-y-6">
         {/* Order Summary Card */}
-        <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100   rounded-2xl border border-slate-200 ">
           <div className="flex items-center gap-4">
             {selectedService && (
               <div
@@ -34,7 +34,7 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
               </div>
             )}
             <div className="flex-1">
-              <p className="font-semibold text-slate-900 dark:text-white">
+              <p className="font-semibold text-slate-900 ">
                 {selectedService?.label}
               </p>
               <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -44,7 +44,7 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
             </div>
             <Badge className="bg-emerald-100 text-emerald-800">{selectedService?.delivery}</Badge>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="grid grid-cols-2 gap-4 text-sm pt-4 mt-4 border-t border-slate-200 ">
             <div>
               <p className="text-slate-500">Weight</p>
               <p className="font-semibold">{form.weight_kg} kg</p>
@@ -57,7 +57,7 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
         </div>
 
         {/* Price Breakdown */}
-        <div className="space-y-3 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div className="space-y-3 p-5 bg-white  rounded-2xl border border-slate-200 ">
           <div className="flex items-center gap-2 mb-4">
             <Calculator className="w-5 h-5 text-slate-500" />
             <span className="font-semibold">Price Breakdown</span>
@@ -87,7 +87,7 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
                 <span className="font-medium">฿{calc.packagingFee.toLocaleString()}</span>
               </div>
             )}
-            <div className="flex justify-between pt-3 border-t border-dashed border-slate-200 dark:border-slate-700 text-lg">
+            <div className="flex justify-between pt-3 border-t border-dashed border-slate-200  text-lg">
               <span className="font-bold">Total</span>
               <span className="font-bold text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 ฿{calc.totalAmount.toLocaleString()}

@@ -17,8 +17,8 @@ import { cn } from '@/lib/utils';
 
 export default function StepShoppingProduct({ form, errors, onUpdate, onNext, onBack }) {
   return (
-    <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden animate-in slide-in-from-right duration-300">
-      <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-0 shadow-xl bg-white  overflow-hidden animate-in slide-in-from-right duration-300">
+      <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50   border-b border-slate-100 ">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl text-white">
             <ShoppingBag className="w-5 h-5" />

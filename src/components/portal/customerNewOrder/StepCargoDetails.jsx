@@ -17,8 +17,8 @@ import { PACKAGING_OPTIONS } from '../pricingMaps';
 
 export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBack }) {
   return (
-    <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden animate-in slide-in-from-right duration-300">
-      <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-0 shadow-xl bg-white  overflow-hidden animate-in slide-in-from-right duration-300">
+      <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50   border-b border-slate-100 ">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-indigo-500 rounded-xl text-white">
             <Scale className="w-5 h-5" />
@@ -32,7 +32,7 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
       <CardContent className="p-6 space-y-6">
         <div className="grid md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+            <Label className="flex items-center gap-2 text-slate-700 ">
               <Scale className="w-4 h-4 text-slate-400" />
               Weight (kg) <span className="text-rose-500">*</span>
             </Label>
@@ -56,7 +56,7 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
             )}
           </div>
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+            <Label className="flex items-center gap-2 text-slate-700 ">
               <Box className="w-4 h-4 text-slate-400" />
               Packaging
             </Label>
@@ -82,7 +82,7 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
         </div>
 
         <div className="space-y-2">
-          <Label className="text-slate-700 dark:text-slate-300">
+          <Label className="text-slate-700 ">
             Item Description <span className="text-rose-500">*</span>
           </Label>
           <Textarea
@@ -104,7 +104,7 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
 
         <div className="grid md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+            <Label className="flex items-center gap-2 text-slate-700 ">
               <MapPin className="w-4 h-4 text-blue-500" />
               Pickup Address (Bangkok)
             </Label>
@@ -116,7 +116,7 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
             />
           </div>
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+            <Label className="flex items-center gap-2 text-slate-700 ">
               <MapPin className="w-4 h-4 text-emerald-500" />
               Delivery Address (Yangon)
             </Label>
@@ -129,13 +129,13 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-blue-900">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50   rounded-xl border border-blue-100 ">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+            <div className="p-2 bg-blue-100  rounded-lg">
               <Shield className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="font-medium text-slate-900 dark:text-white">Shipment Insurance</p>
+              <p className="font-medium text-slate-900 ">Shipment Insurance</p>
               <p className="text-sm text-slate-500">3% of shipping cost</p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function StepCargoDetails({ form, errors, onUpdate, onNext, onBac
         </div>
 
         <div className="space-y-2">
-          <Label className="text-slate-700 dark:text-slate-300">Special Instructions</Label>
+          <Label className="text-slate-700 ">Special Instructions</Label>
           <Textarea
             placeholder="Any special handling instructions..."
             value={form.notes}

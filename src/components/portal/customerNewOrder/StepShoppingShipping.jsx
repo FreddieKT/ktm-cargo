@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 
 export default function StepShoppingShipping({ form, errors, onUpdate, onNext, onBack }) {
   return (
-    <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden animate-in slide-in-from-right duration-300">
-      <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 border-b border-slate-100 dark:border-slate-800">
+    <Card className="border-0 shadow-xl bg-white  overflow-hidden animate-in slide-in-from-right duration-300">
+      <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50   border-b border-slate-100 ">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-indigo-500 rounded-xl text-white">
             <Truck className="w-5 h-5" />
@@ -60,7 +60,7 @@ export default function StepShoppingShipping({ form, errors, onUpdate, onNext, o
         </div>
 
         <div className="space-y-2">
-          <Label className="text-slate-700 dark:text-slate-300">Special Instructions</Label>
+          <Label className="text-slate-700 ">Special Instructions</Label>
           <Textarea
             placeholder="Anything we should know..."
             value={form.notes}

@@ -244,8 +244,8 @@ export default function ShoppingOrderForm({
   );
 
   return (
-    <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-      <CardHeader className="border-b bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 sticky top-0 z-10">
+    <Card className="border-0 shadow-2xl bg-white  max-h-[90vh] overflow-y-auto">
+      <CardHeader className="border-b bg-gradient-to-br from-purple-50 to-pink-50   sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl text-white">
             <ShoppingBag className="w-5 h-5" />
@@ -393,10 +393,10 @@ export default function ShoppingOrderForm({
           </div>
 
           {/* Costs & Weights */}
-          <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl space-y-4">
+          <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100   rounded-2xl space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Calculator className="w-5 h-5 text-slate-600" />
-              <span className="font-semibold text-slate-700 dark:text-slate-200">
+              <span className="font-semibold text-slate-700 ">
                 Cost & Weight Estimates
               </span>
             </div>
@@ -459,12 +459,12 @@ export default function ShoppingOrderForm({
 
           {/* PO Linkage */}
           {availablePOs.length > 0 && (
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 space-y-3">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50   rounded-xl border border-blue-200  space-y-3">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                <div className="p-1.5 bg-blue-100  rounded-lg">
                   <Truck className="w-4 h-4 text-blue-600" />
                 </div>
-                <Label className="text-blue-800 dark:text-blue-200 font-medium">
+                <Label className="text-blue-800  font-medium">
                   Link to Vendor Purchase Order (Optional)
                 </Label>
               </div>
@@ -473,7 +473,7 @@ export default function ShoppingOrderForm({
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value || 'none'} onValueChange={handlePOChange}>
-                    <SelectTrigger className="h-11 bg-white dark:bg-slate-800">
+                    <SelectTrigger className="h-11 bg-white ">
                       <SelectValue placeholder="Select vendor PO" />
                     </SelectTrigger>
                     <SelectContent>
@@ -645,17 +645,17 @@ export default function ShoppingOrderForm({
           </div>
 
           {/* Calculations Review */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-2xl space-y-4">
-            <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50   p-5 rounded-2xl space-y-4">
+            <h4 className="font-semibold text-slate-900  flex items-center gap-2">
               <Calculator className="w-5 h-5 text-purple-600" />
               Cost Summary
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+              <div className="p-3 bg-white  rounded-xl">
                 <p className="text-slate-500 text-xs mb-1">Product Cost</p>
                 <p className="font-bold text-lg">฿{calculated.productCost.toLocaleString()}</p>
               </div>
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+              <div className="p-3 bg-white  rounded-xl">
                 <p className="text-slate-500 text-xs mb-1">
                   Commission ({watchedValues.commission_rate}%)
                 </p>
@@ -663,7 +663,7 @@ export default function ShoppingOrderForm({
                   ฿{calculated.commission.toLocaleString()}
                 </p>
               </div>
-              <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+              <div className="p-3 bg-white  rounded-xl">
                 <p className="text-slate-500 text-xs mb-1">Shipping Estimate</p>
                 <p className="font-bold text-lg">฿{calculated.shippingCost.toLocaleString()}</p>
               </div>
@@ -674,7 +674,7 @@ export default function ShoppingOrderForm({
             </div>
 
             {calculated.profit > 0 && (
-              <div className="pt-3 border-t border-purple-200 dark:border-purple-800 flex items-center gap-4">
+              <div className="pt-3 border-t border-purple-200  flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
                   <span className="text-emerald-600 font-semibold">
@@ -688,7 +688,7 @@ export default function ShoppingOrderForm({
             )}
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex gap-3 pt-4 border-t border-slate-100 ">
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>
