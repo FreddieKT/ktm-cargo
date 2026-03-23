@@ -25,7 +25,7 @@ jobs:
     if: github.event_name == 'issues' && github.event.action == 'labeled'
     steps:
       - name: Move to correct column
-        uses: leonsteinhaeuser/project-beta-automations@v2
+        uses: leonsteinhaeuser/project-beta-automations@v2.2.1
         with:
           gh_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
           user: FreddieKT
@@ -54,7 +54,7 @@ jobs:
 
       - name: Move issue to In Progress
         if: steps.linked.outputs.issue != ''
-        uses: leonsteinhaeuser/project-beta-automations@v2
+        uses: leonsteinhaeuser/project-beta-automations@v2.2.1
         with:
           gh_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
           user: FreddieKT
@@ -68,7 +68,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     steps:
       - name: Move to Done
-        uses: leonsteinhaeuser/project-beta-automations@v2
+        uses: leonsteinhaeuser/project-beta-automations@v2.2.1
         with:
           gh_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
           user: FreddieKT
