@@ -13,7 +13,7 @@
 
 ## Related Issues
 
-<!-- Link to related issues: Fixes #123, Closes #456 -->
+Closes #
 
 ## Changes Made
 
