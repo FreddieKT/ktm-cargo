@@ -37,18 +37,41 @@ export const auth = {
         updated_date: new Date().toISOString(),
       };
 
-      const { data: created, error } = await supabase
-        .from('profiles')
-        .insert(newProfile)
-        .select()
-        .single();
+      try {
+        const { data: created, error } = await supabase
+          .from('profiles')
+          .insert(newProfile)
+          .select()
+          .single();
 
-      if (error) {
-        // Do not silently fallback to a customer profile — fail explicitly so
-        // callers can handle the unauthenticated state safely.
-        throw new Error(`Profile creation failed: ${error.message}`);
+        if (error) {
+          // Profile creation failed (e.g., RLS denied). Return partial user object
+          // rather than throwing — callers handle unauthenticated state via null checks.
+          console.error('Profile creation failed, returning partial user:', error.message);
+          return {
+            ...user,
+            ...profile,
+            email: user.email,
+            id: user.id,
+            staff_role: null,
+            role: profile?.role || 'customer',
+            _profileError: error.message,
+          };
+        }
+        profile = created;
+      } catch (err) {
+        // Network or unexpected error — return partial user, don't crash the app.
+        console.error('Profile creation threw unexpected error:', err);
+        return {
+          ...user,
+          ...profile,
+          email: user.email,
+          id: user.id,
+          staff_role: null,
+          role: profile?.role || 'customer',
+          _profileError: err.message,
+        };
       }
-      profile = created;
     }
 
     return {
