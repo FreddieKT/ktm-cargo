@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
 
 jobs:
   ci:
@@ -34,7 +34,14 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Lint & Format
-        run: npm run lint && npx prettier --check .
+        run: |
+          npm run lint
+          npx prettier --write .
+          if [ -n "$(git diff)" ]; then
+            echo "ERROR: formatting issues detected. Run 'npx prettier --write .' locally."
+            git diff --stat
+            exit 1
+          fi
 
       - name: Unit Tests
         run: npm test -- --passWithNoTests
