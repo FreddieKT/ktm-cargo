@@ -1,6 +1,6 @@
 name: Bug Report
 description: Something is broken
-labels: ["type:bug"]
+labels: ['type:bug']
 body:
   - type: dropdown
     id: severity
@@ -8,9 +8,9 @@ body:
       label: Severity
       description: Pick the closest match — you will apply the matching label (P0/P1/P2) after submitting
       options:
-        - "P0 — Customer financial data wrong / data corrupt / security hole"
-        - "P1 — App crash / wrong data in internal views"
-        - "P2 — Minor UX / cosmetic issue"
+        - 'P0 — Customer financial data wrong / data corrupt / security hole'
+        - 'P1 — App crash / wrong data in internal views'
+        - 'P2 — Minor UX / cosmetic issue'
     validations:
       required: true
 

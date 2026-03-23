@@ -25,6 +25,7 @@ KTM Cargo Express is a solo-developed React + Supabase logistics platform (BKK�
 One GitHub Projects board with three independent tracks. Each track has its own columns and priority logic. The tracks never merge — a bug does not compete with a feature for "what's next." The hard rule is applied first, then within-track priority applies.
 
 **Hard priority rule:**
+
 ```
 P0 Bug > P1 Bug > Feature (Priority) > P2 Bug > Chore
 ```
@@ -47,55 +48,61 @@ P0 Bug > P1 Bug > Feature (Priority) > P2 Bug > Chore
 ```
 
 ### Track 1 — Bug/Fix
+
 All defects: data integrity, wrong calculations, crashes, security issues.
 
-| Column | Meaning |
-|--------|---------|
-| Triage | New bug, not yet assessed |
-| P0 Now | Stop everything, fix today |
-| P1 Next | Fix this sprint |
-| P2 Later | Fix when possible |
-| Done | Resolved and closed |
+| Column   | Meaning                    |
+| -------- | -------------------------- |
+| Triage   | New bug, not yet assessed  |
+| P0 Now   | Stop everything, fix today |
+| P1 Next  | Fix this sprint            |
+| P2 Later | Fix when possible          |
+| Done     | Resolved and closed        |
 
 ### Track 2 — Feature
+
 New capabilities and improvements visible to customers or staff.
 
-| Column | Meaning |
-|--------|---------|
-| Ideas | Captured, not yet prioritized |
+| Column   | Meaning                                   |
+| -------- | ----------------------------------------- |
+| Ideas    | Captured, not yet prioritized             |
 | Priority | Ranked by business impact, ready to build |
-| Building | In progress |
-| Done | Merged and deployed |
+| Building | In progress                               |
+| Done     | Merged and deployed                       |
 
 ### Track 3 — Chore
+
 Dependency updates, CI changes, migrations, refactoring with no behavior change.
 
-| Column | Meaning |
-|--------|---------|
-| Backlog | Pending, not yet scheduled |
-| Scheduled | Targeted for this week |
-| Done | Completed |
+| Column    | Meaning                    |
+| --------- | -------------------------- |
+| Backlog   | Pending, not yet scheduled |
+| Scheduled | Targeted for this week     |
+| Done      | Completed                  |
 
 ---
 
 ## Label System
 
 ### Type Labels
-| Label | Color | Usage |
-|-------|-------|-------|
-| `bug` | 🔴 Red | Data/logic error |
-| `feature` | 🟢 Green | New capability |
-| `chore` | 🔵 Blue | Infra / deps / refactor |
-| `docs` | ⚪ Gray | Documentation only |
+
+| Label     | Color    | Usage                   |
+| --------- | -------- | ----------------------- |
+| `bug`     | 🔴 Red   | Data/logic error        |
+| `feature` | 🟢 Green | New capability          |
+| `chore`   | 🔵 Blue  | Infra / deps / refactor |
+| `docs`    | ⚪ Gray  | Documentation only      |
 
 ### Priority Labels
-| Label | Usage |
-|-------|-------|
-| `P0` | Data corrupt, security, financial data wrong, stop everything |
-| `P1` | Internal crash, wrong internal display, fix this sprint |
-| `P2` | Minor UX issue, cosmetic, fix when possible |
+
+| Label | Usage                                                         |
+| ----- | ------------------------------------------------------------- |
+| `P0`  | Data corrupt, security, financial data wrong, stop everything |
+| `P1`  | Internal crash, wrong internal display, fix this sprint       |
+| `P2`  | Minor UX issue, cosmetic, fix when possible                   |
 
 ### Area Labels
+
 ```
 area:invoices
 area:shipments
@@ -115,6 +122,7 @@ area:deps
 ```
 
 **Examples:**
+
 ```
 bug/123-invoice-null-guard
 feature/124-bulk-shipment-export
@@ -134,15 +142,16 @@ Every branch must include the GitHub Issue number so PRs auto-link and issues au
 <prefix>(<area>): <description> (#<issue>)
 ```
 
-| Prefix | Usage |
-|--------|-------|
-| `fix` | Bug fix |
-| `feat` | New feature |
-| `chore` | Deps / CI / migration |
-| `docs` | Documentation |
+| Prefix     | Usage                                |
+| ---------- | ------------------------------------ |
+| `fix`      | Bug fix                              |
+| `feat`     | New feature                          |
+| `chore`    | Deps / CI / migration                |
+| `docs`     | Documentation                        |
 | `refactor` | Code restructure, no behavior change |
 
 **Examples:**
+
 ```
 fix(shipments): guard customers.find() null (#123)
 feat(invoices): add bulk export to CSV (#124)
@@ -155,16 +164,16 @@ chore(deps): upgrade vite to 8.x (#125)
 
 > ⚠️ **Implementation note:** Label-to-column automations are not built-in GitHub Projects features. They require a custom GitHub Actions workflow (`.github/workflows/board-automation.yml`) using the GitHub GraphQL Projects API or a community action such as `leonsteinhaeuser/project-beta-automations`. Plan for this setup on board creation day.
 
-| Trigger | Action |
-|---------|--------|
-| Issue labeled `P0` | Move to **P0 Now** |
-| Issue labeled `P1` | Move to **P1 Next** |
-| Issue labeled `P2` | Move to **P2 Later** |
-| Issue labeled `feature` | Move to **Ideas** |
-| Issue labeled `chore` | Move to **Backlog** |
+| Trigger                  | Action                             |
+| ------------------------ | ---------------------------------- |
+| Issue labeled `P0`       | Move to **P0 Now**                 |
+| Issue labeled `P1`       | Move to **P1 Next**                |
+| Issue labeled `P2`       | Move to **P2 Later**               |
+| Issue labeled `feature`  | Move to **Ideas**                  |
+| Issue labeled `chore`    | Move to **Backlog**                |
 | PR opened (linked issue) | Move to **Building / In Progress** |
-| PR merged | Move to **Done** + close issue |
-| Dependabot PR opened | Auto-label `chore` + `area:deps` |
+| PR merged                | Move to **Done** + close issue     |
+| Dependabot PR opened     | Auto-label `chore` + `area:deps`   |
 
 ---
 
@@ -201,6 +210,7 @@ A bug that would normally be P1 (wrong internal display) becomes P0 if it was in
 Three templates in `.github/ISSUE_TEMPLATE/`:
 
 ### bug_report.md
+
 ```yaml
 name: Bug Report
 about: Something is broken
@@ -226,6 +236,7 @@ body:
 > **Label mapping:** After submitting, the developer reads the severity field during triage and manually applies the matching `P0`, `P1`, or `P2` label. The board automation then moves the card to the correct column automatically. This is a one-step manual action per bug — not automated, by design, to force a deliberate triage decision.
 
 ### feature_request.md
+
 ```yaml
 name: Feature Request
 about: New capability
@@ -238,6 +249,7 @@ body:
 ```
 
 ### chore.md
+
 ```yaml
 name: Chore
 about: Infra, deps, refactor
@@ -255,16 +267,19 @@ body:
 ## Daily Workflow
 
 ### Day Start (~5 min)
+
 1. Check **P0 Now** — if anything exists, that is today's work, no exceptions
 2. Check **P1 Next** — if multiple P1s exist, pick the one with the **oldest creation date** unless one has an explicit dependency on another (noted in issue comments)
 3. Set a target: close 1–2 issues today
 
 ### During Work
+
 - One issue = one branch
 - Every commit references the issue number
 - PR → CI pass → merge → move to next
 
 ### Day End (~3 min)
+
 - Leave a comment on any open issue with current status
 - Check if tomorrow's target needs a label change
 
@@ -275,7 +290,7 @@ body:
 1. **Dependabot PRs** — safe (patch/minor) → merge; major version → create chore issue, schedule, close the Dependabot PR
 2. **New bugs** — assign P0/P1/P2 using the decision tree, add area label
 3. **Feature Ideas** — rank top 3 by business impact, move to Priority
-4. **P2 backlog** — close any issue with no new comments, commits, or label changes in the past 30 days. Close with label `stale` and comment: *"Closing as stale after 30 days of no activity. Reopen if still relevant."*
+4. **P2 backlog** — close any issue with no new comments, commits, or label changes in the past 30 days. Close with label `stale` and comment: _"Closing as stale after 30 days of no activity. Reopen if still relevant."_
 
 ---
 

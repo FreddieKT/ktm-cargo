@@ -1,6 +1,6 @@
 name: Chore
 description: Infra, deps, migration, refactor — no behaviour change
-labels: ["type:chore"]
+labels: ['type:chore']
 body:
   - type: dropdown
     id: area

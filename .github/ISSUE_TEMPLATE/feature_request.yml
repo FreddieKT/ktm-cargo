@@ -1,6 +1,6 @@
 name: Feature Request
 description: New capability for customers or staff
-labels: ["type:feature"]
+labels: ['type:feature']
 body:
   - type: dropdown
     id: area

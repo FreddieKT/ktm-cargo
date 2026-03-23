@@ -60,7 +60,7 @@ jobs:
           user: FreddieKT
           project_id: 4
           resource_node_id: ${{ github.event.pull_request.node_id }}
-          status_value: "🔨 In Progress"
+          status_value: '🔨 In Progress'
 
   move-on-pr-merge:
     name: Move linked issue to Done when PR merges
@@ -74,4 +74,4 @@ jobs:
           user: FreddieKT
           project_id: 4
           resource_node_id: ${{ github.event.pull_request.node_id }}
-          status_value: "✅ Done"
+          status_value: '✅ Done'
