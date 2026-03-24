@@ -247,12 +247,8 @@ export default function CustomerOnboarding({ customer, onComplete }) {
               <Icon className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 ">
-                {currentStepData.title}
-              </h2>
-              <p className="text-slate-500  mt-1">
-                {currentStepData.description}
-              </p>
+              <h2 className="text-xl font-bold text-slate-900 ">{currentStepData.title}</h2>
+              <p className="text-slate-500  mt-1">{currentStepData.description}</p>
             </div>
           </div>
 
@@ -282,10 +278,7 @@ export default function CustomerOnboarding({ customer, onComplete }) {
             <>
               <div className="space-y-3 mb-6">
                 {currentStepData.steps?.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl"
-                  >
+                  <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl">
                     <div className="w-8 h-8 rounded-full bg-emerald-100  flex items-center justify-center text-emerald-600  font-bold">
                       {step.num}
                     </div>
@@ -330,10 +323,7 @@ export default function CustomerOnboarding({ customer, onComplete }) {
               {currentStepData.features.map((item, idx) => {
                 const ItemIcon = item.icon;
                 return (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl"
-                  >
+                  <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50  rounded-xl">
                     <div className="p-2 bg-purple-100  rounded-lg">
                       <ItemIcon className="w-5 h-5 text-purple-600 " />
                     </div>

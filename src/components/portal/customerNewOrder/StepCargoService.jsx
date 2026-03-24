@@ -56,9 +56,7 @@ export default function StepCargoService({ form, onUpdate, onNext, onBack }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-slate-900 ">{service.label}</p>
-                    <p className="text-sm text-slate-500 ">
-                      {service.description}
-                    </p>
+                    <p className="text-sm text-slate-500 ">{service.description}</p>
                     <Badge variant="secondary" className="text-xs mt-1">
                       <Clock className="w-3 h-3 mr-1" />
                       {service.delivery}

@@ -25,9 +25,7 @@ export default function OrderTypeSelection({ onSelect }) {
             <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white w-fit mb-4 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-shadow">
               <Truck className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900  mb-1">
-              Cargo Shipment
-            </h3>
+            <h3 className="text-lg font-semibold text-slate-900  mb-1">Cargo Shipment</h3>
             <p className="text-sm text-slate-500 ">
               Send a package from Bangkok to Yangon. Choose service type, enter weight, and track
               delivery.
@@ -44,9 +42,7 @@ export default function OrderTypeSelection({ onSelect }) {
             <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl text-white w-fit mb-4 group-hover:shadow-lg group-hover:shadow-purple-500/30 transition-shadow">
               <ShoppingBag className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-900  mb-1">
-              Shopping Order
-            </h3>
+            <h3 className="text-lg font-semibold text-slate-900  mb-1">Shopping Order</h3>
             <p className="text-sm text-slate-500 ">
               We buy products for you in Thailand and ship them to Yangon. Just tell us what you
               want!

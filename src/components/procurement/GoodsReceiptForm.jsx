@@ -235,9 +235,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
             <table className="w-full">
               <thead className="bg-slate-50 ">
                 <tr>
-                  <th className="text-left p-3 text-sm font-semibold text-slate-600 ">
-                    Item
-                  </th>
+                  <th className="text-left p-3 text-sm font-semibold text-slate-600 ">Item</th>
                   <th className="text-center p-3 text-sm font-semibold text-slate-600  w-24">
                     Ordered
                   </th>
@@ -270,9 +268,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Package className="w-4 h-4 text-slate-400" />
-                          <span className="font-medium text-slate-900 ">
-                            {item.item_name}
-                          </span>
+                          <span className="font-medium text-slate-900 ">{item.item_name}</span>
                         </div>
                       </td>
                       <td className="p-3 text-center text-slate-500 font-mono">

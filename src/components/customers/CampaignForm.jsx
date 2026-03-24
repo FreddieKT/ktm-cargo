@@ -362,9 +362,7 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
             <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50   rounded-2xl border border-emerald-200  space-y-4">
               <div className="flex items-center gap-2">
                 <Percent className="w-5 h-5 text-emerald-600" />
-                <span className="font-semibold text-emerald-900 ">
-                  Discount Settings
-                </span>
+                <span className="font-semibold text-emerald-900 ">Discount Settings</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

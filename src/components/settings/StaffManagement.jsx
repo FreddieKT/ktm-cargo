@@ -276,8 +276,7 @@ export default function StaffManagement() {
                 const roleColor =
                   user.role === 'admin'
                     ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800   '
-                    : ROLE_COLORS[user.staff_role] ||
-                      'bg-slate-100 text-slate-800  ';
+                    : ROLE_COLORS[user.staff_role] || 'bg-slate-100 text-slate-800  ';
                 const roleLabel =
                   user.role === 'admin'
                     ? 'Managing Director'
@@ -314,9 +313,7 @@ export default function StaffManagement() {
                             {roleLabel}
                           </Badge>
                           {user.is_active === false && (
-                            <Badge className="bg-rose-100 text-rose-800  ">
-                              Inactive
-                            </Badge>
+                            <Badge className="bg-rose-100 text-rose-800  ">Inactive</Badge>
                           )}
                         </div>
                         <p className="text-sm text-slate-500  flex items-center gap-1 mt-0.5">

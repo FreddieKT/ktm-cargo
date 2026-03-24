@@ -468,9 +468,7 @@ export default function PricingManager() {
                           <Percent className="w-5 h-5 text-amber-600" />
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 ">
-                            {surcharge.name}
-                          </p>
+                          <p className="font-semibold text-slate-900 ">{surcharge.name}</p>
                           <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
                             <span className="font-semibold text-amber-600">
                               {surcharge.surcharge_type === 'fixed'

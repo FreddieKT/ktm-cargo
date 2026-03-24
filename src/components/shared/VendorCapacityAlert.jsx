@@ -141,12 +141,7 @@ export default function VendorCapacityAlert({
       {/* Header */}
       <div className="relative flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              'p-2.5 rounded-xl bg-white/80  shadow-lg',
-              colors.glow
-            )}
-          >
+          <div className={cn('p-2.5 rounded-xl bg-white/80  shadow-lg', colors.glow)}>
             <Gauge className={cn('w-5 h-5', colors.icon)} />
           </div>
           <div>
@@ -228,9 +223,7 @@ export default function VendorCapacityAlert({
           <div
             className={cn(
               'p-3 rounded-xl backdrop-blur-sm text-center',
-              capacityData.isOverCapacity
-                ? 'bg-rose-100/80 '
-                : 'bg-white/60 '
+              capacityData.isOverCapacity ? 'bg-rose-100/80 ' : 'bg-white/60 '
             )}
           >
             <div

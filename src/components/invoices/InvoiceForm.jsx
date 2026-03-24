@@ -499,9 +499,7 @@ export default function InvoiceForm({
           <div className="bg-gradient-to-br from-slate-50 to-slate-100   rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <Calculator className="w-5 h-5 text-slate-600" />
-              <span className="font-semibold text-slate-700 ">
-                Invoice Total
-              </span>
+              <span className="font-semibold text-slate-700 ">Invoice Total</span>
             </div>
 
             <div className="space-y-2 text-sm">

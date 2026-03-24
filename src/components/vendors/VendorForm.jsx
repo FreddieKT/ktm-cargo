@@ -327,12 +327,8 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                   <Star className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <Label className="text-amber-900  font-medium">
-                    Preferred Vendor
-                  </Label>
-                  <p className="text-sm text-amber-700 ">
-                    Show first in dropdowns
-                  </p>
+                  <Label className="text-amber-900  font-medium">Preferred Vendor</Label>
+                  <p className="text-sm text-amber-700 ">Show first in dropdowns</p>
                 </div>
               </div>
               <Switch

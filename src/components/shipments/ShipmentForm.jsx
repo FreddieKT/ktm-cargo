@@ -380,9 +380,7 @@ export default function ShipmentForm({
                 <div className="p-1.5 bg-blue-100  rounded-lg">
                   <Truck className="w-4 h-4 text-blue-600" />
                 </div>
-                <Label className="text-blue-800  font-medium">
-                  Link to Vendor Purchase Order
-                </Label>
+                <Label className="text-blue-800  font-medium">Link to Vendor Purchase Order</Label>
               </div>
               <Controller
                 name="vendor_po_id"
@@ -601,9 +599,7 @@ export default function ShipmentForm({
             <div className="bg-gradient-to-br from-slate-50 to-slate-100   rounded-2xl p-5 space-y-4 animate-in fade-in duration-300">
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-slate-600" />
-                <span className="font-semibold text-slate-700 ">
-                  Price Calculation
-                </span>
+                <span className="font-semibold text-slate-700 ">Price Calculation</span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">

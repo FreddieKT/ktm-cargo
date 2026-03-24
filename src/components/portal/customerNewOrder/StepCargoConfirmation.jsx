@@ -34,9 +34,7 @@ export default function StepCargoConfirmation({ form, calc, isPending, onSubmit,
               </div>
             )}
             <div className="flex-1">
-              <p className="font-semibold text-slate-900 ">
-                {selectedService?.label}
-              </p>
+              <p className="font-semibold text-slate-900 ">{selectedService?.label}</p>
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <Clock className="w-4 h-4" />
                 <span>Est. delivery: {format(calc.estimatedDelivery, 'MMM dd, yyyy')}</span>

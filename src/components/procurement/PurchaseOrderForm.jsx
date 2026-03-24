@@ -285,12 +285,8 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                 <Scale className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <Label className="text-blue-900  font-semibold">
-                  Cargo Weight & Pricing
-                </Label>
-                <p className="text-sm text-blue-700 ">
-                  Set weight and cost parameters
-                </p>
+                <Label className="text-blue-900  font-semibold">Cargo Weight & Pricing</Label>
+                <p className="text-sm text-blue-700 ">Set weight and cost parameters</p>
               </div>
             </div>
 
@@ -327,9 +323,7 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
 
             {estimatedCargoCost > 0 && (
               <div className="mt-4 pt-4 border-t border-blue-200  flex justify-between items-center">
-                <span className="text-blue-700  font-medium">
-                  Estimated Cargo Cost:
-                </span>
+                <span className="text-blue-700  font-medium">Estimated Cargo Cost:</span>
                 <span className="text-xl font-bold text-blue-900 ">
                   ฿{estimatedCargoCost.toLocaleString()}
                 </span>
