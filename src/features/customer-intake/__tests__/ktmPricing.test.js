@@ -311,14 +311,22 @@ describe('calculateKtmPricing', () => {
   });
 
   test('input object is not mutated', () => {
-    const input = { route: 'THAILAND_MYANMAR', mode: 'air', weightKg: 3, productCostThb: 2500, includeShoppingCommission: true };
+    const input = {
+      route: 'THAILAND_MYANMAR',
+      mode: 'air',
+      weightKg: 3,
+      productCostThb: 2500,
+      includeShoppingCommission: true,
+    };
     const original = { ...input };
     calculateKtmPricing(input);
     expect(input).toEqual(original);
   });
 
   test('throws RangeError for unsupported route', () => {
-    expect(() => calculateKtmPricing({ route: 'THAILAND_JAPAN', mode: 'air', weightKg: 3 })).toThrow(RangeError);
+    expect(() =>
+      calculateKtmPricing({ route: 'THAILAND_JAPAN', mode: 'air', weightKg: 3 })
+    ).toThrow(RangeError);
   });
 
   test('throws TypeError for missing route', () => {
@@ -326,26 +334,42 @@ describe('calculateKtmPricing', () => {
   });
 
   test('throws RangeError for unsupported mode', () => {
-    expect(() => calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'sea', weightKg: 3 })).toThrow(RangeError);
+    expect(() =>
+      calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'sea', weightKg: 3 })
+    ).toThrow(RangeError);
   });
 
   test('throws TypeError for non-boolean includeShoppingCommission', () => {
     expect(() =>
-      calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'air', weightKg: 3, includeShoppingCommission: 'true' })
+      calculateKtmPricing({
+        route: 'THAILAND_MYANMAR',
+        mode: 'air',
+        weightKg: 3,
+        includeShoppingCommission: 'true',
+      })
     ).toThrow(TypeError);
   });
 
   test('throws TypeError for missing productCostThb when includeShoppingCommission is true', () => {
     expect(() =>
-      calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'air', weightKg: 3, includeShoppingCommission: true })
+      calculateKtmPricing({
+        route: 'THAILAND_MYANMAR',
+        mode: 'air',
+        weightKg: 3,
+        includeShoppingCommission: true,
+      })
     ).toThrow(TypeError);
   });
 
   test('throws RangeError for zero weightKg', () => {
-    expect(() => calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'air', weightKg: 0 })).toThrow(RangeError);
+    expect(() =>
+      calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'air', weightKg: 0 })
+    ).toThrow(RangeError);
   });
 
   test('throws TypeError for NaN weightKg', () => {
-    expect(() => calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'air', weightKg: NaN })).toThrow(TypeError);
+    expect(() =>
+      calculateKtmPricing({ route: 'THAILAND_MYANMAR', mode: 'air', weightKg: NaN })
+    ).toThrow(TypeError);
   });
 });
