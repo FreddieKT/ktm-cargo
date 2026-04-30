@@ -65,8 +65,12 @@ export default function PriceCalculatorPage() {
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[1.1fr_0.9fr]">
       <section className="space-y-5">
         <div>
-          <p className="text-sm font-medium uppercase tracking-wide text-blue-700">KTM Cargo Express</p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-950">Price calculator and quote request</h1>
+          <p className="text-sm font-medium uppercase tracking-wide text-blue-700">
+            KTM Cargo Express
+          </p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-950">
+            Price calculator and quote request
+          </h1>
           <p className="mt-3 text-slate-600">
             Estimate Thailand ↔ Myanmar cargo pricing, then submit a lead for staff review.
           </p>

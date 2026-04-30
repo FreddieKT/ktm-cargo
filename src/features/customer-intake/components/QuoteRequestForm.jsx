@@ -56,11 +56,21 @@ export default function QuoteRequestForm({ form, estimate, status, onChange, onS
 
       <div className="grid gap-2">
         <Label htmlFor="notes">Notes</Label>
-        <Textarea id="notes" value={form.notes} onChange={(event) => onChange('notes', event.target.value)} />
+        <Textarea
+          id="notes"
+          value={form.notes}
+          onChange={(event) => onChange('notes', event.target.value)}
+        />
       </div>
 
-      {status === 'success' && <p className="text-sm font-medium text-green-700">Quote request received.</p>}
-      {status === 'error' && <p className="text-sm font-medium text-red-700">Could not send quote request. Please try again.</p>}
+      {status === 'success' && (
+        <p className="text-sm font-medium text-green-700">Quote request received.</p>
+      )}
+      {status === 'error' && (
+        <p className="text-sm font-medium text-red-700">
+          Could not send quote request. Please try again.
+        </p>
+      )}
 
       <Button type="submit" disabled={disabled}>
         {status === 'submitting' ? 'Sending...' : 'Request quote'}

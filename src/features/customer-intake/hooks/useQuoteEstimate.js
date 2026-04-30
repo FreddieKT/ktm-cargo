@@ -1,8 +1,5 @@
 import { useMemo } from 'react';
-import {
-  calculateKtmPricing,
-  getCargoRate,
-} from '../lib/ktmPricing.js';
+import { calculateKtmPricing, getCargoRate } from '../lib/ktmPricing.js';
 
 export function getPricingRoute(route) {
   if (route === 'MM-TH') return 'MYANMAR_THAILAND';
